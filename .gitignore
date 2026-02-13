@@ -1,0 +1,6 @@
+# Project exclude paths
+/.gradle/
+/build/
+/composeApp/build/
+/composeApp/build/classes/kotlin/jvm/main/
+.env
