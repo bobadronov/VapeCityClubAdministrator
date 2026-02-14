@@ -19,8 +19,8 @@ private val minor = libs.versions.minor.get().toInt()
 private val patch = libs.versions.patch.get().toInt()
 private val subpath = libs.versions.subpath.get().toInt()
 private val projectVersionName = "$major.$minor.$patch"        // те, що показуєш користувачу
-private val windowsBuild = patch * 100 + subpath              // 0..65535
-private val msiVersion = "$major.$minor.$windowsBuild"        // MAJOR.MINOR.BUILD
+private val desktopBuild = patch * 100 + subpath              // 0..65535
+private val desktopVersion = "$major.$minor.$desktopBuild"        // MAJOR.MINOR.BUILD
 private val projectVersionCode: Int =
     libs.versions.major.get().toInt() * 1000 + libs.versions.minor.get().toInt() * 100 + libs.versions.patch.get().toInt() * 10 + libs.versions.subpath.get().toInt()
 private val currentYear: Int = LocalDateTime.now().toLocalDate().year
@@ -178,15 +178,16 @@ compose.desktop {
         nativeDistributions {
             outputBaseDir.set(project.layout.projectDirectory.dir("release_desktop"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = libs.versions.appName.get().replace(" ", "_").lowercase()
-            packageVersion = msiVersion
-            version = msiVersion
+            packageName = libs.versions.appName.get()
+            packageVersion = desktopVersion
+            version = desktopVersion
             description = "${libs.versions.appName.get()} — corporate tool for administering a chain of stores: users, access rights, and content."
             copyright = "© 2022–${currentYear} BigBlackOwl. All trademarks are property of their respective owners."
             vendor = "BigBlackOwl"
 
             linux {
                 iconFile.set(project.file("desktopAppIcons/LinuxIcon.png"))
+                packageVersion = desktopVersion
             }
 
             windows {
@@ -194,13 +195,14 @@ compose.desktop {
                 shortcut = true
                 console = false
                 dirChooser = false
-                msiPackageVersion = msiVersion
-                exePackageVersion = msiVersion
+                msiPackageVersion = desktopVersion
             }
 
             macOS {
                 iconFile.set(project.file("desktopAppIcons/MacosIcon.icns"))
                 bundleID = "org.bigblackowl.vccadmin.desktopApp"
+                dmgPackageBuildVersion = desktopVersion
+                dmgPackageVersion = desktopVersion
             }
         }
 
