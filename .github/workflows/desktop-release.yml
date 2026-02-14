@@ -2,6 +2,11 @@ name: Desktop packages
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (e.g. v1.2.3). If empty, a manual tag will be created."
+        required: false
+        default: ""
   push:
     tags:
       - "v*"
@@ -41,13 +46,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # --- Gradle wrapper fix for *nix ---
       - name: Make Gradle wrapper executable (macOS/Linux)
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
           chmod +x gradlew
-          # normalize line-endings
           if [ "${{ matrix.os }}" = "macos-latest" ]; then
             sed -i '' $'s/\r$//' gradlew
           else
@@ -70,7 +73,7 @@ jobs:
         shell: bash
         run: ./gradlew :composeApp:packageReleaseDeb
 
-      # --- Collect packages into a stable folder (dist) ---
+      # --- Collect packages into stable folder ---
       - name: Collect packages (macOS/Linux)
         if: matrix.os != 'windows-latest'
         shell: bash
@@ -96,7 +99,6 @@ jobs:
           Write-Host "Collected files:"
           Get-ChildItem dist | Format-Table Name, Length
 
-      # --- Upload workflow artifacts (always) ---
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -105,12 +107,47 @@ jobs:
           if-no-files-found: warn
 
   release:
-    name: Publish GitHub Release
-    if: startsWith(github.ref, 'refs/tags/')
+    name: Publish GitHub Release + update.json
     needs: build
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout (needed to create tag + commit update.json)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine tag name
+        id: tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          else
+            if [ -n "${{ inputs.tag }}" ]; then
+              echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+            else
+              echo "tag=manual-$(date -u +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+            fi
+          fi
+          echo "Using tag: ${{ steps.tag.outputs.tag }}"
+
+      - name: Create tag (only when workflow_dispatch and tag does not exist)
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          git fetch --tags
+
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists. Will publish to existing tag."
+            exit 0
+          fi
+
+          echo "Creating tag $TAG at current commit..."
+          git tag "$TAG"
+          git push origin "$TAG"
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -119,11 +156,12 @@ jobs:
       - name: Show downloaded files (debug)
         run: |
           echo "Downloaded artifacts:"
-          find dist -type f -maxdepth 3 -print || true
+          find dist -type f -print || true
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
           files: |
             dist/**/*.dmg
             dist/**/*.msi
@@ -131,3 +169,104 @@ jobs:
             dist/**/*.pkg
             dist/**/*.exe
           fail_on_unmatched_files: false
+
+      # --- NEW: build SHA256 for installers ---
+      - name: Build SHA256 map
+        shell: bash
+        run: |
+          find dist -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.pkg" -o -name "*.exe" \) -print0 \
+            | xargs -0 -I{} sha256sum "{}" > sha256sums.txt || true
+          echo "SHA256:"
+          cat sha256sums.txt || true
+
+      # --- NEW: generate update.json using libs.versions.toml + GitHub release assets ---
+      - name: Generate update.json (libs.versions.toml + release assets)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          gh api "repos/${REPO}/releases/tags/${TAG}" > release.json
+
+          python - <<'PY'
+          import json, re, pathlib
+          import tomllib
+
+          # --- read libs.versions.toml ---
+          toml_path = pathlib.Path("gradle/libs.versions.toml")
+          data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
+          v = data.get("versions", {})
+
+          major = int(v["major"])
+          minor = int(v["minor"])
+          patch = int(v["patch"])
+          subpath = int(v["subpath"])
+
+          version_name = f"{major}.{minor}.{patch}"
+          windows_build = patch * 100 + subpath
+          msi_version = f"{major}.{minor}.{windows_build}"
+
+          # --- sha256 map by filename ---
+          sha = {}
+          p = pathlib.Path("sha256sums.txt")
+          if p.exists():
+            for line in p.read_text(encoding="utf-8").splitlines():
+              if not line.strip():
+                continue
+              h, f = line.split(maxsplit=1)
+              sha[pathlib.Path(f).name] = h
+
+          # --- release assets ---
+          rel = json.load(open("release.json", "r", encoding="utf-8"))
+          assets = rel.get("assets", [])
+
+          def pick(regex):
+            rx = re.compile(regex, re.I)
+            for a in assets:
+              name = a.get("name","")
+              if rx.search(name):
+                return {
+                  "name": name,
+                  "url": a.get("browser_download_url"),
+                  "size": a.get("size"),
+                  "sha256": sha.get(name, "")
+                }
+            return None
+
+          out = {
+            "tag": rel.get("tag_name"),
+            "publishedAt": rel.get("published_at"),
+            "versionName": version_name,
+            "windowsBuild": windows_build,
+            "msiVersion": msi_version,
+            "assets": {
+              "windows": pick(r"\.(msi|exe)$"),
+              "macos":   pick(r"\.(dmg|pkg)$"),
+              "linux":   pick(r"\.deb$")
+            }
+          }
+
+          pathlib.Path("update.json").write_text(
+            json.dumps(out, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+          )
+          print(pathlib.Path("update.json").read_text(encoding="utf-8"))
+          PY
+
+      # --- NEW: overwrite update.json in repo root (main branch) ---
+      - name: Commit update.json to main
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main
+          git checkout main
+
+          mv update.json ./update.json
+          git add update.json
+          git commit -m "chore(update): ${TAG} [skip ci]" || echo "No changes to commit"
+          git push origin main
