@@ -178,7 +178,7 @@ compose.desktop {
         nativeDistributions {
             outputBaseDir.set(project.layout.projectDirectory.dir("release_desktop"))
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = libs.versions.appName.get()
+            packageName = libs.versions.appName.get().replace(" ", "_").lowercase()
             packageVersion = msiVersion
             version = msiVersion
             description = "${libs.versions.appName.get()} — corporate tool for administering a chain of stores: users, access rights, and content."
