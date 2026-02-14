@@ -1,12 +1,6 @@
 name: Desktop packages
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Release tag to publish (e.g. v1.2.3). If empty, a manual tag will be created."
-        required: false
-        default: ""
   push:
     tags:
       - "v*"
