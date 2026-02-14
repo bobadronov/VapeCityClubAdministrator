@@ -255,18 +255,28 @@ jobs:
           PY
 
       # --- NEW: overwrite update.json in repo root (main branch) ---
-      - name: Commit update.json to main
+      - name: Commit update.json to default branch
         env:
           TAG: ${{ steps.tag.outputs.tag }}
         shell: bash
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git fetch origin main
-          git checkout main
+          # визначаємо default branch репозиторію (main/master/що завгодно)
+          DEFAULT_BRANCH="$(git remote show origin | sed -n 's/.*HEAD branch: //p')"
+          if [ -z "$DEFAULT_BRANCH" ]; then
+            echo "Failed to detect default branch"
+            exit 1
+          fi
+          echo "Default branch: $DEFAULT_BRANCH"
+
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
 
           mv update.json ./update.json
           git add update.json
           git commit -m "chore(update): ${TAG} [skip ci]" || echo "No changes to commit"
-          git push origin main
+          git push origin "$DEFAULT_BRANCH"
