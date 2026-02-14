@@ -176,13 +176,21 @@ compose.desktop {
         mainClass = "org.bigblackowl.vccadmin.MainKt"
 
         nativeDistributions {
+
             outputBaseDir.set(project.layout.projectDirectory.dir("release_desktop"))
+
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+
             packageName = libs.versions.appName.get()
+
             packageVersion = desktopVersion
+
             version = desktopVersion
+
             description = "${libs.versions.appName.get()} — corporate tool for administering a chain of stores: users, access rights, and content."
+
             copyright = "© 2022–${currentYear} BigBlackOwl. All trademarks are property of their respective owners."
+
             vendor = "BigBlackOwl"
 
             linux {
