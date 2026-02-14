@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -40,7 +43,6 @@ jobs:
         shell: bash
         run: |
           chmod +x gradlew
-          # якщо gradlew з CRLF
           sed -i '' $'s/\r$//' gradlew
 
       - name: Build DMG (macOS)
@@ -67,7 +69,8 @@ jobs:
         shell: bash
         run: ./gradlew :composeApp:packageReleaseDeb
 
-      - name: Upload artifacts
+      # (опційно) залишити upload-artifact
+      - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-packages
@@ -78,3 +81,16 @@ jobs:
             composeApp/build/compose/binaries/main-release/**/*.pkg
             composeApp/build/compose/binaries/main-release/**/*.exe
           if-no-files-found: warn
+
+      # ✅ Upload to GitHub Releases (тільки коли це push tag)
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            composeApp/build/compose/binaries/main-release/**/*.dmg
+            composeApp/build/compose/binaries/main-release/**/*.msi
+            composeApp/build/compose/binaries/main-release/**/*.deb
+            composeApp/build/compose/binaries/main-release/**/*.pkg
+            composeApp/build/compose/binaries/main-release/**/*.exe
+          fail_on_unmatched_files: false
