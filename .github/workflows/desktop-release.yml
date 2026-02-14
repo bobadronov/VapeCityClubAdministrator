@@ -16,12 +16,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Create .env
+        shell: bash
         run: |
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
           echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
@@ -33,18 +35,36 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # macOS -> DMG
+      - name: Make Gradle wrapper executable (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          chmod +x gradlew
+          # якщо gradlew з CRLF
+          sed -i '' $'s/\r$//' gradlew
+
       - name: Build DMG (macOS)
         if: matrix.os == 'macos-latest'
+        shell: bash
         run: ./gradlew :composeApp:packageReleaseDmg
 
       # Windows -> MSI
       - name: Build MSI (Windows)
         if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: .\gradlew.bat :composeApp:packageReleaseMsi
 
       # Linux -> DEB
+      - name: Make Gradle wrapper executable (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          chmod +x gradlew
+          sed -i 's/\r$//' gradlew
+
       - name: Build DEB (Linux)
         if: matrix.os == 'ubuntu-latest'
+        shell: bash
         run: ./gradlew :composeApp:packageReleaseDeb
 
       - name: Upload artifacts
