@@ -16,6 +16,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Create .env
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
       - name: Checkout
         uses: actions/checkout@v4
 
