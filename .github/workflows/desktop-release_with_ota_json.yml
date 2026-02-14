@@ -142,7 +142,7 @@ jobs:
           echo "SHA256:"
           cat sha256sums.txt || true
 
-      - name: Generate composeApp/ota/update.json (libs.versions.toml + release assets)
+      - name: Generate composeApp/ota/update.json (with sha256 from local dist)
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
@@ -152,14 +152,43 @@ jobs:
           gh api "repos/${REPO}/releases/tags/${TAG}" > release.json
 
           python - <<'PY'
-          import json, re, pathlib
+          import json, re, pathlib, hashlib
           import tomllib
 
-          # versions
+          dist_root = pathlib.Path("dist")
+
+          def sha256_file(p: pathlib.Path) -> str:
+            h = hashlib.sha256()
+            with p.open("rb") as f:
+              for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                h.update(chunk)
+            return h.hexdigest()
+
+          def find_local_asset(asset_name: str | None, asset_size: int | None) -> pathlib.Path | None:
+            if not dist_root.exists():
+              return None
+
+            # 1) exact name anywhere under dist
+            if asset_name:
+              hits = list(dist_root.rglob(asset_name))
+              for p in hits:
+                if p.is_file():
+                  return p
+
+            # 2) fallback: match by size + extension
+            if asset_name and asset_size:
+              ext = pathlib.Path(asset_name).suffix.lower()
+              candidates = list(dist_root.rglob(f"*{ext}"))
+              for p in candidates:
+                if p.is_file() and p.stat().st_size == asset_size:
+                  return p
+
+            return None
+
+          # --- read libs.versions.toml ---
           toml_path = pathlib.Path("gradle/libs.versions.toml")
           data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
           v = data.get("versions", {})
-
           major = int(v["major"])
           minor = int(v["minor"])
           patch = int(v["patch"])
@@ -169,16 +198,6 @@ jobs:
           desktop_build = patch * 100 + subpath
           desktop_version = f"{major}.{minor}.{desktop_build}"
 
-          # sha256 map by filename
-          sha = {}
-          p = pathlib.Path("sha256sums.txt")
-          if p.exists():
-            for line in p.read_text(encoding="utf-8").splitlines():
-              if not line.strip():
-                continue
-              h, f = line.split(maxsplit=1)
-              sha[pathlib.Path(f).name] = h
-
           rel = json.load(open("release.json", "r", encoding="utf-8"))
           assets = rel.get("assets", [])
 
@@ -187,11 +206,13 @@ jobs:
             for a in assets:
               name = a.get("name","")
               if rx.search(name):
+                size = a.get("size")
+                local = find_local_asset(name, size)
                 return {
                   "name": name,
                   "url": a.get("browser_download_url"),
-                  "size": a.get("size"),
-                  "sha256": sha.get(name, "")
+                  "size": size,
+                  "sha256": sha256_file(local) if local else ""
                 }
             return None
 
@@ -210,7 +231,6 @@ jobs:
           out_path = pathlib.Path("composeApp/ota/update.json")
           out_path.parent.mkdir(parents=True, exist_ok=True)
           out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-
           print(out_path.read_text(encoding="utf-8"))
           PY
 
