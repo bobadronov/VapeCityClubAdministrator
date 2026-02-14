@@ -1,7 +1,10 @@
 [versions]
+#       git tag v1.0.804
+#       git push --tags
+
+
 isDebugBuild    = "true"
 #isDebugBuild    = "false"
-
 
 subpath         = "4"
 patch           = "8"
