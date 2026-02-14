@@ -6,7 +6,7 @@
 isDebugBuild    = "true"
 #isDebugBuild    = "false"
 
-subpath         = "5"
+subpath         = "6"
 patch           = "8"
 minor           = "0"
 major           = "1"
