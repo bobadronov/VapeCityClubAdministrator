@@ -156,6 +156,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
+          make_latest: true
           files: |
             dist/**/*.dmg
             dist/**/*.msi
@@ -198,8 +199,8 @@ jobs:
           subpath = int(v["subpath"])
 
           version_name = f"{major}.{minor}.{patch}"
-          windows_build = patch * 100 + subpath
-          msi_version = f"{major}.{minor}.{windows_build}"
+          desktop_build = patch * 100 + subpath
+          desktop_version = f"{major}.{minor}.{desktop_build}"
 
           # --- sha256 map by filename ---
           sha = {}
@@ -232,8 +233,7 @@ jobs:
             "tag": rel.get("tag_name"),
             "publishedAt": rel.get("published_at"),
             "versionName": version_name,
-            "windowsBuild": windows_build,
-            "msiVersion": msi_version,
+            "desktop_version": desktop_version,
             "assets": {
               "windows": pick(r"\.(msi|exe)$"),
               "macos":   pick(r"\.(dmg|pkg)$"),
