@@ -4,3 +4,4 @@
 /composeApp/build/
 /composeApp/build/classes/kotlin/jvm/main/
 .env
+/composeApp/release_desktop/
