@@ -101,46 +101,15 @@ jobs:
           if-no-files-found: warn
 
   release:
-    name: Publish GitHub Release + update.json
+    name: Publish GitHub Release + composeApp/ota/update.json
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (needed to create tag + commit update.json)
+      - name: Checkout (for libs.versions.toml + committing update.json)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Determine tag name
-        id: tag
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
-          else
-            if [ -n "${{ inputs.tag }}" ]; then
-              echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
-            else
-              echo "tag=manual-$(date -u +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
-            fi
-          fi
-          echo "Using tag: ${{ steps.tag.outputs.tag }}"
-
-      - name: Create tag (only when workflow_dispatch and tag does not exist)
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          TAG="${{ steps.tag.outputs.tag }}"
-          git fetch --tags
-
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-            echo "Tag $TAG already exists. Will publish to existing tag."
-            exit 0
-          fi
-
-          echo "Creating tag $TAG at current commit..."
-          git tag "$TAG"
-          git push origin "$TAG"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -155,7 +124,7 @@ jobs:
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
+          tag_name: ${{ github.ref_name }}
           make_latest: true
           files: |
             dist/**/*.dmg
@@ -165,7 +134,6 @@ jobs:
             dist/**/*.exe
           fail_on_unmatched_files: false
 
-      # --- NEW: build SHA256 for installers ---
       - name: Build SHA256 map
         shell: bash
         run: |
@@ -174,11 +142,10 @@ jobs:
           echo "SHA256:"
           cat sha256sums.txt || true
 
-      # --- NEW: generate update.json using libs.versions.toml + GitHub release assets ---
-      - name: Generate update.json (libs.versions.toml + release assets)
+      - name: Generate composeApp/ota/update.json (libs.versions.toml + release assets)
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.tag.outputs.tag }}
+          TAG: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
         shell: bash
         run: |
@@ -188,7 +155,7 @@ jobs:
           import json, re, pathlib
           import tomllib
 
-          # --- read libs.versions.toml ---
+          # versions
           toml_path = pathlib.Path("gradle/libs.versions.toml")
           data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
           v = data.get("versions", {})
@@ -202,7 +169,7 @@ jobs:
           desktop_build = patch * 100 + subpath
           desktop_version = f"{major}.{minor}.{desktop_build}"
 
-          # --- sha256 map by filename ---
+          # sha256 map by filename
           sha = {}
           p = pathlib.Path("sha256sums.txt")
           if p.exists():
@@ -212,7 +179,6 @@ jobs:
               h, f = line.split(maxsplit=1)
               sha[pathlib.Path(f).name] = h
 
-          # --- release assets ---
           rel = json.load(open("release.json", "r", encoding="utf-8"))
           assets = rel.get("assets", [])
 
@@ -241,17 +207,16 @@ jobs:
             }
           }
 
-          pathlib.Path("update.json").write_text(
-            json.dumps(out, ensure_ascii=False, indent=2),
-            encoding="utf-8"
-          )
-          print(pathlib.Path("update.json").read_text(encoding="utf-8"))
+          out_path = pathlib.Path("composeApp/ota/update.json")
+          out_path.parent.mkdir(parents=True, exist_ok=True)
+          out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+
+          print(out_path.read_text(encoding="utf-8"))
           PY
 
-      # --- NEW: overwrite update.json in repo root (main branch) ---
-      - name: Commit update.json to default branch
+      - name: Commit composeApp/ota/update.json to default branch
         env:
-          TAG: ${{ steps.tag.outputs.tag }}
+          TAG: ${{ github.ref_name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -259,7 +224,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # визначаємо default branch репозиторію (main/master/що завгодно)
           DEFAULT_BRANCH="$(git remote show origin | sed -n 's/.*HEAD branch: //p')"
           if [ -z "$DEFAULT_BRANCH" ]; then
             echo "Failed to detect default branch"
@@ -270,7 +234,6 @@ jobs:
           git fetch origin "$DEFAULT_BRANCH"
           git checkout "$DEFAULT_BRANCH"
 
-          mv update.json ./update.json
-          git add update.json
+          git add composeApp/ota/update.json
           git commit -m "chore(update): ${TAG} [skip ci]" || echo "No changes to commit"
           git push origin "$DEFAULT_BRANCH"
