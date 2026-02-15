@@ -101,15 +101,17 @@ jobs:
           if-no-files-found: warn
 
   release:
-    name: Publish GitHub Release + composeApp/ota/update.json
+    name: Publish GitHub Release + update manifest
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (for libs.versions.toml + committing update.json)
+      # щоб мати можливість комітити update.json у дефолтну гілку
+      - name: Checkout default branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -117,6 +119,7 @@ jobs:
           path: dist
 
       - name: Show downloaded files (debug)
+        shell: bash
         run: |
           echo "Downloaded artifacts:"
           find dist -type f -print || true
@@ -134,7 +137,7 @@ jobs:
             dist/**/*.exe
           fail_on_unmatched_files: false
 
-      - name: Build SHA256 map
+      - name: Build SHA256 list (debug)
         shell: bash
         run: |
           find dist -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.pkg" -o -name "*.exe" \) -print0 \
@@ -142,18 +145,37 @@ jobs:
           echo "SHA256:"
           cat sha256sums.txt || true
 
-      - name: Generate composeApp/ota/update.json (with sha256 from local dist)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install supabase
+
+      - name: Fetch release metadata (release.json)
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
           REPO: ${{ github.repository }}
-        shell: bash
         run: |
           gh api "repos/${REPO}/releases/tags/${TAG}" > release.json
+          jq '.tag_name, (.assets|length)' release.json
 
+      - name: Generate manifest + write composeApp/ota/update.json + upsert Supabase
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
           python - <<'PY'
-          import json, re, pathlib, hashlib
+          import os, json, re, pathlib, hashlib
           import tomllib
+          from supabase import create_client
 
           dist_root = pathlib.Path("dist")
 
@@ -167,41 +189,18 @@ jobs:
           def find_local_asset(asset_name: str | None, asset_size: int | None) -> pathlib.Path | None:
             if not dist_root.exists():
               return None
-
-            # 1) exact name anywhere under dist
             if asset_name:
-              hits = list(dist_root.rglob(asset_name))
-              for p in hits:
+              for p in dist_root.rglob(asset_name):
                 if p.is_file():
                   return p
-
-            # 2) fallback: match by size + extension
             if asset_name and asset_size:
               ext = pathlib.Path(asset_name).suffix.lower()
-              candidates = list(dist_root.rglob(f"*{ext}"))
-              for p in candidates:
+              for p in dist_root.rglob(f"*{ext}"):
                 if p.is_file() and p.stat().st_size == asset_size:
                   return p
-
             return None
 
-          # --- read libs.versions.toml ---
-          toml_path = pathlib.Path("gradle/libs.versions.toml")
-          data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
-          v = data.get("versions", {})
-          major = int(v["major"])
-          minor = int(v["minor"])
-          patch = int(v["patch"])
-          subpath = int(v["subpath"])
-
-          version_name = f"{major}.{minor}.{patch}"
-          desktop_build = patch * 100 + subpath
-          desktop_version = f"{major}.{minor}.{desktop_build}"
-
-          rel = json.load(open("release.json", "r", encoding="utf-8"))
-          assets = rel.get("assets", [])
-
-          def pick(regex):
+          def pick_asset(assets: list[dict], regex: str) -> dict | None:
             rx = re.compile(regex, re.I)
             for a in assets:
               name = a.get("name","")
@@ -216,44 +215,66 @@ jobs:
                 }
             return None
 
-          out = {
+          # Read versions from libs.versions.toml
+          toml_path = pathlib.Path("gradle/libs.versions.toml")
+          data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
+          v = data.get("versions", {})
+
+          major = int(v["major"])
+          minor = int(v["minor"])
+          patch = int(v["patch"])
+          subpath = int(v["subpath"])
+
+          version_name = f"{major}.{minor}.{patch}"
+          desktop_build = patch * 100 + subpath
+          desktop_version = f"{major}.{minor}.{desktop_build}"
+
+          rel = json.loads(pathlib.Path("release.json").read_text(encoding="utf-8"))
+          assets = rel.get("assets", [])
+
+          manifest = {
             "tag": rel.get("tag_name"),
             "publishedAt": rel.get("published_at"),
             "versionName": version_name,
             "desktop_version": desktop_version,
             "assets": {
-              "windows": pick(r"\.(msi|exe)$"),
-              "macos":   pick(r"\.(dmg|pkg)$"),
-              "linux":   pick(r"\.deb$")
+              "windows": pick_asset(assets, r"\.(msi|exe)$"),
+              "macos":   pick_asset(assets, r"\.(dmg|pkg)$"),
+              "linux":   pick_asset(assets, r"\.deb$")
             }
           }
 
+          # Write update.json into repo
           out_path = pathlib.Path("composeApp/ota/update.json")
           out_path.parent.mkdir(parents=True, exist_ok=True)
-          out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-          print(out_path.read_text(encoding="utf-8"))
+          out_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+          print("Wrote:", out_path)
+
+          # Push to Supabase
+          sb_url = os.environ["SUPABASE_URL"]
+          sb_key = os.environ["SUPABASE_KEY"]
+          supabase = create_client(sb_url, sb_key)
+
+          row = {
+            "tag": manifest["tag"],
+            "published_at": manifest.get("publishedAt"),
+            "version_name": manifest.get("versionName"),
+            "desktop_version": manifest.get("desktop_version"),
+            "manifest": manifest,
+          }
+
+          res = supabase.table("admin_app_updates").upsert(row).execute()
+          print("Upsert result:", res.data)
+          print(json.dumps(manifest, ensure_ascii=False, indent=2))
           PY
 
-      - name: Commit composeApp/ota/update.json to default branch
-        env:
-          TAG: ${{ github.ref_name }}
+      - name: Commit and push update.json
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          DEFAULT_BRANCH="$(git remote show origin | sed -n 's/.*HEAD branch: //p')"
-          if [ -z "$DEFAULT_BRANCH" ]; then
-            echo "Failed to detect default branch"
-            exit 1
-          fi
-          echo "Default branch: $DEFAULT_BRANCH"
-
-          git fetch origin "$DEFAULT_BRANCH"
-          git checkout "$DEFAULT_BRANCH"
-
           git add composeApp/ota/update.json
-          git commit -m "chore(update): ${TAG} [skip ci]" || echo "No changes to commit"
-          git push origin "$DEFAULT_BRANCH"
+          git commit -m "chore(ota): update manifest for ${{ github.ref_name }}" || echo "No changes to commit"
+          git push
