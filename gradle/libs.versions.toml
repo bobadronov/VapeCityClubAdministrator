@@ -3,10 +3,10 @@
 #       git push --tags
 
 
-isDebugBuild    = "true"
-#isDebugBuild    = "false"
+#isDebugBuild    = "true"
+isDebugBuild    = "false"
 
-subpath         = "7"
+subpath         = "8"
 patch           = "8"
 minor           = "0"
 major           = "1"
