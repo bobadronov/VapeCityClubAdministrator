@@ -18,8 +18,8 @@ private val major = libs.versions.major.get().toInt()
 private val minor = libs.versions.minor.get().toInt()
 private val patch = libs.versions.patch.get().toInt()
 private val subpath = libs.versions.subpath.get().toInt()
-private val projectVersionName = "$major.$minor.$patch"        // те, що показуєш користувачу
 private val desktopBuild = patch * 100 + subpath              // 0..65535
+private val projectVersionName = "$major.$minor.$desktopBuild"        // те, що показуєш користувачу
 private val desktopVersion = "$major.$minor.$desktopBuild"        // MAJOR.MINOR.BUILD
 private val projectVersionCode: Int =
     libs.versions.major.get().toInt() * 1000 + libs.versions.minor.get().toInt() * 100 + libs.versions.patch.get().toInt() * 10 + libs.versions.subpath.get().toInt()
@@ -126,6 +126,7 @@ kotlin {
 }
 
 extensions.configure<ApplicationExtension> {
+
     namespace = "org.bigblackowl.vccadmin"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
@@ -135,6 +136,7 @@ extensions.configure<ApplicationExtension> {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = projectVersionCode
         versionName = projectVersionName
+        manifestPlaceholders["appName"] = libs.versions.appName.get()
     }
 
     packaging {
@@ -229,6 +231,7 @@ val envProps = Properties().apply {
 }
 
 buildConfig {
+    packageName("org.bigblackowl.vccadmin")
     buildConfigField("APP_NAME", libs.versions.appName.get())
     buildConfigField("IS_DEBUG_BUILD", isDebugBuild)
     buildConfigField("APP_VERSION", projectVersionName)

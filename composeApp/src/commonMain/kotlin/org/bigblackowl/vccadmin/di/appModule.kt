@@ -1,7 +1,6 @@
 // shared
 package org.bigblackowl.vccadmin.di
 
-import VCCAdministrator.composeApp.BuildConfig
 import androidx.lifecycle.SavedStateHandle
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.logging.LogLevel
@@ -20,6 +19,7 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
 import org.bigblackowl.vccadmin.data.repository.AiRepository
 import org.bigblackowl.vccadmin.data.repository.AiRepositoryImpl
@@ -27,6 +27,8 @@ import org.bigblackowl.vccadmin.data.repository.AuthRepository
 import org.bigblackowl.vccadmin.data.repository.AuthRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.CityRepository
 import org.bigblackowl.vccadmin.data.repository.CityRepositoryImpl
+import org.bigblackowl.vccadmin.data.repository.CitySearchRepository
+import org.bigblackowl.vccadmin.data.repository.CitySearchRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.FileGeneratorRepository
 import org.bigblackowl.vccadmin.data.repository.FileGeneratorRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.LocalRepository
@@ -66,7 +68,7 @@ expect val ktorEngine: HttpClientEngine
 
 val networkModule = module {
     single { LocalRepository() }
-    single {
+    single<Json> {
         Json {
             ignoreUnknownKeys = true
         }
@@ -151,6 +153,7 @@ val repositoryModule = module {
     single<SlideRepository> { SlideRepositoryImpl(get()) }
     single<FileGeneratorRepository> { FileGeneratorRepositoryImpl(get()) }
     single<AiRepository> { AiRepositoryImpl(get(), get()) }
+    single<CitySearchRepository> { CitySearchRepositoryImpl(json = get()) }
 }
 
 val logger = module {

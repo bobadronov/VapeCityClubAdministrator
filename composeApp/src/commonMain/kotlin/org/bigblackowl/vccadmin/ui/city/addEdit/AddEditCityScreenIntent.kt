@@ -11,4 +11,13 @@ sealed interface AddEditCityScreenIntent {
     object EditLogo : AddEditCityScreenIntent
     data class DeleteCity(val city: City) : AddEditCityScreenIntent
     object Clear : AddEditCityScreenIntent
+    object ExpandCityDropdown : AddEditCityScreenIntent
+
+    data class CitySelected(val suggestion: CitySuggestion) : AddEditCityScreenIntent
+
+
+    // NEW keyboard control
+    object HighlightNextCity : AddEditCityScreenIntent
+    object HighlightPrevCity : AddEditCityScreenIntent
+    object SelectHighlightedCity : AddEditCityScreenIntent
 }

@@ -7,6 +7,7 @@ import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
+import org.bigblackowl.vccadmin.ui.city.addEdit.CitySuggestion
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -69,6 +70,18 @@ object FakeBackend {
     val singleShop: Shop = shops.first()
     val singleSlide: Slide = slides.first()
     val singleUser: User = users.first()
+    private val previewSuggestions = listOf(
+        CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
+        CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
+        CitySuggestion(CityDto(name = "Ірпінь", oblast = "Київська область"), false),
+        CitySuggestion(CityDto(name = "Біла Церква", oblast = "Київська область"), false),
+        CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
+        CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
+        CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
+        CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
+    )
+
+    val previewSuggestionsList = previewSuggestions
 
     // ========================================================================
     // Builders

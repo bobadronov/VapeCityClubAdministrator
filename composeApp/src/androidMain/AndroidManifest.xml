@@ -30,7 +30,7 @@
         android:name=".di.DiApplication"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="VCC Administrator"
+        android:label="${appName}"
         android:theme="@style/Theme"
         tools:replace="android:name"
         tools:targetApi="36">

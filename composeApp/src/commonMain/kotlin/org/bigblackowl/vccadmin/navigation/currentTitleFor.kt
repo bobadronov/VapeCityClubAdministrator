@@ -1,7 +1,7 @@
 package org.bigblackowl.vccadmin.navigation
 
-import VCCAdministrator.composeApp.BuildConfig
 import androidx.compose.runtime.Composable
+import org.bigblackowl.vccadmin.BuildConfig
 import org.jetbrains.compose.resources.stringResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.add_city

@@ -68,7 +68,7 @@ import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
@@ -252,7 +252,10 @@ private fun EditSlidesSettingsScreenContent(
                         )
 
                         DropdownMenu(
-                            expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.fillParentMaxWidth(), shape = RoundedCornerShape(10.dp)
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.fillParentMaxWidth(),
+                            shape = RoundedCornerShape(DefaultValues.Shape.defaultShape)
                         ) {
                             TransitionEffect.entries.forEachIndexed { index, effect ->
                                 DropdownMenuItem(

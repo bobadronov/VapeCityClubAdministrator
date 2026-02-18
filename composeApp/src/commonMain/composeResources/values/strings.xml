@@ -26,6 +26,7 @@
     <string name="zip_ready_to_share">ZIP підготовлено. Можна поділитися</string>
     <string name="share_failed">Не вдалося поділитися файлом</string>
     <string name="open_settings">Відкрити налаштування</string>
+    <string name="no_matches_with_existing_list">Немає збігів з наявним списком</string>
     <!-- Desktop clipboard -->
     <string name="copy_failed">Не вдалося скопіювати в буфер обміну</string>
 

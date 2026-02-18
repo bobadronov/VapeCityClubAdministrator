@@ -11,11 +11,11 @@ import org.bigblackowl.vccadmin.data.entity.UserRoleColors
 
 internal val UserRoleAdminDark = Color(0xFF00FF00)
 internal val UserRoleUserDark = Color(0xff4c6ef6)
-internal val UserRoleAdminLight = Color(0xff22ed09)
+internal val UserRoleAdminLight = Color(0xff128f04)
 internal val UserRoleUserLight = Color(0xff0064fb)
 
 // Status colors — Light theme
-internal val StatusColorActiveLight = Color(0xff05f611)
+internal val StatusColorActiveLight = Color(0xff04870b)
 internal val StatusColorInactiveLight = Color(0xFF616161)
 internal val StatusColorClosedLight = Color(0xFFC62828)
 internal val StatusColorRelocatingLight = Color(0xFFF9A825)

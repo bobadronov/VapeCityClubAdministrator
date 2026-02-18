@@ -1,12 +1,16 @@
 
-TODO: check for update in repo https://klibs.io/project/dshatz/pdfmp
+[//]: # (TODO: check for update in repo https://klibs.io/project/dshatz/pdfmp)
 
-@Composable
+[//]: # (@Composable)
 
-fun OpenPdfInNewTabButton(url: String, modifier: Modifier = Modifier) {
+[//]: # ()
+[//]: # (fun OpenPdfInNewTabButton&#40;url: String, modifier: Modifier = Modifier&#41; {)
 
-    val state by rememberPdfViewerState(url)
+[//]: # ()
+[//]: # (    val state by rememberPdfViewerState&#40;url&#41;)
 
-    PdfViewer(pdfViewerState = state) // NOT_Implemented_for_web
+[//]: # ()
+[//]: # (    PdfViewer&#40;pdfViewerState = state&#41; // NOT_Implemented_for_web)
 
-}
+[//]: # ()
+[//]: # (})

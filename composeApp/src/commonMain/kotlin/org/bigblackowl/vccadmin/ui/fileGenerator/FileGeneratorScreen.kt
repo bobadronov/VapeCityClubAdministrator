@@ -84,7 +84,6 @@ import org.bigblackowl.vccadmin.data.state.UIEvents
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.OpenButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.ShareAllFilesButton
@@ -93,6 +92,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
@@ -389,7 +389,7 @@ private fun NumberIndicator(
                         .size(width = width, height = height)
                         .background(
                             color = bgColor,
-                            shape = RoundedCornerShape(20.dp)
+                            shape = RoundedCornerShape(DefaultValues.Shape.defaultShape)
                         )
                 ) {
                     if (showLabelInsideActive) {

@@ -4,10 +4,10 @@ package org.bigblackowl.vccadmin.navigation
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,10 +51,12 @@ import org.bigblackowl.vccadmin.data.repository.AuthRepository
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.repository.LocalRepository
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.theme.ThemeMode
+import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.ui.login.LoginScreenIntent
 import org.bigblackowl.vccadmin.ui.login.LoginScreenViewModel
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
@@ -76,7 +78,7 @@ fun MainTopAppBar(
     networkMonitorProvider: NetworkMonitorProvider = koinInject(),
 ) {
     var themeMode by LocalThemeMode.current
-    val systemDark = isSystemInDarkTheme()
+    val systemDark = rememberIsDarkTheme()
 
     val currentUser by authRepository.currentUser.collectAsStateWithLifecycle()
     val isConnected by networkMonitorProvider.isConnected.collectAsStateWithLifecycle()
@@ -210,6 +212,7 @@ private fun AppMenu(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
                     ) { onDismiss() }
+                    .background(Color.Black.copy(.4f))
             )
 
             // 2) Меню (кліки всередині НЕ мають закривати через scrim)
@@ -240,7 +243,7 @@ private fun AppMenu(
                         modifier = Modifier
                             .fillMaxWidth(),
                         enabled = !selected,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
                         colors = CardDefaults.cardColors(
                             containerColor = if (selected)
                                 MaterialTheme.colorScheme.surfaceVariant

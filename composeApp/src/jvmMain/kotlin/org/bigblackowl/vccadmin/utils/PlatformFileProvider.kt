@@ -2,7 +2,6 @@
 
 package org.bigblackowl.vccadmin.utils
 
-import VCCAdministrator.composeApp.BuildConfig
 import io.github.aakira.napier.Napier
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
@@ -14,6 +13,7 @@ import io.github.vinceglb.filekit.withScopedAccess
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import org.jetbrains.compose.resources.getString
@@ -46,6 +46,16 @@ actual object PlatformFileProvider {
         val file = PlatformFile("$downloadFolderPath${File.separator}$fileName")
         Napier.d(tag = TAG) { file.absolutePath() }
         FileKit.openFileWithDefaultApplication(file)
+    }
+
+    suspend fun saveFile(name: String, content: ByteArray) {
+        if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
+
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
+        Napier.d(tag = TAG) { file.absolutePath() }
+        file.withScopedAccess { file ->
+            file.write(content)
+        }
     }
 
     actual suspend fun downloadFile(name: String, content: ByteArray) {

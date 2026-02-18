@@ -1,14 +1,12 @@
 // LoginScreen.kt
 package org.bigblackowl.vccadmin.ui.login
 
-import VCCAdministrator.composeApp.BuildConfig
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,9 +59,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
+import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
@@ -124,7 +124,7 @@ private fun LoginScreenContent(
         ),
         label = "login_button_width"
     )
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = rememberIsDarkTheme()
     val darkLogo = painterResource(Res.drawable.main_logo)
     val lightLogo = painterResource(Res.drawable.main_logo_white_theme)
     val logo = remember(isDarkTheme) {
@@ -269,7 +269,7 @@ private fun EmailField(
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email, imeAction = ImeAction.Next
         ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
     )
 }
 
@@ -307,7 +307,7 @@ private fun PasswordField(
                 DefaultIcon(if (isVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff)
             }
         },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
     )
 }
 

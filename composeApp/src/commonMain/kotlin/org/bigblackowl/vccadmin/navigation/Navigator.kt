@@ -22,6 +22,7 @@ import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
+import io.github.aakira.napier.Napier
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreen
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideScreen
 import org.bigblackowl.vccadmin.ui.city.addEdit.AddEditCityScreen
@@ -179,7 +180,6 @@ fun Navigator(
 
 /**
  * A [androidx.navigation3.scene.Scene] that displays a list and a detail [androidx.navigation3.runtime.NavEntry] side-by-side in a 40/60 split.
- *
  */
 private class ListDetailScene<T : Any>(
     override val key: Any,
@@ -203,7 +203,7 @@ private class ListDetailScene<T : Any>(
 @Composable
 private fun <T : Any> rememberSceneStrategy(): ListDetailSceneStrategy<T> {
     val windowSizeClass = currentWindowAdaptiveInfo(supportLargeAndXLargeWidth = true).windowSizeClass
-
+    Napier.d { "windowSizeClass minWidthDp: ${windowSizeClass.minWidthDp}" }
     return remember(windowSizeClass) {
         ListDetailSceneStrategy(windowSizeClass)
     }
@@ -217,7 +217,7 @@ private class ListDetailSceneStrategy<T : Any>(val windowSizeClass: WindowSizeCl
 
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
 
-        if (!windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)) {
+        if (!windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)) {
             return null
         }
 

@@ -2,18 +2,30 @@
 
 package org.bigblackowl.vccadmin.ui.city.addEdit
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -25,6 +37,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,7 +55,6 @@ import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.AddButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
@@ -44,6 +64,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -56,6 +77,7 @@ import vccadministrator.composeapp.generated.resources.delete_confirmation_messa
 import vccadministrator.composeapp.generated.resources.edit_city
 import vccadministrator.composeapp.generated.resources.enter_city_name
 import vccadministrator.composeapp.generated.resources.invalid_city_name
+import vccadministrator.composeapp.generated.resources.no_matches_with_existing_list
 import vccadministrator.composeapp.generated.resources.select_logo
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -69,13 +91,14 @@ fun AddEditCityScreen(
     val isEdit = cityId != null
     var showUnsavedDialog by remember { mutableStateOf(false) }
 
-    DisposableEffect(Unit) { onDispose { addEditCityScreenViewModel.onIntent(AddEditCityScreenIntent.Clear) } }
-
     LaunchedEffect(Unit) {
         if (isEdit) addEditCityScreenViewModel.onIntent(AddEditCityScreenIntent.GetCity(cityId))
     }
 
+    DisposableEffect(Unit) { onDispose { addEditCityScreenViewModel.onIntent(AddEditCityScreenIntent.Clear) } }
+
     val uiEvent by addEditCityScreenViewModel.uiEvent.collectAsStateWithLifecycle(null)
+    val autocomplete by addEditCityScreenViewModel.cityAutocomplete.collectAsStateWithLifecycle()
 
     // Обробка одноразових подій (наприклад, помилок у Snackbar)
     LaunchedEffect(uiEvent) {
@@ -93,6 +116,7 @@ fun AddEditCityScreen(
 
     AddEditCityScreenContent(
         uiState = state,
+        autocomplete = autocomplete,
         onIntent = addEditCityScreenViewModel::onIntent,
     )
 
@@ -114,12 +138,11 @@ fun AddEditCityScreen(
 @Composable
 private fun AddEditCityScreenContent(
     uiState: AddEditCityScreenUiState,
+    autocomplete: CityAutocompleteUiState,
     onIntent: (AddEditCityScreenIntent) -> Unit,
 ) {
 
     val isAddMode = uiState.selectedCity == null
-
-    val listState = rememberLazyListState()
 
     if (uiState.isLoading) {
         LoadingComponent()
@@ -127,50 +150,49 @@ private fun AddEditCityScreenContent(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(DefaultValues.Padding.mainBoxPadding),
         verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val imageModel = uiState.newCityLogoFile?.toString() ?: uiState.selectedCity?.logoUrl
-        Row(Modifier.weight(1f)) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding)
-            ) {
-                item {
-                    Crossfade(targetState = imageModel) { model ->
-                        OnlineIcon(
-                            model = model,
-                            contentDescription = stringResource(Res.string.select_logo),
-                            modifier = Modifier.size(250.dp),
-                        )
-                    }
-                }
-                item {
-                    OutlinedButton(
-                        onClick = { onIntent(AddEditCityScreenIntent.EditLogo) }, modifier = Modifier.fillMaxWidth(0.8f)
-                    ) {
-                        BodyText(text = if (imageModel != null) stringResource(Res.string.change_logo) else stringResource(Res.string.select_logo))
-                    }
-                }
 
-                item {
-                    OutlinedTextField(
-                        value = uiState.newCityName,
-                        onValueChange = { onIntent(AddEditCityScreenIntent.EditName(it)) },
-                        label = { Text(if (isAddMode) stringResource(Res.string.enter_city_name) else stringResource(Res.string.edit_city)) },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        singleLine = true,
-                        isError = uiState.newCityName.length < 2,
-                        supportingText = {
-                            if (uiState.newCityName.length < 2) SmallText(stringResource(Res.string.invalid_city_name))
-                        })
-                }
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding)
+        ) {
+
+            Crossfade(targetState = imageModel) { model ->
+                OnlineIcon(
+                    model = model,
+                    contentDescription = stringResource(Res.string.select_logo),
+                    modifier = Modifier.size(250.dp),
+                )
             }
 
-            DefaultScrollbar(scrollState = listState)
+            OutlinedButton(
+                onClick = { onIntent(AddEditCityScreenIntent.EditLogo) }, modifier = Modifier.fillMaxWidth(0.8f)
+            ) {
+                BodyText(text = if (imageModel != null) stringResource(Res.string.change_logo) else stringResource(Res.string.select_logo))
+            }
+
+            CityAutocompleteField(
+                value = uiState.newCityName,
+                onValueChange = { onIntent(AddEditCityScreenIntent.EditName(it)) },
+                onSuggestionSelected = { onIntent(AddEditCityScreenIntent.CitySelected(it)) },
+                onHighlightNext = { onIntent(AddEditCityScreenIntent.HighlightNextCity) },
+                onHighlightPrev = { onIntent(AddEditCityScreenIntent.HighlightPrevCity) },
+                onSelectHighlighted = { onIntent(AddEditCityScreenIntent.SelectHighlightedCity) },
+                isLoading = autocomplete.isLoading,
+                suggestions = autocomplete.suggestions,
+                highlightedIndex = autocomplete.highlightedIndex,
+                label = { Text(if (isAddMode) stringResource(Res.string.enter_city_name) else stringResource(Res.string.edit_city)) },
+                modifier = Modifier.fillMaxWidth(0.8f),
+                isError = uiState.newCityName.length < 2,
+                supportingText = {
+                    if (uiState.newCityName.length < 2) SmallText(stringResource(Res.string.invalid_city_name))
+                },
+            )
         }
 
         ButtonRowContainer {
@@ -195,22 +217,236 @@ private fun AddEditCityScreenContent(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun CityAutocompleteField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSuggestionSelected: (CitySuggestion) -> Unit,
+
+    onHighlightNext: () -> Unit,
+    onHighlightPrev: () -> Unit,
+    onSelectHighlighted: () -> Unit,
+
+    isLoading: Boolean,
+    suggestions: List<CitySuggestion>,
+    highlightedIndex: Int,
+
+    modifier: Modifier = Modifier,
+    label: @Composable (() -> Unit)? = null,
+    isError: Boolean = false,
+    supportingText: @Composable (() -> Unit)? = null,
+) {
+    val tfFocus = remember { FocusRequester() }
+
+    val scrollState = rememberLazyListState()
+
+    LaunchedEffect(suggestions.size, highlightedIndex) {
+        if (suggestions.isEmpty()) return@LaunchedEffect
+        scrollState.animateScrollToItem(highlightedIndex)
+    }
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = { onValueChange(it) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(tfFocus)
+                .onPreviewKeyEvent { e ->
+                    if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    when (e.key) {
+                        Key.DirectionDown -> {
+                            if (suggestions.isNotEmpty()) {
+                                onHighlightNext()
+                                true
+                            } else false
+                        }
+
+                        Key.DirectionUp -> {
+                            if (suggestions.isNotEmpty()) {
+                                onHighlightPrev()
+                                true
+                            } else false
+                        }
+
+                        Key.Enter, Key.NumPadEnter -> {
+                            if (suggestions.isNotEmpty()) {
+                                onSelectHighlighted()
+                                true
+                            } else false
+                        }
+
+                        Key.Escape -> {
+                            tfFocus.requestFocus(); true
+                        }
+
+                        else -> false
+                    }
+                },
+            label = label,
+            singleLine = true,
+            isError = isError,
+            supportingText = supportingText,
+        )
+
+        // ВАЖЛИВО: це НЕ Popup. Це звичайний блок під полем -> фокус не зникає.
+
+        Surface(
+            tonalElevation = 2.dp,
+            shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp)
+        ) {
+            when {
+                suggestions.isEmpty() -> {
+                    BodyText(
+                        text = stringResource(Res.string.no_matches_with_existing_list),
+                        modifier = Modifier
+                            .padding(DefaultValues.Padding.cardContentPadding),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                else -> {
+                    Column {
+                        Row(Modifier.fillMaxWidth().weight(1f)) {
+                            LazyColumn(
+                                modifier = Modifier.weight(1f),
+                                state = scrollState,
+                            ) {
+                                items(suggestions.size) { index ->
+                                    val s = suggestions[index]
+                                    val selected = index == highlightedIndex
+
+                                    val bg = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+                                    val fg = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+
+                                    // Робимо клікабельність + фон самі, без DropdownMenuItem (він заточений під меню/попап)
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(bg)
+                                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                                            .run {
+                                                if (!s.exists) clickable { onSuggestionSelected(s) } else this
+                                            }
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = s.city.name,
+                                                style = if (selected) MaterialTheme.typography.titleMedium
+                                                else MaterialTheme.typography.bodyLarge,
+                                                color = fg
+                                            )
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = s.city.oblast,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = if (selected) fg else MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                                if (s.exists) {
+                                                    Text(
+                                                        text = "  •  вже додано",
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.error
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            DefaultScrollbar(scrollState = scrollState)
+                        }
+
+                        AnimatedVisibility(
+                            visible = isLoading && value.trim().length >= 2,
+                            modifier = Modifier.fillMaxWidth(),
+                            enter = slideInVertically { it },
+                            exit = slideOutVertically { -it },
+                        ) {
+                            LinearWavyProgressIndicator(Modifier.fillMaxWidth())
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------- Previews ----------
 @Preview
 @Composable
-private fun AddEditCityScreenContentPreview1() = PreviewLightMaterialTheme {
+private fun AddEditCityScreenContentPreview_AddMode_Empty() = PreviewLightMaterialTheme {
     AddEditCityScreenContent(
-        uiState = AddEditCityScreenUiState(),
+        uiState = AddEditCityScreenUiState(
+            isLoading = false,
+            selectedCity = null,
+            newCityName = "",
+        ),
         onIntent = {},
+        autocomplete = CityAutocompleteUiState(
+            isLoading = false,
+            suggestions = emptyList(),
+            highlightedIndex = -1
+        )
     )
 }
 
 @Preview
 @Composable
-private fun AddEditCityScreenContentPreview2() = PreviewDarkMaterialTheme {
+private fun AddEditCityScreenContentPreview_AddMode_LoadingDropdown() = PreviewLightMaterialTheme {
     AddEditCityScreenContent(
         uiState = AddEditCityScreenUiState(
-            selectedCity = FakeBackend.singleCity,
+            isLoading = false,
+            selectedCity = null,
+            newCityName = "Ки",
         ),
         onIntent = {},
+        autocomplete = CityAutocompleteUiState(
+            isLoading = true,
+            suggestions = emptyList(),
+            highlightedIndex = -1
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun AddEditCityScreenContentPreview_AddMode_WithSuggestions() = PreviewLightMaterialTheme {
+    AddEditCityScreenContent(
+        uiState = AddEditCityScreenUiState(
+            isLoading = false,
+            selectedCity = null,
+            newCityName = "Ки",
+        ),
+        onIntent = {},
+        autocomplete = CityAutocompleteUiState(
+            isLoading = false,
+            suggestions = FakeBackend.previewSuggestionsList,
+            highlightedIndex = 1 // підсвітимо другий доступний (exists=false)
+        )
+    )
+}
+
+@Preview
+@Composable
+private fun AddEditCityScreenContentPreview_EditMode_WithSuggestions() = PreviewDarkMaterialTheme {
+    AddEditCityScreenContent(
+        uiState = AddEditCityScreenUiState(
+            isLoading = false,
+            selectedCity = FakeBackend.singleCity,
+            initialName = FakeBackend.singleCity.name,
+            newCityName = "Ір",
+        ),
+        onIntent = {},
+        autocomplete = CityAutocompleteUiState(
+            isLoading = true,
+            suggestions = FakeBackend.previewSuggestionsList,
+            highlightedIndex = 0
+        ),
     )
 }

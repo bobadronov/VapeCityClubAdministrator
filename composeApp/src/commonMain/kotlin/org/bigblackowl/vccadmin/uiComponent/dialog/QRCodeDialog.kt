@@ -3,7 +3,6 @@ package org.bigblackowl.vccadmin.uiComponent.dialog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -40,6 +39,7 @@ import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
+import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.jetbrains.compose.resources.painterResource
@@ -122,7 +122,7 @@ private fun QrCodeImage(
 ) {
 
     val centerLogo = painterResource(
-        if (isSystemInDarkTheme())
+        if (rememberIsDarkTheme())
             Res.drawable.main_logo
         else
             Res.drawable.main_logo_white_theme

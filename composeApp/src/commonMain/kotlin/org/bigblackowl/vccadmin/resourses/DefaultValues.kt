@@ -24,6 +24,10 @@ object DefaultValues {
             .date.toString().replace("-", "_")
     }
 
+    object Shape {
+        val defaultShape = 20.dp
+    }
+
     object Size {
         val iconSize = 25.dp
         val gridItemMinSize = 350.dp

@@ -24,7 +24,7 @@ class AppActivity : ComponentActivity(), KoinComponent {
         init()
 
         setContent {
-            App(onThemeChanged = { ThemeChanged(it) }) 
+            App(onThemeChanged = { ThemeChanged(it) })
         }
     }
 }
@@ -60,3 +60,4 @@ private fun ThemeChanged(isDark: Boolean) {
 //        Napier.e(tag = "QRCodeDialog") { "Failed to set brightness: ${e.message}" }
 //    }
 //}
+

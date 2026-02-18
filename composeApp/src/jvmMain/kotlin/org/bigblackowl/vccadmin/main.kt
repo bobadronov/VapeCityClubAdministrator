@@ -1,11 +1,11 @@
 // /src/main/kotlin/org/bigblackowl/vccadmin/Main.kt
 package org.bigblackowl.vccadmin
 
-import VCCAdministrator.composeApp.BuildConfig
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Maximize
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +20,8 @@ import com.kdroid.composetray.utils.SingleInstanceManager
 import io.github.vinceglb.filekit.FileKit
 import org.bigblackowl.vccadmin.data.repository.LocalRepository
 import org.bigblackowl.vccadmin.di.coreModules
+import org.bigblackowl.vccadmin.otaUpdates.OtaOverlayWindow
+import org.bigblackowl.vccadmin.otaUpdates.OtaUpdateManager
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinApplication
@@ -40,6 +42,7 @@ fun main() = application {
         configuration = koinConfiguration { modules(coreModules) }
     ) {
         val localRepository: LocalRepository = koinInject()
+        val otaUpdateManager: OtaUpdateManager = koinInject()
 
         var awtWindowRef by remember { mutableStateOf<java.awt.Window?>(null) }
         var isWindowVisible by remember { mutableStateOf(true) }
@@ -115,6 +118,9 @@ fun main() = application {
                 exitFully()
             }
         }
+
+
+
         Window(
             title = BuildConfig.APP_NAME,
             icon = appIconPainter,
@@ -140,6 +146,15 @@ fun main() = application {
             window.minimumSize = Dimension(600, HEIGHT_DP_EXPANDED_LOWER_BOUND)
 
             App()
+
+            LaunchedEffect(Unit) {
+                otaUpdateManager.checkOnAppStart()
+            }
+
+            OtaOverlayWindow(
+                ota = otaUpdateManager,
+                stateFlow = otaUpdateManager.state,
+            )
         }
     }
 }

@@ -1,5 +1,6 @@
 package org.bigblackowl.vccadmin.data.entity
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.SerialName
@@ -154,3 +155,20 @@ data class NewShop(
     @SerialName("device_type") val deviceType: DeviceType = DeviceType.NONE,
 )
 
+@Immutable
+data class ShopsFilter(
+    val selectedCityIds: Set<Int> = emptySet(),
+    val selectedStatuses: Set<ShopStatus> = emptySet(),
+) {
+    fun toggleCity(cityId: Int): ShopsFilter =
+        copy(
+            selectedCityIds = if (cityId in selectedCityIds) selectedCityIds - cityId else selectedCityIds + cityId
+        )
+
+    fun toggleStatus(status: ShopStatus): ShopsFilter =
+        copy(
+            selectedStatuses = if (status in selectedStatuses) selectedStatuses - status else selectedStatuses + status
+        )
+
+    fun clear(): ShopsFilter = ShopsFilter()
+}

@@ -23,7 +23,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 /**
- * Форматує timestamp (ms від епохи) у гарний український формат:
+ * Форматує timestamp (ms від епохи) у гарний локалізований формат:
  * "18:00 25 грудня 2025"
  */
 @OptIn(ExperimentalTime::class)
@@ -32,7 +32,7 @@ suspend fun formatTimestamp(timestampMs: Long): String {
     val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
 
     val day = dateTime.day
-    val month = getString(dateTime.month.ukrainianName())
+    val month = getString(dateTime.month.getName())
     val year = dateTime.year
     val hour = dateTime.hour.toString().padStart(2, '0')
     val minute = dateTime.minute.toString().padStart(2, '0')
@@ -47,7 +47,7 @@ suspend fun formatTimestamp(timestampMs: Long): String {
     )
 }
 
-private fun Month.ukrainianName(): StringResource = when (this) {
+private fun Month.getName(): StringResource = when (this) {
     Month.JANUARY -> Res.string.month_january
     Month.FEBRUARY -> Res.string.month_february
     Month.MARCH -> Res.string.month_march

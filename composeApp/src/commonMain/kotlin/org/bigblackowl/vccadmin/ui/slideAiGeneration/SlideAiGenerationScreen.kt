@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aallam.openai.api.image.ImageSize
@@ -61,8 +62,8 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
-import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
+import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.koin.compose.koinInject
 
@@ -116,6 +117,9 @@ private fun SlideAiGenerationScreenContent(
         modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding)
     ) {
+
+        TitleText("BETA TEST, NOT WORK YET!!!", color = Color.Red) /// todo: remove after test
+
         Row(
             modifier = Modifier.weight(1f),
         ) {
@@ -299,6 +303,7 @@ private fun SlideAiGenerationScreenContent(
                         }
                     }
                 }
+
                 item {
                     state.error?.let {
                         SelectionContainer(modifier = Modifier.weight(1f)) {
@@ -306,6 +311,7 @@ private fun SlideAiGenerationScreenContent(
                         }
                     }
                 }
+
                 item {
                     // Results gallery + selected preview
                     if (state.results.isNotEmpty()) {
@@ -380,13 +386,6 @@ private fun SlideAiGenerationScreenContent(
         }
     }
 }
-
-/**
- * =================
- *   Domain models
- * =================
- */
-enum class GenerationModeUi { Generate, EditWithPhoto, Variations, TemplateWithPhoto }
 
 
 @Preview

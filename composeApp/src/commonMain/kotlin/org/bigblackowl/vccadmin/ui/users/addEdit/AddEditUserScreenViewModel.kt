@@ -242,16 +242,7 @@ class AddEditUserScreenViewModel(
     }
 
     private fun cancelChanges() {
-        _uiState.update { current ->
-            current.copy(
-                editableEmail = current.initialEmail,
-                editablePassword = current.initialPassword,
-                editableFirstName = current.initialFirstName,
-                editableLastName = current.initialLastName,
-                editablePhone = current.initialPhone,
-                editableRole = current.initialRole
-            )
-        }
+        _uiState.update { AddEditUserUiState() }
         _isDirty.value = false
     }
 

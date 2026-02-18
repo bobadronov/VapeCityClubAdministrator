@@ -4,7 +4,6 @@ package org.bigblackowl.vccadmin.ui.shopDetail
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,7 +67,7 @@ import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
+import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.EditButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.QRCodeButton
@@ -80,6 +79,7 @@ import org.bigblackowl.vccadmin.uiComponent.dialog.ShareShopDataDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
@@ -445,10 +445,10 @@ private fun InfoRow(
 private fun StatusBadge(status: ShopStatus) {
     val color = status.color
     val text = stringResource(status.title)
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = rememberIsDarkTheme()
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(DefaultValues.Shape.defaultShape))
             .background(color.copy(alpha = 0.15f))
             .padding(horizontal = 10.dp, vertical = 5.dp)
     ) {

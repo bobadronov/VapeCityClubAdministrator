@@ -68,7 +68,7 @@ import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.DeleteButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
@@ -418,13 +418,13 @@ private fun ImagePreview(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
-                .clip(RoundedCornerShape(12.dp))
         ) { request ->
             if (request != null) {
                 AsyncImage(
                     model = request,
                     contentDescription = stringResource(Res.string.slides_preview),
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize()
+                        .clip(RoundedCornerShape(DefaultValues.Shape.defaultShape)),
                     onState = { sta ->
                         sta.securelyAccessFile(state.selectedFile)
                     }

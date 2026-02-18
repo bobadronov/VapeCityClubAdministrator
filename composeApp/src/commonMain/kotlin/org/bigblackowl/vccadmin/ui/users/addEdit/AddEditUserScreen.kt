@@ -59,7 +59,6 @@ import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.DeleteButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.RetryButton
@@ -67,6 +66,7 @@ import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.utils.UkrainianPhoneVisualTransformation
 import org.bigblackowl.vccadmin.utils.generatePassword

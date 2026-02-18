@@ -37,7 +37,7 @@ internal class UkrainianPhoneVisualTransformation : VisualTransformation {
         // Обробка (XXX) для короткого вводу
         if (trimmed.length <= 3) {
             builder.append("(")
-            mapping.add(0) // Відкриваюча дужка
+            mapping.add(0) // Що відкриває дужка
             for (i in trimmed.indices) {
                 builder.append(trimmed[i])
                 mapping.add(i) // Мапимо цифру на її позицію
@@ -59,7 +59,7 @@ internal class UkrainianPhoneVisualTransformation : VisualTransformation {
 
         // Повний формат: +38 (XXX) XXX XX XX
         builder.append("(${trimmed.take(3)}) ")
-        mapping.add(0) // Відкриваюча дужка
+        mapping.add(0) // Що відкриває дужка
         repeat(3) { mapping.add(digitIndex + it) } // Цифри 0-2
         mapping.add(digitIndex + 3) // Закриваюча дужка
         mapping.add(digitIndex + 3) // Пробіл після

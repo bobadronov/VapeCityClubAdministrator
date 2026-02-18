@@ -15,7 +15,7 @@ suspend fun <T> CoroutineScope.withRetry(
     while (attempts < maxAttempts) {
         try {
             return block()
-        } catch (e: HttpRequestTimeoutException) {  // Або специфічний для клієнта (Retrofit/Ktor)
+        } catch (_: HttpRequestTimeoutException) {  // Або специфічний для клієнта (Retrofit/Ktor)
             attempts++
             if (attempts < maxAttempts) {
                 delay(delayMillis)

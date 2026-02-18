@@ -1,4 +1,4 @@
-// File: src/commonMain/kotlin/org/bigblackowl/vccadmin/ui/main/MainViewModel.kt
+// File: MainViewModel.kt
 package org.bigblackowl.vccadmin.ui.main
 
 import androidx.lifecycle.ViewModel
@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.bigblackowl.vccadmin.data.entity.ShopsFilter
 import org.bigblackowl.vccadmin.data.entity.toUiShops
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
@@ -20,6 +21,7 @@ import org.bigblackowl.vccadmin.data.repository.CityRepository
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.ShopRepository
 import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.utils.ShopGroup
 import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -51,6 +53,27 @@ class MainScreenViewModel(
     fun onIntent(intent: MainScreenIntent) {
         when (intent) {
             MainScreenIntent.Refresh -> loadAllData()
+
+            is MainScreenIntent.ToggleCity -> {
+                _uiState.update { st ->
+                    val nextFilter = st.filter.toggleCity(intent.cityId)
+                    st.copy(filter = nextFilter, filteredGroupedShops = applyFilter(st.groupedShops, nextFilter))
+                }
+            }
+
+            is MainScreenIntent.ToggleStatus -> {
+                _uiState.update { st ->
+                    val nextFilter = st.filter.toggleStatus(intent.status)
+                    st.copy(filter = nextFilter, filteredGroupedShops = applyFilter(st.groupedShops, nextFilter))
+                }
+            }
+
+            MainScreenIntent.ClearFilters -> {
+                _uiState.update { st ->
+                    val nextFilter = st.filter.clear()
+                    st.copy(filter = nextFilter, filteredGroupedShops = applyFilter(st.groupedShops, nextFilter))
+                }
+            }
         }
     }
 
@@ -77,16 +100,17 @@ class MainScreenViewModel(
                     val citiesDeferred = async { cityRepository.getCities() }
 
                     val supabaseShops = shopsDeferred.await()
-                    val cities = citiesDeferred.await()
+                    val cities = citiesDeferred.await().sortedBy { it.name }
 
                     val uiShops = supabaseShops.toUiShops(cities)
-                    val groupedShops = getGroupedShops(uiShops, cities)
+                    val grouped = getGroupedShops(uiShops, cities)
 
-                    _uiState.update {
-                        it.copy(
-                            groupedShops = groupedShops,
-                            cities = cities.sortedBy { city -> city.name },
-                            selectedFilterCity = null,
+                    _uiState.update { st ->
+                        val filtered = applyFilter(grouped, st.filter)
+                        st.copy(
+                            groupedShops = grouped,
+                            cities = cities,
+                            filteredGroupedShops = filtered,
                         )
                     }
                 }
@@ -98,5 +122,28 @@ class MainScreenViewModel(
                 _uiState.update { it.copy(isInitialLoading = false, isRefreshing = false) }
             }
         }
+    }
+
+    private fun applyFilter(
+        groups: List<ShopGroup>,
+        filter: ShopsFilter
+    ): List<ShopGroup> {
+        val cityIds = filter.selectedCityIds
+        val statuses = filter.selectedStatuses
+
+        return groups
+            .asSequence()
+            .filter { group ->
+                // якщо міста не вибрані — всі; інакше тільки вибрані міста
+                cityIds.isEmpty() || group.city.id in cityIds
+            }
+            .map { group ->
+                val shops = group.shops.filter { shop ->
+                    statuses.isEmpty() || shop.status in statuses
+                }
+                group.copy(shops = shops)
+            }
+            .filter { it.shops.isNotEmpty() }
+            .toList()
     }
 }

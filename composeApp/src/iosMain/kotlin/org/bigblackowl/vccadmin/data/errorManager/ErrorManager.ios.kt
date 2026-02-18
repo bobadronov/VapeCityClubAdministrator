@@ -1,7 +1,12 @@
 package org.bigblackowl.vccadmin.data.errorManager
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.UIKit.UIDevice
+import platform.UIKit.UIScreen
+
 @Suppress(names = ["EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING"])
 actual object SystemInfoProvider {
+    @OptIn(ExperimentalForeignApi::class)
     actual fun systemInfo(): SystemInfo {
         val device = UIDevice.currentDevice
         val bounds = UIScreen.mainScreen.bounds

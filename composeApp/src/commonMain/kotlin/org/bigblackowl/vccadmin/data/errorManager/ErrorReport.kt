@@ -1,8 +1,8 @@
 package org.bigblackowl.vccadmin.data.errorManager
 
-import VCCAdministrator.composeApp.BuildConfig
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.bigblackowl.vccadmin.BuildConfig
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 

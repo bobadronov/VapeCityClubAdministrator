@@ -4,15 +4,21 @@ package org.bigblackowl.vccadmin.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Spring.StiffnessHigh
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -20,12 +26,24 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarHostState
@@ -33,17 +51,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
+import org.bigblackowl.vccadmin.data.entity.ShopStatus
+import org.bigblackowl.vccadmin.data.entity.ShopsFilter
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.state.UIEvents
 import org.bigblackowl.vccadmin.data.utils.ShopGroup
@@ -53,11 +78,11 @@ import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -89,21 +114,32 @@ fun MainScreen(
     }
 
     MainScreenContent(
-        groupedShops = uiState.groupedShops,
+        cities = uiState.cities,
+        filter = uiState.filter,
+        groupedShops = uiState.filteredGroupedShops, // ✅ вже відфільтровано у VM
         isInitialLoading = uiState.isInitialLoading,
         isRefreshing = uiState.isRefreshing,
         onShopClick = { shopId -> navigationViewModel.navigateTo(Route.ShopDetails(shopId)) },
         onRefresh = { viewModel.onIntent(MainScreenIntent.Refresh) },
+
+        onToggleCity = { viewModel.onIntent(MainScreenIntent.ToggleCity(it)) },
+        onToggleStatus = { viewModel.onIntent(MainScreenIntent.ToggleStatus(it)) },
+        onClearFilters = { viewModel.onIntent(MainScreenIntent.ClearFilters) },
     )
 }
 
 @Composable
 private fun MainScreenContent(
-    groupedShops: List<ShopGroup>,
+    cities: List<City>,
+    filter: ShopsFilter,
+    groupedShops: List<ShopGroup>, // вже filtered
     isInitialLoading: Boolean,
     isRefreshing: Boolean,
     onShopClick: (String) -> Unit,
     onRefresh: () -> Unit,
+    onToggleCity: (Int) -> Unit,
+    onToggleStatus: (ShopStatus) -> Unit,
+    onClearFilters: () -> Unit,
 ) {
     val lazyGridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
@@ -122,29 +158,53 @@ private fun MainScreenContent(
             LoadingComponent()
             return@PlatformPullToRefreshBox
         }
-        if (groupedShops.isEmpty()) {
+
+        if (cities.isEmpty()) {
             BodyText(stringResource(Res.string.empty_list), modifier = Modifier.align(Alignment.Center), textAlign = TextAlign.Center)
             return@PlatformPullToRefreshBox
         }
+
         Row(
             Modifier
                 .fillMaxSize()
                 .padding(DefaultValues.Padding.mainBoxPadding)
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(DefaultValues.Size.gridItemMinSize),
-                modifier = Modifier.weight(1f),
-                state = lazyGridState,
-                verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
-                horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
-            ) {
-                groupedShops.forEach { (city, shops) ->
-                    stickyHeader(key = "header_${city.id}") {
-                        StickyCityHeader(city = city)
-                    }
+            Column(Modifier.weight(1f)) {
 
-                    items(items = shops, key = { it.id }) { shop ->
-                        ShopCardItem(shop = shop, onClick = { onShopClick(shop.id) })
+                ShopsFiltersBar(
+                    cities = cities,
+                    filter = filter,
+                    onToggleCity = onToggleCity,
+                    onToggleStatus = onToggleStatus,
+                    onClear = onClearFilters,
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Crossfade(targetState = groupedShops, modifier = Modifier.fillMaxSize()) {
+                    if (it.isEmpty()) {
+                        BodyText(
+                            "Нічого не знайдено за поточними фільтрами",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(DefaultValues.Size.gridItemMinSize),
+                            state = lazyGridState,
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
+                            horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
+                        ) {
+                            groupedShops.forEach { (city, shops) ->
+                                stickyHeader(key = "header_${city.id}") {
+                                    StickyCityHeader(city = city)
+                                }
+                                items(items = shops, key = { it.id }) { shop ->
+                                    ShopCardItem(shop = shop, onClick = { onShopClick(shop.id) })
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -166,6 +226,96 @@ private fun MainScreenContent(
             ) {
                 DefaultIcon(Icons.Default.ArrowUpward, tint = MaterialTheme.colorScheme.primary)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ShopsFiltersBar(
+    cities: List<City>,
+    filter: ShopsFilter,
+    onToggleCity: (Int) -> Unit,
+    onToggleStatus: (ShopStatus) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val statuses = ShopStatus.entries
+    var expanded by remember { mutableStateOf(false) }
+    val height by animateDpAsState(if (expanded) 110.dp else 35.dp)
+    val scope = rememberCoroutineScope()
+    val gridState = rememberLazyStaggeredGridState()
+    val wheelSpeed = 130f
+
+    Box(modifier = modifier.fillMaxWidth().height(height)) {
+        LazyHorizontalStaggeredGrid(
+            rows = StaggeredGridCells.Fixed(if (expanded) 3 else 1),
+            modifier = Modifier.fillMaxSize()
+                .pointerInput(gridState) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+
+                            if (event.type == PointerEventType.Scroll) {
+                                val dy = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                                if (dy != 0f) {
+                                    // wheel вниз -> вправо (можеш поміняти знак якщо хочеш навпаки)
+                                    scope.launch {
+                                        gridState.animateScrollBy(
+                                            value = dy * wheelSpeed,
+                                            animationSpec = spring(stiffness = StiffnessHigh)
+                                        )
+                                    }
+
+                                    // щоб не прокручувався батьківський контейнер
+                                    event.changes.forEach { it.consume() }
+                                }
+                            }
+                        }
+                    }
+                },
+            state = gridState,
+            verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.flowRowPadding),
+            horizontalItemSpacing = DefaultValues.Padding.flowRowPadding,
+        ) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                AssistChip(
+                    onClick = onClear,
+                    label = { HelperText("Скинути") },
+                    enabled = filter.selectedCityIds.isNotEmpty() || filter.selectedStatuses.isNotEmpty(),
+                    shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+                )
+            }
+
+            // --- Status chips (multi-select)
+            items(statuses, key = { it.name }, span = { StaggeredGridItemSpan.SingleLane }) { st ->
+                FilterChip(
+                    selected = st in filter.selectedStatuses,
+                    onClick = { onToggleStatus(st) },
+                    label = { HelperText(stringResource(st.title)) },
+                    leadingIcon = { Icon(st.icon, contentDescription = null) },
+                    shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+                )
+            }
+
+            // --- City chips (multi-select)
+            items(cities, key = { it.id }, span = { StaggeredGridItemSpan.SingleLane }) { city ->
+                FilterChip(
+                    selected = city.id in filter.selectedCityIds,
+                    onClick = { onToggleCity(city.id) },
+                    label = { HelperText(city.name) },
+                    shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+                )
+            }
+        }
+
+        IconButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier.align(Alignment.CenterEnd),
+            colors = IconButtonDefaults.iconButtonColors()
+                .copy(containerColor = MaterialTheme.colorScheme.primary),
+        ) {
+            ExposedDropdownMenuDefaults.TrailingIcon(expanded)
         }
     }
 }
@@ -243,36 +393,55 @@ private fun ShopCardItem(
 }
 
 
-@Preview
+@Preview(device = Devices.PHONE)
 @Composable
 private fun MainScreenContentPreview1() = PreviewDarkMaterialTheme {
+    val cities = FakeBackend.cities.sortedBy { it.name }
+    val grouped = getGroupedShops(
+        shops = FakeBackend.shops,
+        cities = cities
+    )
+
     MainScreenContent(
-        groupedShops = getGroupedShops(
-            shops = FakeBackend.shops,
-            cities = FakeBackend.cities
-        ),
+        cities = cities,
+        filter = ShopsFilter(),              // без фільтрів
+        groupedShops = grouped,              // у прев’ю можемо дати повний список
         isInitialLoading = false,
         isRefreshing = false,
         onShopClick = {},
-        onRefresh = {}
+        onRefresh = {},
+        onToggleCity = {},
+        onToggleStatus = {},
+        onClearFilters = {},
     )
 }
 
-@Preview(
-    showSystemUi = true,
-    device = Devices.DESKTOP,
-)
+@Preview(showSystemUi = true, device = Devices.DESKTOP)
 @Composable
 private fun MainScreenContentPreview12() = PreviewLightMaterialTheme {
+    val cities = FakeBackend.cities.sortedBy { it.name }
+    val grouped = getGroupedShops(
+        shops = FakeBackend.shops,
+        cities = cities
+    )
+
+    // приклад: прев’ю з активним фільтром
+    val filter = ShopsFilter(
+        selectedCityIds = cities.take(2).map { it.id }.toSet(),
+        selectedStatuses = setOf(ShopStatus.ACTIVE)
+    )
+
     MainScreenContent(
-        groupedShops = getGroupedShops(
-            shops = FakeBackend.shops,
-            cities = FakeBackend.cities
-        ),
+        cities = cities,
+        filter = filter,
+        groupedShops = grouped, // у прев’ю VM нема, тому просто даємо grouped (або можеш підставити вже відфільтрований список вручну)
         isInitialLoading = false,
         isRefreshing = false,
         onShopClick = {},
-        onRefresh = {}
+        onRefresh = {},
+        onToggleCity = {},
+        onToggleStatus = {},
+        onClearFilters = {},
     )
 }
 
