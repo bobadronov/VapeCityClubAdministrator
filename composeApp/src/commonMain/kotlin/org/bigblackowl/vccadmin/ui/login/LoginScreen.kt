@@ -238,7 +238,7 @@ private fun LoginScreenContent(
                 Button(
                     onClick = { PlatformFunctionProvider.openNetwork() },
                 ) {
-                    DefaultIcon(icon = Icons.Default.Settings, tint = MaterialTheme.colorScheme.onPrimary)
+                    DefaultIcon(image = Icons.Default.Settings, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                     BodyText(stringResource(Res.string.open_settings))
                 }
