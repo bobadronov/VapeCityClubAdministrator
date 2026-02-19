@@ -16,6 +16,10 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -78,7 +82,23 @@ val networkModule = module {
             install(ContentNegotiation) {
                 json(get())
             }
+            install(HttpTimeout) {
+                connectTimeoutMillis = 30_000
+                socketTimeoutMillis = 120_000
+                requestTimeoutMillis = 20 * 60_000 // 20 хв, або більше
+            }
+
+            install(HttpRequestRetry) {
+                retryOnExceptionIf(maxRetries = 3) { _, cause ->
+                    cause is HttpRequestTimeoutException ||
+                            cause is SocketTimeoutException
+                }
+                exponentialDelay()
+            }
+
+            followRedirects = true
         }
+
     }
     single<SupabaseClient> {
         val localRepository: LocalRepository = get()
