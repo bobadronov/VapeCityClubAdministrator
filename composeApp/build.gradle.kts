@@ -21,7 +21,7 @@ private val subpath = libs.versions.subpath.get().toInt()
 private val desktopBuild = patch * 100 + subpath              // 0..65535
 private val projectVersionName = "$major.$minor.$desktopBuild"        // те, що показуєш користувачу
 private val desktopVersion = "$major.$minor.$desktopBuild"        // MAJOR.MINOR.BUILD
-private val projectVersionCode: Int =
+private val androidVersionCode: Int =
     libs.versions.major.get().toInt() * 1000 + libs.versions.minor.get().toInt() * 100 + libs.versions.patch.get().toInt() * 10 + libs.versions.subpath.get().toInt()
 private val currentYear: Int = LocalDateTime.now().toLocalDate().year
 
@@ -134,7 +134,7 @@ extensions.configure<ApplicationExtension> {
         applicationId = "org.bigblackowl.vccadmin"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = projectVersionCode
+        versionCode = androidVersionCode
         versionName = projectVersionName
         manifestPlaceholders["appName"] = libs.versions.appName.get()
     }
