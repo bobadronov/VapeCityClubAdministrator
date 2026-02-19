@@ -95,7 +95,7 @@ fun SlideAiGenerationScreen(
     SlideAiGenerationScreenContent(
         state = state,
         onIntent = viewModel::onIntent,
-        onBack = { navigationViewModel.popBackStack() }
+        onBack = { navigationViewModel.requestBack() }
     )
 }
 
