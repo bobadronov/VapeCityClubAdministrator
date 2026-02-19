@@ -13,11 +13,11 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DefaultIcon(
-    icon: ImageVector,
+    image: ImageVector,
     tint: Color = MaterialTheme.colorScheme.primary,
     size: Dp = 24.0.dp,
 ) {
-    Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(size), tint = tint)
+    Icon(imageVector = image, contentDescription = null, modifier = Modifier.size(size), tint = tint)
 }
 
 @Composable
