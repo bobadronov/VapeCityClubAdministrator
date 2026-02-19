@@ -1,8 +1,13 @@
 // file: org/bigblackowl/vccadmin/MainTopAppBar.kt
 package org.bigblackowl.vccadmin.navigation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,6 +38,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.repository.AuthRepository
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
@@ -67,6 +74,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.exit
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -167,17 +175,37 @@ fun MainTopAppBar(
 
 @Composable
 private fun NetworkStatusIcon(isConnected: Boolean) {
-    Crossfade(
-        targetState = isConnected,
-        modifier = Modifier.padding(end = 8.dp),
-        animationSpec = tween { 200f }
-    ) { connected ->
-        IconButton(onClick = {
-            PlatformFunctionProvider.openNetwork()
-        }) {
+    var visible by remember { mutableStateOf(!isConnected) }
+
+    LaunchedEffect(isConnected) {
+        if (!isConnected) {
+            // немає інтернету — показуємо кнопку
+            visible = true
+        } else {
+            // інтернет з’явився — ще 3 сек показуємо, потім ховаємо
+            visible = true
+            delay(3.seconds)
+            visible = false
+        }
+    }
+
+    val color by animateColorAsState(
+        if (isConnected)
+            Color.Green.copy(alpha = 0.3f)
+        else
+            MaterialTheme.colorScheme.error
+    )
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(easing= LinearEasing)),
+        exit = fadeOut(tween(easing= LinearEasing)),
+        modifier = Modifier.padding(end = 8.dp)
+    ) {
+        IconButton(onClick = { PlatformFunctionProvider.openNetwork() }) {
             DefaultIcon(
-                if (connected) Icons.Default.SignalWifi4Bar else Icons.Default.WifiOff,
-                tint = if (connected) Color.Green.copy(alpha = 0.3f) else MaterialTheme.colorScheme.error
+                image = if (isConnected) Icons.Default.SignalWifi4Bar else Icons.Default.WifiOff,
+                tint = color
             )
         }
     }
@@ -264,7 +292,7 @@ private fun AppMenu(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            DefaultIcon(icon = item.icon, tint = contentColor)
+                            DefaultIcon(image = item.icon, tint = contentColor)
 
                             BodyText(
                                 text = stringResource(item.text),
