@@ -18,6 +18,7 @@ import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_EXPANDED_
 import com.kdroid.composetray.tray.api.Tray
 import com.kdroid.composetray.utils.SingleInstanceManager
 import io.github.vinceglb.filekit.FileKit
+import kotlinx.coroutines.delay
 import org.bigblackowl.vccadmin.data.repository.LocalRepository
 import org.bigblackowl.vccadmin.di.coreModules
 import org.bigblackowl.vccadmin.otaUpdates.OtaOverlayWindow
@@ -34,6 +35,7 @@ import vccadministrator.composeapp.generated.resources.show_pc_window
 import vccadministrator.composeapp.generated.resources.stay_online_on_close
 import java.awt.Dimension
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
 fun main() = application {
     FileKit.init(appId = BuildConfig.APP_NAME)
@@ -147,16 +149,13 @@ fun main() = application {
 
             App()
 
-            if (BuildConfig.IS_DEBUG_BUILD == false) {
-                LaunchedEffect(Unit) {
-                    otaUpdateManager.checkOnAppStart()
-                }
-
-                OtaOverlayWindow(
-                    ota = otaUpdateManager,
-                    stateFlow = otaUpdateManager.state,
-                )
+            LaunchedEffect(Unit) {
+                delay(1.seconds)
+                otaUpdateManager.check()
             }
+
+            OtaOverlayWindow(ota = otaUpdateManager)
+
         }
     }
 }

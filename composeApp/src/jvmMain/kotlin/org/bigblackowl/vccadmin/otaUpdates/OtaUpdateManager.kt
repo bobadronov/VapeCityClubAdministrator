@@ -2,7 +2,9 @@ package org.bigblackowl.vccadmin.otaUpdates
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +17,6 @@ import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
-import java.security.MessageDigest
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.pow
@@ -27,9 +28,9 @@ import kotlin.time.TimeSource
 class OtaUpdateManager(
     private val repo: OtaUpdateRepository,
     private val downloader: OtaDownloader,
-    private val networkMonitorProvider: NetworkMonitorProvider,
+    private val network: NetworkMonitorProvider,
 ) {
-    private val currentDesktopVersion: String = BuildConfig.APP_VERSION
+    private val currentVersion: String = BuildConfig.APP_VERSION
     private val os: DesktopOs = detectDesktopOs()
 
     private companion object {
@@ -41,204 +42,194 @@ class OtaUpdateManager(
     private val _state = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val state: StateFlow<UpdateState> = _state.asStateFlow()
 
-    private data class PendingInstall(val fileName: String, val info: UpdateInfo)
-    private var pendingInstall: PendingInstall? = null
+    private var pending: PendingInstall? = null
 
-    fun checkOnAppStart() {
-        scope.launch {
-            if (_state.value is UpdateState.Checking) return@launch
+    private var checkJob: Job? = null
+    private var downloadJob: Job? = null
+
+    private data class PendingInstall(val fileName: String, val info: UpdateInfo)
+
+    fun check() {
+        if (checkJob?.isActive == true) return
+        checkJob = scope.launch {
+            delay(250.milliseconds) // легкий debounce
             _state.value = UpdateState.Checking
-            Napier.d(tag = TAG) { "Checking updates... local=$currentDesktopVersion os=$os" }
+            Napier.d(tag = TAG) { "Checking updates... local=$currentVersion os=$os" }
 
             try {
-                if (!networkMonitorProvider.isConnected.value) {
-                    delay(5.seconds)
-                    if (!networkMonitorProvider.isConnected.value) {
-                        _state.value = UpdateState.Error("No internet")
-                        return@launch
-                    }
-                }
+                ensureInternetOrFail()
 
                 val manifest = repo.fetchLatestManifest()
                 if (manifest == null) {
-                    Napier.d(tag = TAG) { "No manifest found" }
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
 
-                Napier.d(tag = TAG) {
-                    "Latest: tag=${manifest.tag}, desktop=${manifest.desktopVersion}"
-                }
-
-                // ✅ desktopVersion тепер nullable
-                val remoteDesktopVersion = manifest.desktopVersion
-                if (!isNewer(remoteDesktopVersion)) {
-                    // обробка сміття: якщо локально є файл під останній тег — прибрати
-                    val candidateName = manifest.pickAsset(os)?.name
-                    if (!candidateName.isNullOrBlank()) {
-                        cleanupLocalIfExists(candidateName)
-                    }
-
-                    Napier.d(tag = TAG) { "No update: remote <= local" }
+                val remote = manifest.desktopVersion
+                if (!isRemoteNewer(remote)) {
+                    // optional cleanup: якщо є локальний файл під останній тег — прибираємо
+                    manifest.pickAsset(os)?.name?.takeIf { it.isNotBlank() }?.let { cleanupLocalIfExists(it) }
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
 
-                val asset = manifest.pickAsset(os)
-                if (asset == null) {
+                val asset = manifest.pickAsset(os) ?: run {
                     _state.value = UpdateState.Error("No asset for OS=$os")
                     return@launch
                 }
 
-                // ✅ якщо файл з таким ім’ям вже існує — прибрати перед завантаженням
                 cleanupLocalIfExists(asset.name)
 
                 _state.value = UpdateState.Available(UpdateInfo(manifest, asset))
                 Napier.d(tag = TAG) { "Update available: ${asset.name}, size=${asset.size}" }
             } catch (t: Throwable) {
-                Napier.e(tag = TAG, throwable = t) { "Check updates failed" }
-                _state.value = UpdateState.Error("Check updates failed: ${t.message}", t)
+                Napier.e(tag = TAG, throwable = t) { "Check failed" }
+                _state.value = UpdateState.Error("Check failed: ${t.message}", t)
             }
         }
     }
 
-    private suspend fun cleanupLocalIfExists(fileName: String) {
-        if (fileName.isBlank()) return
-
-        // якщо в тебе немає цих методів — додай їх у PlatformFileProvider
-        val exists = runCatching { PlatformFileProvider.isFileExist(fileName) }.getOrNull()
-        if (exists == true) {
-            Napier.d(tag = TAG) { "Local file exists, deleting: $fileName" }
-            runCatching { PlatformFileProvider.deleteFile(fileName) }
-                .onFailure { Napier.w(tag = TAG) { "Failed to delete $fileName: ${it.message}" } }
-        }
+    fun downloadIfAvailable() {
+        val info = (state.value as? UpdateState.Available)?.info ?: return
+        download(info)
     }
 
-    private fun parseVersion(v: String): List<Int> =
-        v.split(".").mapNotNull { it.toIntOrNull() }
+    fun download(info: UpdateInfo) {
+        if (downloadJob?.isActive == true) return
 
-    // ✅ приймає nullable
-    private fun isNewer(remote: String?): Boolean {
-        val rvStr = remote?.trim().orEmpty()
-        if (rvStr.isBlank()) return false
-
-        val r = parseVersion(rvStr)
-        val l = parseVersion(currentDesktopVersion)
-
-        val maxSize = max(r.size, l.size)
-        for (i in 0 until maxSize) {
-            val rv = r.getOrNull(i) ?: 0
-            val lv = l.getOrNull(i) ?: 0
-            if (rv != lv) return rv > lv
-        }
-        return false
-    }
-
-    fun downloadUpdate(info: UpdateInfo) {
-        scope.launch {
+        downloadJob = scope.launch(start = CoroutineStart.LAZY, context = Dispatchers.IO) {
             try {
                 _state.value = UpdateState.Downloading(progress = null, downloaded = "0 B", total = "—")
-                Napier.d(tag = TAG) { "Downloading: ${info.asset.url}" }
 
                 val time = TimeSource.Monotonic
-                var lastEmitAt = time.markNow()
-                var lastPercent = -1
-                var lastDownloadedBucket = -1L
+                var lastEmit = time.markNow()
+                var firstEmitted = false
+
+                var lastDownloaded = 0L
+                var lastTotal: Long? = null
+                var lastProgress: Float? = null
+
+                fun emit(force: Boolean = false) {
+                    // перший емiт — одразу як тільки є байти
+                    val shouldFirst = !firstEmitted && lastDownloaded > 0
+                    val timeOk = lastEmit.elapsedNow() >= 200.milliseconds
+
+                    if (!force && !shouldFirst && !timeOk) return
+
+                    firstEmitted = true
+                    lastEmit = time.markNow()
+
+                    val p = lastProgress?.takeIf { it.isFinite() }?.coerceIn(0f, 1f)
+
+                    _state.value = UpdateState.Downloading(
+                        progress = if ((lastTotal ?: 0L) > 0L) p else null,
+                        downloaded = lastDownloaded.formatBytes(1),
+                        total = lastTotal?.formatBytesOrDash(1) ?: "—"
+                    )
+                }
 
                 val result = downloader.downloadBytesWithProgress(
                     url = info.asset.url,
                     onProgress = { downloaded, total, progress ->
-                        if (total != null && total > 0 && progress != null) {
-                            val percent = (progress * 100).toInt().coerceIn(0, 100)
-                            val timeOk = lastEmitAt.elapsedNow() >= 120.milliseconds
-                            val percentOk = percent != lastPercent
-
-                            if (timeOk || percentOk) {
-                                lastEmitAt = time.markNow()
-                                lastPercent = percent
-                                _state.value = UpdateState.Downloading(
-                                    progress = progress,
-                                    downloaded = downloaded.formatBytes(1),
-                                    total = total.formatBytesOrDash(1),
-                                )
-                            }
-                            return@downloadBytesWithProgress
-                        }
-
-                        val bucket = downloaded / (512 * 1024)
-                        val timeOk = lastEmitAt.elapsedNow() >= 200.milliseconds
-                        val bucketOk = bucket != lastDownloadedBucket
-
-                        if (timeOk || bucketOk) {
-                            lastEmitAt = time.markNow()
-                            lastDownloadedBucket = bucket
-                            _state.value = UpdateState.Downloading(
-                                progress = null,
-                                downloaded = downloaded.formatBytes(1),
-                                total = total.formatBytesOrDash(1),
-                            )
-                        }
+                        Napier.d(tag=TAG) { " downloaded: $downloaded, total: $total, progress:$progress " }
+                        lastDownloaded = downloaded
+                        lastTotal = total
+                        lastProgress = progress
+                        emit(force = true)
                     }
                 )
 
                 val bytes = result.bytes
 
-                val safeTag = info.manifest.tag?.ifBlank { null }
+                // ---- примусовий фінальний емiт (щоб не "зависнути" на 99%) ----
+                lastDownloaded = lastDownloaded.coerceAtLeast(result.bytes.size.toLong())
+                lastTotal = lastTotal ?: result.bytes.size.toLong()
+                lastProgress = 1f
+                emit(force = true)
+
                 val fileName = info.asset.name
-                    .takeIf { it.isNotBlank() }
-                    ?: "update-${safeTag ?: "latest"}"
 
-                // ✅ на випадок, якщо воно вже є
+                // (краще tmp + rename, але тут мінімальна правка)
                 cleanupLocalIfExists(fileName)
-
                 PlatformFileProvider.saveFile(fileName, bytes)
 
                 _state.value = UpdateState.Verifying(info)
-                val computed = sha256(bytes)
 
-                if (info.asset.sha256.isNotBlank() && !computed.equals(info.asset.sha256, ignoreCase = true)) {
+                // ---- SHA перевіряємо по файлу, а не по bytes ----
+                val computed = PlatformFileProvider.sha256OfSavedFile(fileName)
+
+                if (info.asset.sha256.isNotBlank() &&
+                    !computed.equals(info.asset.sha256, ignoreCase = true)
+                ) {
+                    Napier.e(tag = TAG) {
+                        "SHA256 mismatch. expected=${info.asset.sha256} computed=$computed"
+                    }
                     _state.value = UpdateState.Error("SHA256 mismatch. File may be corrupted.")
                     return@launch
                 }
 
-                pendingInstall = PendingInstall(fileName = fileName, info = info)
-                _state.value = UpdateState.ReadyToInstall
+                pending = PendingInstall(fileName, info)
+                _state.value = UpdateState.ReadyToInstall(info)
             } catch (t: Throwable) {
+                Napier.e(tag = TAG, throwable = t) { "Download failed" }
                 _state.value = UpdateState.Error("Download failed: ${t.message}", t)
             }
         }
+
+        downloadJob?.start()
     }
 
-    private fun sha256(bytes: ByteArray): String {
-        val md = MessageDigest.getInstance("SHA-256")
-        md.update(bytes)
-        return md.digest().joinToString("") { "%02x".format(it) }
-    }
 
-    fun startInstall() {
+    fun installIfReadyAndExit() {
+        val p = pending ?: run {
+            _state.value = UpdateState.Error("Немає завантаженого оновлення. Спочатку скачай файл.")
+            return
+        }
+
+        // не даємо паралельні інстали
+        if (state.value is UpdateState.Installing) return
+
         scope.launch {
-            val pending = pendingInstall
-            if (pending == null) {
-                _state.value = UpdateState.Error("Немає завантаженого оновлення. Спочатку скачай файл.")
-                return@launch
-            }
-
-            val (fileName, info) = pending
-
             try {
-                _state.value = UpdateState.Installing(info)
-                Napier.d(tag = TAG) { "Opening installer: $fileName" }
+                _state.value = UpdateState.Installing(p.info)
+                PlatformFileProvider.openFile(p.fileName)
 
-                PlatformFileProvider.openFile(fileName)
-
-                pendingInstall = null
-                _state.value = UpdateState.Idle
-                delay(1000)
+                pending = null
+                // Дай UI трошки часу показати “Installing”
+                delay(700)
                 exitProcess(0)
             } catch (t: Throwable) {
                 _state.value = UpdateState.Error("Install failed: ${t.message}", t)
             }
         }
+    }
+
+    private suspend fun ensureInternetOrFail() {
+        if (network.isConnected.value) return
+        delay(4.seconds)
+        if (!network.isConnected.value) error("No internet")
+    }
+
+    private suspend fun cleanupLocalIfExists(fileName: String) {
+        if (fileName.isBlank()) return
+        val exists = runCatching { PlatformFileProvider.isFileExist(fileName) }.getOrNull()
+        if (exists == true) runCatching { PlatformFileProvider.deleteFile(fileName) }
+    }
+
+    private fun isRemoteNewer(remote: String?): Boolean {
+        val rv = remote?.trim().orEmpty()
+        if (rv.isBlank()) return false
+
+        val r = rv.split(".").mapNotNull { it.toIntOrNull() }
+        val l = currentVersion.split(".").mapNotNull { it.toIntOrNull() }
+
+        val n = max(r.size, l.size)
+        for (i in 0 until n) {
+            val a = r.getOrNull(i) ?: 0
+            val b = l.getOrNull(i) ?: 0
+            if (a != b) return a > b
+        }
+        return false
     }
 
     private fun Long.formatBytes(decimals: Int = 1): String {
@@ -249,7 +240,6 @@ class OtaUpdateManager(
         return "%.${decimals}f %s".format(value, units[digitGroups])
     }
 
-    // ✅ було "— MB" — це дивно
     private fun Long?.formatBytesOrDash(decimals: Int = 1): String =
         this?.formatBytes(decimals) ?: "—"
 
@@ -262,4 +252,3 @@ class OtaUpdateManager(
         }
     }
 }
-

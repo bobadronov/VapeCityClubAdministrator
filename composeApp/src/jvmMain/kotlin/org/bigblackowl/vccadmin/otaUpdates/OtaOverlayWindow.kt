@@ -1,17 +1,17 @@
 package org.bigblackowl.vccadmin.otaUpdates
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Error
@@ -29,6 +29,7 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,102 +40,171 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.rememberDialogState
-import kotlinx.coroutines.flow.StateFlow
-import org.bigblackowl.vccadmin.data.entity.UpdateInfo
-import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.AppTheme
-import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
-
+import org.jetbrains.compose.resources.stringResource
+import vccadministrator.composeapp.generated.resources.Res
+import vccadministrator.composeapp.generated.resources.ota_action_check
+import vccadministrator.composeapp.generated.resources.ota_action_close
+import vccadministrator.composeapp.generated.resources.ota_action_install
+import vccadministrator.composeapp.generated.resources.ota_dialog_title
+import vccadministrator.composeapp.generated.resources.ota_download_counter_template
+import vccadministrator.composeapp.generated.resources.ota_release_notes_title
+import vccadministrator.composeapp.generated.resources.ota_state_available_template
+import vccadministrator.composeapp.generated.resources.ota_state_checking
+import vccadministrator.composeapp.generated.resources.ota_state_downloading
+import vccadministrator.composeapp.generated.resources.ota_state_error_template
+import vccadministrator.composeapp.generated.resources.ota_state_idle
+import vccadministrator.composeapp.generated.resources.ota_state_installing
+import vccadministrator.composeapp.generated.resources.ota_state_no_update
+import vccadministrator.composeapp.generated.resources.ota_state_ready_to_install
+import vccadministrator.composeapp.generated.resources.ota_state_verifying
+import vccadministrator.composeapp.generated.resources.ota_title
 
 @Composable
 fun OtaOverlayWindow(
     ota: OtaUpdateManager,
-    stateFlow: StateFlow<UpdateState>,
-    autoOpenOnAvailable: Boolean = true,
+    autoOpen: Boolean = true,
+    modifier: Modifier = Modifier,
 ) {
-    val state by stateFlow.collectAsState()
+    val state by ota.state.collectAsState()
 
-    var visible by remember { mutableStateOf(true) }
+    // Ключ “оновлення” (щоб скинути dismiss, коли прийшов інший реліз)
+    val updateKey = remember(state) { state.updateKeyOrNull() }
 
-    // Автоматично відкривати вікно коли є апдейт / йде процес
-    LaunchedEffect(state, autoOpenOnAvailable) {
-        if (!autoOpenOnAvailable) return@LaunchedEffect
-        visible = when (state) {
-            is UpdateState.Available,
-            is UpdateState.Checking,
-            is UpdateState.Downloading,
-            is UpdateState.Verifying,
-            is UpdateState.ReadyToInstall,
-            is UpdateState.Installing,
-            is UpdateState.Error -> true
+    // ✅ ЄДИНИЙ механізм dismiss, який працює для всіх станів
+    var dismissed by remember { mutableStateOf(false) }
 
-            is UpdateState.NoUpdate -> false
-            else -> visible
-        }
+    // ✅ Як тільки з’явився інший updateKey — знов показуємо вікно
+    LaunchedEffect(updateKey) {
+        if (updateKey != null) dismissed = false
+    }
+
+    // Якщо апдейт закінчився/нема — закрите
+    LaunchedEffect(state) {
+        if (state is UpdateState.Idle || state is UpdateState.NoUpdate) dismissed = false
+    }
+
+    val visible = remember(state, dismissed, autoOpen) {
+        autoOpen && !dismissed && state.shouldShowOverlay()
     }
 
     if (!visible) return
 
+    val onCheck = remember(ota) { { ota.check() } }
+    val onDownload = remember(ota) { { ota.downloadIfAvailable() } }
+    val onInstall = remember(ota) { { ota.installIfReadyAndExit() } }
+
     AppTheme({}) {
         DialogWindow(
-            onCloseRequest = { visible = false },
-            title = "Update",
+            onCloseRequest = { dismissed = true },
+            title = stringResource(Res.string.ota_dialog_title),
             state = rememberDialogState(width = 460.dp, height = 320.dp),
             resizable = false,
-            alwaysOnTop = true,
+            alwaysOnTop = false,
             undecorated = true,
             transparent = true,
         ) {
-            OtaOverlayContent(
+            OtaOverlayContentSimple(
                 state = state,
-                onCheck = { ota.checkOnAppStart() },
-                onDownload = { ota.downloadUpdate(it) },
-                onInstall = { ota.startInstall() },
-                onClose = { visible = false },
+                onCheck = onCheck,
+                onDownload = onDownload,
+                onInstall = onInstall,
+                onClose = { dismissed = true },
+                modifier = modifier,
             )
         }
     }
 }
 
 @Composable
-fun OtaOverlayContent(
+private fun OtaOverlayContentSimple(
     state: UpdateState,
     onCheck: () -> Unit,
-    onDownload: (UpdateInfo) -> Unit,
+    onDownload: () -> Unit,
     onInstall: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val ui = state.toUiModel()
+    val notesScroll = rememberLazyListState()
+
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surfaceBright,
         shape = RoundedCornerShape(DefaultValues.Shape.defaultShape)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp, alignment = Alignment.CenterVertically),
+            modifier = Modifier.fillMaxSize().padding(DefaultValues.Padding.cardContentPadding),
+            verticalArrangement = Arrangement.spacedBy(10.dp, alignment = Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            TitleText(text = "Оновлення програми")
-            SelectionContainer {
-                OtaStateBlock(state)
+            TitleText(text = stringResource(Res.string.ota_title))
+
+            Card(Modifier.fillMaxWidth().weight(1f)) {
+                Column(
+                    Modifier.fillMaxSize().padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = ui.message,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        maxLines = 3,
+                    )
+
+                    if (!ui.releaseNotes.isNullOrBlank()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .heightIn(max = 170.dp),
+                                state = notesScroll,
+                            ) {
+                                item {
+                                    HelperText(
+                                        text = stringResource(Res.string.ota_release_notes_title),
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
+                                }
+
+                                item {
+                                    SelectionContainer {
+                                        BodyText(
+                                            text = ui.releaseNotes,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Start,
+                                            maxLines = Int.MAX_VALUE,
+                                        )
+                                    }
+                                }
+                            }
+
+                            DefaultScrollbar(scrollState = notesScroll)
+                        }
+                    }
+
+                    OtaFooterSimple(ui)
+                }
             }
 
-            OtaActionsRow(
-                state = state,
+            OtaActionsRowSimple(
+                ui = ui,
                 onCheck = onCheck,
                 onDownload = onDownload,
                 onInstall = onInstall,
-                onClose = onClose
+                onClose = onClose,
             )
         }
     }
@@ -142,146 +212,50 @@ fun OtaOverlayContent(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun OtaStateBlock(state: UpdateState) {
-    val message = remember(state) {
-        when (state) {
-            UpdateState.Idle -> "Очікування…"
-            UpdateState.Checking -> "Перевіряємо оновлення…"
-            UpdateState.NoUpdate -> "Оновлень немає."
-            is UpdateState.Available -> buildString {
-                append("Доступне оновлення: ")
-                append(state.info.manifest.desktopVersion ?: "—")
-                append("\nФайл: ")
-                append(state.info.asset.name)
-            }
-
-            is UpdateState.Downloading -> "Завантаження…"
-            is UpdateState.Verifying -> "Перевірка цілісності (SHA256)…"
-            is UpdateState.ReadyToInstall -> "Готово до встановлення"
-            is UpdateState.Installing -> "Запуск інсталятора"
-            is UpdateState.Error -> "Помилка: ${state.message}"
+private fun OtaFooterSimple(ui: OtaUiModel) {
+    when {
+        ui.isChecking -> Icon(Icons.Default.Search, null)
+        ui.isError -> Icon(Icons.Default.Error, null)
+        ui.isInstalling -> Icon(Icons.Default.InstallDesktop, null)
+        ui.isReadyToInstall -> Icon(Icons.Default.FileDownloadDone, null)
+        ui.isVerifying -> Icon(Icons.Default.Security, null)
+        ui.isNoUpdate -> Icon(Icons.Default.DoneAll, null)
+        ui.downloadProgress != null -> {
+            LinearWavyProgressIndicator(
+                progress = { ui.downloadProgress },
+                modifier = Modifier.fillMaxWidth(.9f)
+            )
+            if (ui.downloadText != null) BodyText(ui.downloadText)
         }
-    }
 
-    // ✅ дістаємо releaseNotes тільки коли є апдейт/верифікація/установка (де є manifest)
-    val releaseNotes = remember(state) {
-        when (state) {
-            is UpdateState.Available -> state.info.manifest.releaseNotes
-            is UpdateState.Verifying -> state.info.manifest.releaseNotes
-            is UpdateState.Installing -> state.info.manifest.releaseNotes
-            else -> null
-        }?.trim().orEmpty().takeIf { it.isNotBlank() }
-    }
-
-    val notesScroll = rememberScrollState()
-
-    Card(Modifier.fillMaxWidth()) {
-        Crossfade(state) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                BodyText(
-                    message,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    maxLines = 3,
-                )
-
-                // ✅ Блок release notes
-                if (releaseNotes != null) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 170.dp)
-                            .verticalScroll(notesScroll)
-                            .padding(horizontal = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        HelperText(
-                            text = "Що змінилось:",
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        BodyText(
-                            text = releaseNotes,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Start,
-                            maxLines = Int.MAX_VALUE,
-                        )
-                    }
-                }
-
-                when (state) {
-                    UpdateState.Checking -> Icon(Icons.Default.Search, null)
-
-                    is UpdateState.Downloading -> {
-                        val p = state.progress
-                        val d = state.downloaded
-                        val t = state.total
-                        if (p != null) {
-                            LinearWavyProgressIndicator(
-                                progress = { p },
-                                modifier = Modifier.fillMaxWidth(.9f)
-                            )
-                            BodyText("$d / $t")
-                        } else {
-                            LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth(.9f))
-                            BodyText("$d / $t")
-                        }
-                    }
-
-                    is UpdateState.Available -> Unit
-                    is UpdateState.Error -> Icon(Icons.Default.Error, null)
-                    is UpdateState.Installing -> Icon(Icons.Default.InstallDesktop, null)
-                    UpdateState.NoUpdate -> Icon(Icons.Default.DoneAll, null)
-                    UpdateState.ReadyToInstall -> Icon(Icons.Default.FileDownloadDone, null)
-                    is UpdateState.Verifying -> Icon(Icons.Default.Security, null)
-                    else -> LoadingIndicator(modifier = Modifier)
-                }
-            }
-        }
+        ui.isDownloading -> LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth(.9f))
+        else -> LoadingIndicator()
     }
 }
 
 @Composable
-private fun OtaActionsRow(
-    state: UpdateState,
+private fun OtaActionsRowSimple(
+    ui: OtaUiModel,
     onCheck: () -> Unit,
-    onDownload: (UpdateInfo) -> Unit,
+    onDownload: () -> Unit,
     onInstall: () -> Unit,
     onClose: () -> Unit,
 ) {
-    val busy = state is UpdateState.Checking ||
-            state is UpdateState.Downloading ||
-            state is UpdateState.Verifying ||
-            state is UpdateState.Installing
-
-    // ✅ автозавантаження лише 1 раз при вході в Available (а не на кожній рекомпозиції)
-    LaunchedEffect(state) {
-        if (state is UpdateState.Available) {
-            onDownload(state.info)
-        }
-    }
-
     ButtonRowContainer {
-        AnimatedVisibility(
-            visible = !busy,
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedButton(onClick = onCheck) { HelperText("Перевірити") }
+        AnimatedVisibility(visible = !ui.isBusy, modifier = Modifier.weight(1f)) {
+            OutlinedButton(onClick = onCheck) { HelperText(stringResource(Res.string.ota_action_check)) }
         }
 
-        AnimatedVisibility(
-            visible = state is UpdateState.ReadyToInstall,
-            modifier = Modifier.weight(1f)
-        ) {
-            Button(
-                onClick = onInstall,
-                modifier = Modifier.weight(1f)
-            ) { HelperText("Встановити") }
+        AnimatedVisibility(visible = ui.canDownload, modifier = Modifier.weight(1f)) {
+            Button(onClick = onDownload, modifier = Modifier.weight(1f)) {
+                HelperText("Download")
+            }
+        }
+
+        AnimatedVisibility(visible = ui.isReadyToInstall, modifier = Modifier.weight(1f)) {
+            Button(onClick = onInstall, modifier = Modifier.weight(1f)) {
+                HelperText(stringResource(Res.string.ota_action_install))
+            }
         }
 
         OutlinedButton(
@@ -291,108 +265,107 @@ private fun OtaActionsRow(
                 containerColor = MaterialTheme.colorScheme.errorContainer.copy(.15f),
                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
             ),
-        ) { HelperText("Закрити") }
+        ) {
+            HelperText(stringResource(Res.string.ota_action_close))
+        }
     }
 }
 
+/** Показуємо overlay тільки коли треба */
+private fun UpdateState.shouldShowOverlay(): Boolean = when (this) {
+    is UpdateState.Available,
+    is UpdateState.Checking,
+    is UpdateState.Downloading,
+    is UpdateState.Verifying,
+    is UpdateState.ReadyToInstall,
+    is UpdateState.Installing,
+    is UpdateState.Error -> true
 
-
-@Preview
-@Composable
-private fun Idle() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.Idle,
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
+    UpdateState.Idle,
+    UpdateState.NoUpdate -> false
 }
 
-@Preview
-@Composable
-private fun Checking() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.Checking,
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
+private fun UpdateState.updateKeyOrNull(): String? = when (this) {
+    is UpdateState.Available -> info.manifest.tag ?: info.manifest.desktopVersion ?: info.asset.sha256
+    is UpdateState.Verifying -> info.manifest.tag ?: info.manifest.desktopVersion ?: info.asset.sha256
+    is UpdateState.Installing -> info.manifest.tag ?: info.manifest.desktopVersion ?: info.asset.sha256
+    is UpdateState.ReadyToInstall -> info.manifest.tag ?: info.manifest.desktopVersion ?: info.asset.sha256
+    else -> null
 }
 
-@Preview
-@Composable
-private fun NoUpdate() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.NoUpdate,
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
-}
+/** UI-модель: один remember(state) => мінімум рекомпозицій */
+private data class OtaUiModel(
+    val message: String,
+    val releaseNotes: String?,
+    val isBusy: Boolean,
+    val isChecking: Boolean,
+    val isDownloading: Boolean,
+    val isVerifying: Boolean,
+    val isReadyToInstall: Boolean,
+    val isInstalling: Boolean,
+    val isError: Boolean,
+    val isNoUpdate: Boolean,
+    val canDownload: Boolean,
+    val downloadProgress: Float?,
+    val downloadText: String?,
+)
 
-@Preview
 @Composable
-private fun Available() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.Available(FakeBackend.updateInfoWin),
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
-}
+private fun UpdateState.toUiModel(): OtaUiModel {
+    val message = when (this) {
+        UpdateState.Idle -> stringResource(Res.string.ota_state_idle)
+        UpdateState.Checking -> stringResource(Res.string.ota_state_checking)
+        UpdateState.NoUpdate -> stringResource(Res.string.ota_state_no_update)
+        is UpdateState.Available -> {
+            val version = info.manifest.desktopVersion ?: "—"
+            stringResource(Res.string.ota_state_available_template, version)
+        }
+        is UpdateState.Downloading -> stringResource(Res.string.ota_state_downloading)
+        is UpdateState.Verifying -> stringResource(Res.string.ota_state_verifying)
+        is UpdateState.ReadyToInstall -> stringResource(Res.string.ota_state_ready_to_install)
+        is UpdateState.Installing -> stringResource(Res.string.ota_state_installing)
+        is UpdateState.Error -> stringResource(Res.string.ota_state_error_template, message)
+    }
 
-@Preview
-@Composable
-private fun Downloading() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.Downloading(
-            progress = 0.42f,
-            downloaded = "50.4 MB",
-            total = "120.0 MB",
-        ),
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
-}
+    val notes = when (this) {
+        is UpdateState.Available -> info.manifest.releaseNotes
+        is UpdateState.Verifying -> info.manifest.releaseNotes
+        is UpdateState.Installing -> info.manifest.releaseNotes
+        is UpdateState.ReadyToInstall -> info.manifest.releaseNotes
+        else -> null
+    }?.trim().orEmpty().takeIf { it.isNotBlank() }
 
-@Preview
-@Composable
-private fun Verifying() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.Verifying(FakeBackend.updateInfoWin),
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
-}
+    val isBusy = this is UpdateState.Checking ||
+            this is UpdateState.Downloading ||
+            this is UpdateState.Verifying ||
+            this is UpdateState.Installing
 
-@Preview
-@Composable
-private fun ReadyToInstall() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.ReadyToInstall,
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
-    )
-}
+    val dlProgress = (this as? UpdateState.Downloading)?.progress
+    val dlText = (this as? UpdateState.Downloading)?.let { st ->
+        val d = st.downloaded
+        val t = st.total
+        if (!d.isNullOrBlank() || !t.isNullOrBlank()) {
+            stringResource(
+                Res.string.ota_download_counter_template,
+                d.orEmpty(),
+                t.orEmpty(),
+            )
+        } else null
+    }
 
-@Preview
-@Composable
-private fun Error() = PreviewDarkMaterialTheme {
-    OtaOverlayContent(
-        state = UpdateState.Error("SHA256 mismatch. File may be corrupted."),
-        onCheck = {},
-        onDownload = {},
-        onInstall = {},
-        onClose = {},
+    return OtaUiModel(
+        message = message,
+        releaseNotes = notes,
+        isBusy = isBusy,
+        isChecking = this is UpdateState.Checking,
+        isDownloading = this is UpdateState.Downloading,
+        isVerifying = this is UpdateState.Verifying,
+        isReadyToInstall = this is UpdateState.ReadyToInstall,
+        isInstalling = this is UpdateState.Installing,
+        isError = this is UpdateState.Error,
+        isNoUpdate = this is UpdateState.NoUpdate,
+        canDownload = this is UpdateState.Available,
+        downloadProgress = dlProgress,
+        downloadText = dlText,
     )
 }

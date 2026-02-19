@@ -15,7 +15,7 @@ sealed class UpdateState {
         val downloaded: String? = null,
     ) : UpdateState() // 0..1 або null
     data class Verifying(val info: UpdateInfo) : UpdateState()
-    object ReadyToInstall : UpdateState()
+    data class ReadyToInstall(val info: UpdateInfo) : UpdateState()
 
     data class Installing(val info: UpdateInfo) : UpdateState()
     data class Error(val message: String, val cause: Throwable? = null) : UpdateState()
