@@ -2,19 +2,26 @@
 #       git tag v1.0.809
 #       git push --tags
 
+#noinspection UnusedVersionCatalogEntry
+isDebugBuild    = "true"
+#isDebugBuild    = "false"
 
-#isDebugBuild    = "true"
-isDebugBuild    = "false"
-
-subpath         = "9"
+#noinspection UnusedVersionCatalogEntry
+subpath         = "10"
+#noinspection UnusedVersionCatalogEntry
 patch           = "8"
+#noinspection UnusedVersionCatalogEntry
 minor           = "0"
+#noinspection UnusedVersionCatalogEntry
 major           = "1"
-
+#noinspection UnusedVersionCatalogEntry
 android-minSdk              = "29"
+#noinspection UnusedVersionCatalogEntry
 android-targetSdk           = "36"
+#noinspection UnusedVersionCatalogEntry
 android-compileSdk          = "36"
 
+#noinspection UnusedVersionCatalogEntry
 appName                     = "VCC Administrator"
 kotlin                      = "2.3.20-Beta2"
 agp                         = "9.0.1"
