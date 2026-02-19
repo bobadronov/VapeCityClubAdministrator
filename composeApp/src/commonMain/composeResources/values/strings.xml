@@ -281,4 +281,28 @@
     <!--    TRAY    -->
     <string name="show_pc_window">Показати вікно</string>
     <string name="stay_online_on_close">При закритті — згортати в трей</string>
+
+    <!-- OTA -->
+    <string name="ota_dialog_title">Update</string>
+    <string name="ota_title">Оновлення програми</string>
+    <string name="ota_dash">—</string>
+
+    <string name="ota_state_idle">Очікування…</string>
+    <string name="ota_state_checking">Перевіряємо оновлення…</string>
+    <string name="ota_state_no_update">Оновлень немає.</string>
+    <string name="ota_state_downloading">Завантаження…</string>
+    <string name="ota_state_verifying">Перевірка цілісності (SHA256)…</string>
+    <string name="ota_state_ready_to_install">Готово до встановлення</string>
+    <string name="ota_state_installing">Запуск інсталятора</string>
+
+    <string name="ota_state_available_template">Доступне оновлення: %1$s</string>
+    <string name="ota_state_error_template">Помилка: %1$s</string>
+
+    <string name="ota_release_notes_title">Що змінилось:</string>
+    <string name="ota_download_counter_template">%1$s / %2$s</string>
+
+    <string name="ota_action_check">Перевірити</string>
+    <string name="ota_action_install">Встановити</string>
+    <string name="ota_action_close">Закрити</string>
+
 </resources>
