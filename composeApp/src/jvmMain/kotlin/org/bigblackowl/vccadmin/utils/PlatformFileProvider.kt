@@ -10,6 +10,7 @@ import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.exists
+import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.withScopedAccess
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +35,7 @@ import java.io.FileOutputStream
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.time.Duration.Companion.seconds
@@ -52,7 +54,6 @@ actual object PlatformFileProvider {
 
     suspend fun saveFile(name: String, content: ByteArray) {
         if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
-
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
         Napier.d(tag = TAG) { file.absolutePath() }
         file.withScopedAccess { file ->
@@ -60,6 +61,16 @@ actual object PlatformFileProvider {
         }
     }
 
+    suspend fun sha256OfSavedFile(name: String): String {
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
+
+        return file.withScopedAccess { f ->
+            val md = MessageDigest.getInstance("SHA-256")
+            val bytes = f.readBytes()
+            val digest = md.digest(bytes)
+            digest.joinToString("") { "%02x".format(it) }
+        }
+    }
     actual suspend fun downloadFile(name: String, content: ByteArray) {
         if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
 
