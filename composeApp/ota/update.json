@@ -1,0 +1,35 @@
+{
+  "tag": "v1.0.810",
+  "publishedAt": "2026-02-19T14:57:33Z",
+  "versionName": "1.0.810",
+  "desktop_version": "1.0.810",
+  "android_version": "1.0.810",
+  "android_version_code": 1090,
+  "releaseNotes": "# v1.0.810\n\n## Changes since v1.0.809\n\n- v1.0.810 (03febd7)\n- OTA update for desktop (f5de647)\n- auto show/hide network icon (2bff161)\n- add sha check (9178fa4)\n- add res for ota (3c8dff8)\n- rename param (c192b25)\n- rename param (14751c9)\n- add Timeout param for HttpClient (24424e9)\n- Merge remote-tracking branch 'origin/master' (d0e20b5)\n- version conf sync (67b9560)\n- Update release_with_ota.yml (dd5c043)\n- chore(ota): update manifest for v1.0.809 (3725e6c)\n---\nGenerated automatically from git log.\n",
+  "assets": {
+    "android": {
+      "name": "composeApp-release.apk",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.810/composeApp-release.apk",
+      "size": 7256644,
+      "sha256": "208c5465723a67e27582434cb12548da34af6e0f1800ca6e2b4c5a68c3f362df"
+    },
+    "windows": {
+      "name": "VCC.Administrator-1.0.810.msi",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.810/VCC.Administrator-1.0.810.msi",
+      "size": 126603719,
+      "sha256": "dbf1b868ad0558a22fb07814599697dee1945bfc8fd71e2c75beefb33afda98b"
+    },
+    "macos": {
+      "name": "VCC.Administrator-1.0.810.dmg",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.810/VCC.Administrator-1.0.810.dmg",
+      "size": 138030305,
+      "sha256": "6097ed5e7e52f0c14744ad6864f08f2c0fa677a3cf2068941b259884b43187b2"
+    },
+    "linux": {
+      "name": "vcc-administrator_1.0.810_amd64.deb",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.810/vcc-administrator_1.0.810_amd64.deb",
+      "size": 115165216,
+      "sha256": "bec9a4aa9af2d6fb1e6d77de71491129c1da011da65a3df9aea02e681f76a61e"
+    }
+  }
+}
