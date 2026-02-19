@@ -2,10 +2,8 @@
 
 package org.bigblackowl.vccadmin.utils
 
-import io.github.aakira.napier.Napier
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
@@ -42,20 +40,18 @@ import kotlin.time.Duration.Companion.seconds
 
 //jvm
 actual object PlatformFileProvider {
-    private const val TAG = "PlatformFileProvider"
+//    private const val TAG = "PlatformFileProvider"
     private val userHome = System.getProperty("user.home")
     actual val downloadFolderPath = "$userHome${File.separator}${BuildConfig.APP_NAME}DownloadedFiles"
 
     actual fun openFile(fileName: String) {
         val file = PlatformFile("$downloadFolderPath${File.separator}$fileName")
-        Napier.d(tag = TAG) { file.absolutePath() }
         FileKit.openFileWithDefaultApplication(file)
     }
 
     suspend fun saveFile(name: String, content: ByteArray) {
         if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
-        Napier.d(tag = TAG) { file.absolutePath() }
         file.withScopedAccess { file ->
             file.write(content)
         }
@@ -63,7 +59,6 @@ actual object PlatformFileProvider {
 
     suspend fun sha256OfSavedFile(name: String): String {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
-
         return file.withScopedAccess { f ->
             val md = MessageDigest.getInstance("SHA-256")
             val bytes = f.readBytes()
@@ -71,11 +66,10 @@ actual object PlatformFileProvider {
             digest.joinToString("") { "%02x".format(it) }
         }
     }
+
     actual suspend fun downloadFile(name: String, content: ByteArray) {
         if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
-
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
-        Napier.d(tag = TAG) { file.absolutePath() }
         file.withScopedAccess { file ->
             file.write(content)
         }
@@ -98,22 +92,18 @@ actual object PlatformFileProvider {
                 message = getString(Res.string.no_files_to_share)
             )
         }
-
         val zipFile = withContext(Dispatchers.IO) { createZipTemp(okFiles) }
-
         val copiedOk = runCatching {
             copyFileToClipboard(zipFile)
             true
         }.getOrDefault(false)
-
         // telegram open: best-effort
         runCatching { Desktop.getDesktop().browse(URI("tg://resolve?domain=telegram")) }
             .onFailure { runCatching { Desktop.getDesktop().browse(URI("https://web.telegram.org")) } }
-
         return if (copiedOk) {
             ShareResult(
                 state = true,
-                message = getString(Res.string.copied_to_clipboard) // <-- ключове повідомлення
+                message = getString(Res.string.copied_to_clipboard)
             )
         } else {
             ShareResult(
@@ -122,6 +112,18 @@ actual object PlatformFileProvider {
             )
         }
     }
+
+    actual suspend fun deleteFile(fileName: String): Boolean {
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
+        file.delete()
+        delay(1.seconds)
+        return file.exists()
+    }
+
+    actual fun openDownloadFolder() {
+        FileKit.openFileWithDefaultApplication(PlatformFile(downloadFolderPath))
+    }
+
 
     private fun copyFileToClipboard(file: File) {
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
@@ -143,7 +145,6 @@ actual object PlatformFileProvider {
 
         clipboard.setContents(transferable, null)
     }
-
     private suspend fun createZipTemp(files: List<GeneratedFile>): File {
         val zipName: String = getString(Res.string.share_pdf_files_as_zip_file_name, DefaultValues.Time.date) + ".zip"
         val safeName = zipName.ensureZipExt()
@@ -165,24 +166,7 @@ actual object PlatformFileProvider {
         }
         return outFile
     }
-
-    private fun String.ensureZipExt(): String =
-        if (lowercase().endsWith(".zip")) this else "$this.zip"
-
-    private fun String.safeZipEntryName(): String =
-        replace("\\", "/")
-            .substringAfterLast("/")
-            .ifBlank { "file.bin" }
-
-    actual suspend fun deleteFile(fileName: String): Boolean {
-        val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
-        file.delete()
-        delay(1.seconds)
-        return file.exists()
-    }
-
-    actual fun openDownloadFolder() {
-        FileKit.openFileWithDefaultApplication(PlatformFile(downloadFolderPath))
-    }
+    private fun String.ensureZipExt(): String = if (lowercase().endsWith(".zip")) this else "$this.zip"
+    private fun String.safeZipEntryName(): String = replace("\\", "/").substringAfterLast("/").ifBlank { "file.bin" }
 
 }

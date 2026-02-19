@@ -8,7 +8,6 @@ internal actual object PlatformFunctionProvider {
 
     actual fun openNetwork() {
         val os = System.getProperty("os.name").orEmpty().lowercase(Locale.getDefault())
-
         when {
             os.contains("win") -> openWindowsNetworkSettings()
             os.contains("mac") || os.contains("darwin") -> openMacNetworkSettings()
