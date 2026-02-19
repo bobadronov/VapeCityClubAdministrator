@@ -1,26 +1,26 @@
 {
-  "tag": "v1.0.807",
-  "publishedAt": "2026-02-14T22:56:28Z",
+  "tag": "v1.0.808",
+  "publishedAt": "2026-02-18T21:40:28Z",
   "versionName": "1.0.8",
-  "desktop_version": "1.0.807",
+  "desktop_version": "1.0.808",
   "assets": {
     "windows": {
-      "name": "VCC.Administrator-1.0.807.msi",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.807/VCC.Administrator-1.0.807.msi",
-      "size": 126181831,
-      "sha256": ""
+      "name": "VCC.Administrator-1.0.808.msi",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.808/VCC.Administrator-1.0.808.msi",
+      "size": 126587335,
+      "sha256": "456f8b4ace682b0fc1d2e0eaadef5bd07295cdfd5c547d04155d15125f3ec854"
     },
     "macos": {
-      "name": "VCC.Administrator-1.0.807.dmg",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.807/VCC.Administrator-1.0.807.dmg",
-      "size": 137651730,
-      "sha256": ""
+      "name": "VCC.Administrator-1.0.808.dmg",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.808/VCC.Administrator-1.0.808.dmg",
+      "size": 138017814,
+      "sha256": "9e2a0ba1a597ecf90af6dda460c34d49f1856c84b315fa89c31467d7201cd5cf"
     },
     "linux": {
-      "name": "vcc-administrator_1.0.807_amd64.deb",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.807/vcc-administrator_1.0.807_amd64.deb",
-      "size": 114669208,
-      "sha256": "63068748b389f730f416a2e171cdbdd4a5acae4ae1a3a5d84cdd8497c4707698"
+      "name": "vcc-administrator_1.0.808_amd64.deb",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.808/vcc-administrator_1.0.808_amd64.deb",
+      "size": 115127904,
+      "sha256": "7318f9e8012bfe1bf04fe048c88615fa408282a6c48df97bbbf420120683f766"
     }
   }
 }
