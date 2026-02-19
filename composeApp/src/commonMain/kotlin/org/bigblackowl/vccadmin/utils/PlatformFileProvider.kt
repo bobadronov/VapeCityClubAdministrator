@@ -6,12 +6,12 @@ import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 internal expect object PlatformFileProvider {
     val downloadFolderPath: String
     fun openFile(fileName: String)
+    fun openDownloadFolder()
     suspend fun downloadFile(name: String, content: ByteArray)
     fun isFileExist(fileName: String): Boolean?
-
     suspend fun shareWithTelegram(data:String)
-
     suspend fun shareFilesAsZip(files: List<GeneratedFile>): ShareResult
+    suspend fun deleteFile(fileName: String): Boolean
 }
 
 data class ShareResult(

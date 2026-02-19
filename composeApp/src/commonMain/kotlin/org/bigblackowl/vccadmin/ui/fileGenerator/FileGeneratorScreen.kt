@@ -44,6 +44,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -96,6 +97,7 @@ import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
+import org.bigblackowl.vccadmin.utils.PlatformFileProvider
 import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
@@ -106,6 +108,7 @@ import vccadministrator.composeapp.generated.resources.deselect_all
 import vccadministrator.composeapp.generated.resources.empty_list
 import vccadministrator.composeapp.generated.resources.generate
 import vccadministrator.composeapp.generated.resources.next
+import vccadministrator.composeapp.generated.resources.open_file
 import vccadministrator.composeapp.generated.resources.select
 import vccadministrator.composeapp.generated.resources.select_all
 import vccadministrator.composeapp.generated.resources.select_file_types
@@ -514,6 +517,19 @@ private fun SelectFileContent(
             }
 
             OutlinedButton(
+                onClick = {
+                    PlatformFileProvider.openDownloadFolder()
+                },
+                modifier = Modifier.sizeIn(minWidth = 150.dp),
+            ) {
+                if (isWideScreen()) {
+                    BodyText(text = stringResource(Res.string.open_file))
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                }
+                DefaultIcon(Icons.Default.FolderOpen)
+            }
+
+            OutlinedButton(
                 enabled = canGoNextFromFiles,
                 onClick = {
                     if (needsShops) {
@@ -872,6 +888,7 @@ private fun MonthPicker(
         }
     }
 }
+
 
 
 @Preview(name = "FileGeneration • Dark")

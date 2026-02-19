@@ -139,7 +139,7 @@ fun ShopDetailsScreen(
         shop = uiState.shop,
         isInitialLoading = uiState.isInitialLoading,
         isRefreshing = uiState.isRefreshing,
-        onBack = navigationViewModel::popBackStack,
+        onBack = { navigationViewModel.requestBack() },
         onEdit = { id -> navigationViewModel.navigateTo(Route.AddEditShop(id)) },
         onCopy = { data ->
             scope.launch {

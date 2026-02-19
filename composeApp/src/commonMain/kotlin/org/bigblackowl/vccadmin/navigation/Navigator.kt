@@ -22,7 +22,6 @@ import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
-import io.github.aakira.napier.Napier
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreen
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideScreen
 import org.bigblackowl.vccadmin.ui.city.addEdit.AddEditCityScreen
@@ -50,7 +49,7 @@ fun Navigator(
     NavDisplay(
         backStack = navigationViewModel.backStack,
         modifier = Modifier.padding(padding).consumeWindowInsets(WindowInsets.statusBars),
-        onBack = navigationViewModel::popBackStack,
+        onBack = navigationViewModel::requestBack,
         sceneStrategy = sceneStrategy,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
@@ -203,7 +202,7 @@ private class ListDetailScene<T : Any>(
 @Composable
 private fun <T : Any> rememberSceneStrategy(): ListDetailSceneStrategy<T> {
     val windowSizeClass = currentWindowAdaptiveInfo(supportLargeAndXLargeWidth = true).windowSizeClass
-    Napier.d { "windowSizeClass minWidthDp: ${windowSizeClass.minWidthDp}" }
+//    Napier.d { "windowSizeClass minWidthDp: ${windowSizeClass.minWidthDp}" }
     return remember(windowSizeClass) {
         ListDetailSceneStrategy(windowSizeClass)
     }

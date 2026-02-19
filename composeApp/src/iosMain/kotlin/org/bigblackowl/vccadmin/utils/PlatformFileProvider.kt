@@ -30,6 +30,9 @@ import vccadministrator.composeapp.generated.resources.zip_ready_to_share
 import cocoapods.ZIPFoundation.Archive
 import cocoapods.ZIPFoundation.ArchiveAccessMode
 import cocoapods.ZIPFoundation.EntryType
+import io.github.vinceglb.filekit.delete
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 // ios
 actual object PlatformFileProvider {
@@ -39,14 +42,21 @@ actual object PlatformFileProvider {
         val file = PlatformFile("$downloadFolderPath/$fileName")
         FileKit.openFileWithDefaultApplication(file)
     }
-
+    actual fun openDownloadFolder() {
+        FileKit.openFileWithDefaultApplication(PlatformFile(downloadFolderPath))
+    }
     actual suspend fun downloadFile(name: String, content: ByteArray) {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
         file.withScopedAccess { scoped ->
             scoped.write(content)
         }
     }
-
+    actual suspend fun deleteFile(fileName: String): Boolean {
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
+        file.delete()
+        delay(1.seconds)
+        return file.exists()
+    }
     actual fun isFileExist(fileName: String): Boolean? =
         PlatformFile("$downloadFolderPath/$fileName").exists()
 

@@ -30,6 +30,23 @@ actual object PlatformFileProvider {
         openBytesInNewTab(bytes.toJsNumberArray(), "application/pdf", fileName)
     }
 
+    actual fun openDownloadFolder() {
+        // Працює не всюди/не завжди. Викликати тільки з onClick!
+        val candidates = listOf(
+            "chrome://downloads/",
+            "edge://downloads/all",
+            "about:downloads"
+        )
+
+        for (url in candidates) {
+            val w = window.open(url, "_blank")
+            if (w != null) return
+        }
+
+        // fallback
+        window.alert("Не вдалося відкрити сторінку завантажень.\nВідкрий вручну: Ctrl+J (⌘+J на macOS).")
+    }
+
     actual suspend fun downloadFile(name: String, content: ByteArray) {
         // зберігаємо, щоб openFile міг відкрити
         memoryCache[name] = content
@@ -47,6 +64,8 @@ actual object PlatformFileProvider {
             "noopener,noreferrer"
         )
     }
+
+    actual suspend fun deleteFile(fileName: String): Boolean = false
 
     actual suspend fun shareFilesAsZip(files: List<GeneratedFile>): ShareResult {
         val okFiles = files.asSequence().filter { it.error == null && it.content != null }.toList()

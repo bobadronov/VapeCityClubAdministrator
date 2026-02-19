@@ -147,14 +147,16 @@ fun main() = application {
 
             App()
 
-            LaunchedEffect(Unit) {
-                otaUpdateManager.checkOnAppStart()
-            }
+            if (BuildConfig.IS_DEBUG_BUILD == false) {
+                LaunchedEffect(Unit) {
+                    otaUpdateManager.checkOnAppStart()
+                }
 
-            OtaOverlayWindow(
-                ota = otaUpdateManager,
-                stateFlow = otaUpdateManager.state,
-            )
+                OtaOverlayWindow(
+                    ota = otaUpdateManager,
+                    stateFlow = otaUpdateManager.state,
+                )
+            }
         }
     }
 }

@@ -7,11 +7,13 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.absolutePath
 import io.github.vinceglb.filekit.createDirectories
+import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.withScopedAccess
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.resourses.DefaultValues
@@ -34,6 +36,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.time.Duration.Companion.seconds
 
 //jvm
 actual object PlatformFileProvider {
@@ -42,7 +45,6 @@ actual object PlatformFileProvider {
     actual val downloadFolderPath = "$userHome${File.separator}${BuildConfig.APP_NAME}DownloadedFiles"
 
     actual fun openFile(fileName: String) {
-
         val file = PlatformFile("$downloadFolderPath${File.separator}$fileName")
         Napier.d(tag = TAG) { file.absolutePath() }
         FileKit.openFileWithDefaultApplication(file)
@@ -160,5 +162,16 @@ actual object PlatformFileProvider {
         replace("\\", "/")
             .substringAfterLast("/")
             .ifBlank { "file.bin" }
+
+    actual suspend fun deleteFile(fileName: String): Boolean {
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
+        file.delete()
+        delay(1.seconds)
+        return file.exists()
+    }
+
+    actual fun openDownloadFolder() {
+        FileKit.openFileWithDefaultApplication(PlatformFile(downloadFolderPath))
+    }
 
 }

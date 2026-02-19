@@ -2,18 +2,20 @@
 
 package org.bigblackowl.vccadmin.utils
 
+import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.os.Environment
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.dialogs.shareFile
 import io.github.vinceglb.filekit.exists
-import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.withScopedAccess
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
@@ -29,14 +31,21 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
+import kotlin.time.Duration.Companion.seconds
 
 actual object PlatformFileProvider {
     private val context: Context by inject(Context::class.java)
-    actual val downloadFolderPath = FileKit.filesDir.absolutePath()
+    actual val downloadFolderPath: String = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
 
     actual fun openFile(fileName: String) {
         val file = PlatformFile("$downloadFolderPath/$fileName")
         FileKit.openFileWithDefaultApplication(file)
+    }
+
+    actual fun openDownloadFolder() {
+        val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
     }
 
     actual suspend fun downloadFile(name: String, content: ByteArray) {
@@ -116,6 +125,13 @@ actual object PlatformFileProvider {
                 message = getString(Res.string.share_failed)
             )
         }
+    }
+
+    actual suspend fun deleteFile(fileName: String): Boolean {
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
+        file.delete()
+        delay(1.seconds)
+        return file.exists()
     }
 
     private fun String.ensureZipExt(): String =

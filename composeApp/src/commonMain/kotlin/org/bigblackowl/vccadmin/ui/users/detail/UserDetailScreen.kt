@@ -46,7 +46,6 @@ import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.QRCodeButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
@@ -54,6 +53,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.dialog.QRCodeDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
@@ -101,7 +101,7 @@ fun UserDetailScreen(
     } else {
         UserDetailContent(
             state = state,
-            onBack = { navigationViewModel.popBackStack() },
+            onBack = { navigationViewModel.requestBack() },
             onRefresh = { userDetailScreenViewModel.onIntent(UserDetailScreenIntent.Refresh(userId.orEmpty())) },
             showConfirmMessage = {
                 scope.launch {

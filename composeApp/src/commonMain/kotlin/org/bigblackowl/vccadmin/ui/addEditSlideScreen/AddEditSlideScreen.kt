@@ -68,7 +68,6 @@ import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.DeleteButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
@@ -78,6 +77,7 @@ import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -134,7 +134,7 @@ fun AddEditSlideScreen(
 
                 is UIEvents.NotificationAndNavigate -> {
                     snackbarHostState.showSnackbar(event.message)
-                    navigationViewModel.popBackStack()
+                    navigationViewModel.requestBack()
                 }
 
                 is UIEvents.ShowUnsavedChangesDialog -> showUnsavedDialog = true

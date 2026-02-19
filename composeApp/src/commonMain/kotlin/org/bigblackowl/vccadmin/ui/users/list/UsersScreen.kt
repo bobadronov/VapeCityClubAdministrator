@@ -35,7 +35,6 @@ import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.AddButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.EditButton
@@ -43,6 +42,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.AdaptiveBox
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -91,7 +91,7 @@ fun UsersScreen(
                 viewModel.onIntent(UsersScreenIntent.Refresh)
             },
             onBack = {
-                navigationViewModel.popBackStack()
+                navigationViewModel.requestBack()
             },
         )
     }

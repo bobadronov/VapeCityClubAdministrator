@@ -8,7 +8,7 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
 import org.bigblackowl.vccadmin.otaUpdates.OtaDownloader
 import org.bigblackowl.vccadmin.otaUpdates.OtaUpdateManager
-import org.bigblackowl.vccadmin.otaUpdates.OtaUpdateRepository
+import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 

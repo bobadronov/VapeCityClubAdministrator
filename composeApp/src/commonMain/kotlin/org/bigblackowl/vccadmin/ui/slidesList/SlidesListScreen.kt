@@ -42,7 +42,6 @@ import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.AddButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.RetryButton
@@ -51,6 +50,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
@@ -92,7 +92,7 @@ fun SlidesListScreen(
     SlidesListScreenContent(
         uiState = uiState,
         onIntent = viewModel::onIntent,
-        onBack = navigationViewModel::popBackStack,
+        onBack = { navigationViewModel.requestBack() },
         onOpenSettings = { navigationViewModel.navigateTo(Route.EditSlidesSettings) },
         onEditSlide = { id -> navigationViewModel.navigateTo(Route.AddEditSlide(id)) },
         onAddSlide = { navigationViewModel.navigateTo(Route.AddEditSlide()) },

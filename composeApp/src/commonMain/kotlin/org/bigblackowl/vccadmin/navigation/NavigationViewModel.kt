@@ -89,11 +89,6 @@ class NavigationViewModel(
         persist()
     }
 
-    fun popBackStack() {
-        backStack = backStack.dropLast(1).ifEmpty { listOf(Route.Login) }
-        persist()
-    }
-
     fun requestBack() {
         when (backStack.lastOrNull()) {
             is Route.AddEditSlide -> addEditSlideViewModel.onIntent(AddEditSlideIntent.GoBack)
@@ -107,6 +102,11 @@ class NavigationViewModel(
     }
 
     fun logout() = replaceRoot(Route.Login)
+
+    fun popBackStack() {
+        backStack = backStack.dropLast(1).ifEmpty { listOf(Route.Login) }
+        persist()
+    }
 
     private fun replaceRoot(route: Route) {
         backStack = listOf(route)

@@ -122,7 +122,7 @@ fun MainTopAppBar(
         title = { Text(if (isLoginScreen) "" else currentTitleFor(lastRoute)) },
         navigationIcon = {
             if (!isLoginScreen && !isMainScreen) {
-                IconButton(onClick = navigationViewModel::requestBack) {
+                IconButton(onClick = { navigationViewModel.requestBack() }) {
                     DefaultIcon(Icons.AutoMirrored.Filled.ArrowBack)
                 }
             }

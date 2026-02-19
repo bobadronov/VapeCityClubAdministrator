@@ -1,10 +1,14 @@
 package org.bigblackowl.vccadmin.data.repository
 
+import org.bigblackowl.vccadmin.data.entity.AssetInfo
+import org.bigblackowl.vccadmin.data.entity.Assets
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.DeviceType
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
+import org.bigblackowl.vccadmin.data.entity.UpdateInfo
+import org.bigblackowl.vccadmin.data.entity.UpdateManifest
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
 import org.bigblackowl.vccadmin.ui.city.addEdit.CitySuggestion
@@ -70,6 +74,54 @@ object FakeBackend {
     val singleShop: Shop = shops.first()
     val singleSlide: Slide = slides.first()
     val singleUser: User = users.first()
+    // --------------------------
+    // Preview
+    // -------------------------
+    val manifest = UpdateManifest(
+        tag = "v1.2.3",
+        publishedAt = "2026-02-15T12:34:56Z",
+        versionName = "1.2.3",
+        desktopVersion = "1.2.303",
+        releaseNotes = """
+            - Додали OTA-оновлення для Desktop
+            - Виправили SHA256 перевірку
+            - Покращили прогрес завантаження
+            - Дрібні UI/UX правки
+        """.trimIndent(),
+        androidVersion = "1.2.3",
+        androidVersionCode = 10203,
+        assets = Assets(
+            windows = AssetInfo(
+                name = "VCC-Admin-Setup-1.2.303.msi",
+                url = "https://example.com/VCC-Admin-Setup-1.2.303.msi",
+                size = 120L * 1024 * 1024,
+                sha256 = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+            ),
+            macos = AssetInfo(
+                name = "VCC-Admin-1.2.303.dmg",
+                url = "https://example.com/VCC-Admin-1.2.303.dmg",
+                size = 140L * 1024 * 1024,
+                sha256 = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+            ),
+            linux = AssetInfo(
+                name = "vcc-admin_1.2.303_amd64.deb",
+                url = "https://example.com/vcc-admin_1.2.303_amd64.deb",
+                size = 110L * 1024 * 1024,
+                sha256 = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+            ),
+            android = AssetInfo(
+                name = "vcc-admin-1.2.3-release.apk",
+                url = "https://example.com/vcc-admin-1.2.3-release.apk",
+                size = 45L * 1024 * 1024,
+                sha256 = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+            ),
+        )
+    )
+
+    val updateInfoWin = UpdateInfo(
+        manifest = manifest,
+        asset = manifest.assets.windows!!
+    )
     private val previewSuggestions = listOf(
         CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
         CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
