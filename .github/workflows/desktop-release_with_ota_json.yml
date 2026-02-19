@@ -1,4 +1,4 @@
-name: Desktop packages
+name: Release (Android + Desktop)
 
 on:
   push:
@@ -9,8 +9,82 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build packages (${{ matrix.os }})
+  android:
+    name: Build Android Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create .env
+        shell: bash
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env
+          echo "OPEN_AI_KEY=${{ secrets.OPEN_AI_KEY }}" >> .env
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        shell: bash
+        run: |
+          chmod +x gradlew
+          sed -i 's/\r$//' gradlew
+
+      - name: Decode keystore
+        shell: bash
+        run: |
+          mkdir -p keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore/release.jks
+          ls -la keystore
+
+      - name: Build Release APK
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/keystore/release.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew :composeApp:assembleRelease
+
+      - name: Collect APK
+        shell: bash
+        run: |
+          mkdir -p dist
+          echo "Searching for APK..."
+          find . -type f -path "*/build/outputs/apk/*/*release*.apk" -print || true
+          echo "Copying to dist/ ..."
+          find . -type f -path "*/build/outputs/apk/*/*release*.apk" -exec cp -v {} dist/ \; || true
+          echo "Collected files:"
+          ls -la dist || true
+
+      - name: SHA256 (debug)
+        shell: bash
+        run: |
+          (cd dist && sha256sum *.apk) | tee sha256sums.txt || true
+          echo "SHA256:"
+          cat sha256sums.txt || true
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release
+          path: dist/*
+          if-no-files-found: error
+
+  desktop:
+    name: Build Desktop packages (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
@@ -51,7 +125,6 @@ jobs:
             sed -i 's/\r$//' gradlew
           fi
 
-      # --- Build per OS ---
       - name: Build DMG (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
@@ -67,7 +140,6 @@ jobs:
         shell: bash
         run: ./gradlew :composeApp:packageReleaseDeb
 
-      # --- Collect packages into stable folder ---
       - name: Collect packages (macOS/Linux)
         if: matrix.os != 'windows-latest'
         shell: bash
@@ -96,22 +168,26 @@ jobs:
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-packages
+          name: desktop-${{ matrix.os }}
           path: dist/*
           if-no-files-found: warn
 
   release:
-    name: Publish GitHub Release + update manifest
-    needs: build
+    name: Publish GitHub Release + update manifest + upsert Supabase
+    needs: [android, desktop]
     runs-on: ubuntu-latest
 
     steps:
-      # щоб мати можливість комітити update.json у дефолтну гілку
-      - name: Checkout default branch
+      - name: Checkout default branch (for committing update.json)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.repository.default_branch }}
+
+      - name: Fetch tags
+        shell: bash
+        run: |
+          git fetch --tags --force
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -124,26 +200,53 @@ jobs:
           echo "Downloaded artifacts:"
           find dist -type f -print || true
 
-      - name: Upload to GitHub Release
+      # ---- Generate release notes (опис змін) ----
+      - name: Generate release notes (release_notes.md)
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -e
+          # знайдемо попередній тег; якщо його нема — беремо всю історію
+          PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
+          echo "Current tag: ${TAG}"
+          echo "Prev tag: ${PREV_TAG}"
+
+          echo "# ${TAG}" > release_notes.md
+          echo "" >> release_notes.md
+
+          if [ -n "${PREV_TAG}" ]; then
+            echo "## Changes since ${PREV_TAG}" >> release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" "${PREV_TAG}..${TAG}" >> release_notes.md
+          else
+            echo "## Changes" >> release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" "${TAG}" >> release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+          echo "---" >> release_notes.md
+          echo "Generated automatically from git log." >> release_notes.md
+
+          echo "Release notes:"
+          cat release_notes.md
+
+      # ---- Create/Update GitHub Release + attach assets + body ----
+      - name: Upload to GitHub Release (assets + notes)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           make_latest: true
+          body_path: release_notes.md
           files: |
+            dist/**/*.apk
             dist/**/*.dmg
             dist/**/*.msi
             dist/**/*.deb
             dist/**/*.pkg
             dist/**/*.exe
           fail_on_unmatched_files: false
-
-      - name: Build SHA256 list (debug)
-        shell: bash
-        run: |
-          find dist -type f \( -name "*.dmg" -o -name "*.msi" -o -name "*.deb" -o -name "*.pkg" -o -name "*.exe" \) -print0 \
-            | xargs -0 -I{} sha256sum "{}" > sha256sums.txt || true
-          echo "SHA256:"
-          cat sha256sums.txt || true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -164,7 +267,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           gh api "repos/${REPO}/releases/tags/${TAG}" > release.json
-          jq '.tag_name, (.assets|length)' release.json
+          jq '.tag_name, .published_at, (.assets|length), (.body|length)' release.json
 
       - name: Generate manifest + write composeApp/ota/update.json + upsert Supabase
         shell: bash
@@ -215,7 +318,7 @@ jobs:
                 }
             return None
 
-          # Read versions from libs.versions.toml
+          # versions from libs.versions.toml
           toml_path = pathlib.Path("gradle/libs.versions.toml")
           data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
           v = data.get("versions", {})
@@ -229,28 +332,36 @@ jobs:
           desktop_build = patch * 100 + subpath
           desktop_version = f"{major}.{minor}.{desktop_build}"
 
+          # android version code (простий стабільний формат)
+          android_version = version_name
+          android_version_code = major * 10000 + minor * 100 + patch
+
           rel = json.loads(pathlib.Path("release.json").read_text(encoding="utf-8"))
           assets = rel.get("assets", [])
+
+          release_notes = rel.get("body") or ""
 
           manifest = {
             "tag": rel.get("tag_name"),
             "publishedAt": rel.get("published_at"),
             "versionName": version_name,
             "desktop_version": desktop_version,
+            "android_version": android_version,
+            "android_version_code": android_version_code,
+            "releaseNotes": release_notes,
             "assets": {
+              "android": pick_asset(assets, r"\.apk$"),
               "windows": pick_asset(assets, r"\.(msi|exe)$"),
               "macos":   pick_asset(assets, r"\.(dmg|pkg)$"),
               "linux":   pick_asset(assets, r"\.deb$")
             }
           }
 
-          # Write update.json into repo
           out_path = pathlib.Path("composeApp/ota/update.json")
           out_path.parent.mkdir(parents=True, exist_ok=True)
           out_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
           print("Wrote:", out_path)
 
-          # Push to Supabase
           sb_url = os.environ["SUPABASE_URL"]
           sb_key = os.environ["SUPABASE_KEY"]
           supabase = create_client(sb_url, sb_key)
@@ -260,12 +371,14 @@ jobs:
             "published_at": manifest.get("publishedAt"),
             "version_name": manifest.get("versionName"),
             "desktop_version": manifest.get("desktop_version"),
+            "android_version": manifest.get("android_version"),
+            "android_version_code": manifest.get("android_version_code"),
+            "release_notes": manifest.get("releaseNotes"),
             "manifest": manifest,
           }
 
           res = supabase.table("admin_app_updates").upsert(row).execute()
           print("Upsert result:", res.data)
-          print(json.dumps(manifest, ensure_ascii=False, indent=2))
           PY
 
       - name: Commit and push update.json
