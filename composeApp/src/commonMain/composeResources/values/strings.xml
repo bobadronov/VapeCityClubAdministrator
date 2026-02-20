@@ -19,6 +19,7 @@
     <string name="send">Відправити</string>
     <string name="share">Поділитися</string>
     <string name="update">Оновити</string>
+    <string name="download">Завантажити</string>
     <string name="share_all_files">Відправити усе</string>
     <string name="share_pdf_files_as_zip_file_name">Згенеровані_бланки_%1$s</string>
     <string name="download_all_files">Завантажити всі файли</string>

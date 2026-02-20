@@ -12,6 +12,7 @@ import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.dialogs.shareFile
 import io.github.vinceglb.filekit.exists
+import io.github.vinceglb.filekit.readBytes
 import io.github.vinceglb.filekit.withScopedAccess
 import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,7 @@ import vccadministrator.composeapp.generated.resources.zip_ready_to_share
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import kotlin.time.Duration.Companion.seconds
@@ -41,7 +43,6 @@ actual object PlatformFileProvider {
         val file = PlatformFile("$downloadFolderPath/$fileName")
         FileKit.openFileWithDefaultApplication(file)
     }
-
     actual fun openDownloadFolder() {
         val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -54,9 +55,7 @@ actual object PlatformFileProvider {
             file.write(content)
         }
     }
-
     actual fun isFileExist(fileName: String): Boolean? = PlatformFile("$downloadFolderPath${File.separator}$fileName").exists()
-
     actual suspend fun shareWithTelegram(data: String) {
         val telegramPkg = "org.telegram.messenger"
 
@@ -82,8 +81,6 @@ actual object PlatformFileProvider {
             context.startActivity(chooser)
         }
     }
-
-
     actual suspend fun shareFilesAsZip(files: List<GeneratedFile>): ShareResult {
         val okFiles = files.asSequence().filter { it.error == null && it.content != null }.toList()
         if (okFiles.isEmpty()) {
@@ -126,17 +123,21 @@ actual object PlatformFileProvider {
             )
         }
     }
-
     actual suspend fun deleteFile(fileName: String): Boolean {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
         file.delete()
         delay(1.seconds)
         return file.exists()
     }
-
-    private fun String.ensureZipExt(): String =
-        if (lowercase().endsWith(".zip")) this else "$this.zip"
-
-    private fun String.safeZipEntryName(): String =
-        replace("\\", "/").substringAfterLast("/").ifBlank { "file.pdf" }
+    suspend fun sha256OfSavedFile(name: String): String {
+        val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
+        return file.withScopedAccess { f ->
+            val md = MessageDigest.getInstance("SHA-256")
+            val bytes = f.readBytes()
+            val digest = md.digest(bytes)
+            digest.joinToString("") { "%02x".format(it) }
+        }
+    }
+    private fun String.ensureZipExt(): String = if (lowercase().endsWith(".zip")) this else "$this.zip"
+    private fun String.safeZipEntryName(): String = replace("\\", "/").substringAfterLast("/").ifBlank { "file.pdf" }
 }

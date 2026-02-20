@@ -5,7 +5,7 @@
       <SelectionState runConfigName="composeApp">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PlaygroundPreview1">
+      <SelectionState runConfigName="OtaTopBarActionPreview_Menu">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

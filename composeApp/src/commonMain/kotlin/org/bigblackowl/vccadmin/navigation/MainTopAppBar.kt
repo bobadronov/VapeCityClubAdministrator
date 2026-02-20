@@ -58,6 +58,7 @@ import org.bigblackowl.vccadmin.data.repository.AuthRepository
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.repository.LocalRepository
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.ota.OtaUiComponent
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
@@ -74,7 +75,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.exit
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,7 +137,7 @@ fun MainTopAppBar(
         },
         actions = {
             NetworkStatusIcon(isConnected)
-
+            OtaUiComponent()
             Crossfade(isLoginScreen) { isShowMenu ->
 
                 if (isShowMenu) {
@@ -174,7 +174,10 @@ fun MainTopAppBar(
 }
 
 @Composable
-private fun NetworkStatusIcon(isConnected: Boolean) {
+private fun NetworkStatusIcon(
+    isConnected: Boolean,
+    hideDelayMs: Long = 1200L,
+) {
     var visible by remember { mutableStateOf(!isConnected) }
 
     LaunchedEffect(isConnected) {
@@ -184,7 +187,7 @@ private fun NetworkStatusIcon(isConnected: Boolean) {
         } else {
             // інтернет з’явився — ще 3 сек показуємо, потім ховаємо
             visible = true
-            delay(3.seconds)
+            delay(hideDelayMs)
             visible = false
         }
     }
@@ -198,8 +201,8 @@ private fun NetworkStatusIcon(isConnected: Boolean) {
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(easing= LinearEasing)),
-        exit = fadeOut(tween(easing= LinearEasing)),
+        enter = fadeIn(tween(easing = LinearEasing)),
+        exit = fadeOut(tween(easing = LinearEasing)),
         modifier = Modifier.padding(end = 8.dp)
     ) {
         IconButton(onClick = { PlatformFunctionProvider.openNetwork() }) {

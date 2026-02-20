@@ -6,9 +6,7 @@ import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
-import org.bigblackowl.vccadmin.otaUpdates.OtaDownloader
-import org.bigblackowl.vccadmin.otaUpdates.OtaUpdateManager
-import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
+import org.bigblackowl.vccadmin.ota.OtaUpdateManager
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -21,8 +19,6 @@ actual val platformModule = module {
             }
             .build()
     }
-    singleOf(::OtaDownloader)
-    singleOf(::OtaUpdateRepository)
     singleOf(::OtaUpdateManager)
 }
 

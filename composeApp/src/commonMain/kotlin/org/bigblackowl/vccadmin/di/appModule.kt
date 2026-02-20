@@ -37,12 +37,14 @@ import org.bigblackowl.vccadmin.data.repository.FileGeneratorRepository
 import org.bigblackowl.vccadmin.data.repository.FileGeneratorRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.LocalRepository
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
 import org.bigblackowl.vccadmin.data.repository.ShopRepository
 import org.bigblackowl.vccadmin.data.repository.ShopRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.SlideRepository
 import org.bigblackowl.vccadmin.data.repository.SlideRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.UserRepository
 import org.bigblackowl.vccadmin.data.repository.UserRepositoryImpl
+import org.bigblackowl.vccadmin.data.utils.OtaDownloader
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideViewModel
@@ -98,7 +100,6 @@ val networkModule = module {
 
             followRedirects = true
         }
-
     }
     single<SupabaseClient> {
         val localRepository: LocalRepository = get()
@@ -175,7 +176,10 @@ val repositoryModule = module {
     single<AiRepository> { AiRepositoryImpl(get(), get()) }
     single<CitySearchRepository> { CitySearchRepositoryImpl(json = get()) }
 }
-
+val otaModule = module{
+    singleOf(::OtaUpdateRepository)
+    singleOf(::OtaDownloader)
+}
 val logger = module {
     if (BuildConfig.IS_DEBUG_BUILD) Napier.base(DebugAntilog())
 }
@@ -184,6 +188,7 @@ val coreModules = listOf(
     logger,
     networkModule,
     repositoryModule,
+    otaModule,
     navigationModule,
     screensModule,
     platformModule,

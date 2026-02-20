@@ -1,4 +1,6 @@
-package org.bigblackowl.vccadmin.otaUpdates
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
+package org.bigblackowl.vccadmin.ota
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
@@ -13,9 +15,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.entity.DesktopOs
-import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
+import org.bigblackowl.vccadmin.data.utils.OtaDownloader
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
 import kotlin.math.ln
 import kotlin.math.max
@@ -25,7 +27,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
-class OtaUpdateManager(
+actual class OtaUpdateManager(
     private val repo: OtaUpdateRepository,
     private val downloader: OtaDownloader,
     private val network: NetworkMonitorProvider,
@@ -40,7 +42,7 @@ class OtaUpdateManager(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val _state = MutableStateFlow<UpdateState>(UpdateState.Idle)
-    val state: StateFlow<UpdateState> = _state.asStateFlow()
+    actual val state: StateFlow<UpdateState> = _state.asStateFlow()
 
     private var pending: PendingInstall? = null
 
@@ -49,13 +51,13 @@ class OtaUpdateManager(
 
     private data class PendingInstall(val fileName: String, val info: UpdateInfo)
 
-    fun check() {
+    actual fun check() {
         if (checkJob?.isActive == true) return
         checkJob = scope.launch {
             delay(250.milliseconds) // легкий debounce
             _state.value = UpdateState.Checking
             Napier.d(tag = TAG) { "Checking updates... local=$currentVersion os=$os" }
-
+            DEFAULT_BUFFER_SIZE
             try {
                 ensureInternetOrFail()
 
@@ -89,12 +91,36 @@ class OtaUpdateManager(
         }
     }
 
-    fun downloadIfAvailable() {
+    actual fun download() {
         val info = (state.value as? UpdateState.Available)?.info ?: return
-        download(info)
+        downloadIfAvailable(info)
     }
 
-    fun download(info: UpdateInfo) {
+    actual fun install() {
+        val p = pending ?: run {
+            _state.value = UpdateState.Error("Немає завантаженого оновлення. Спочатку скачай файл.")
+            return
+        }
+
+        // не даємо паралельні інстали
+        if (state.value is UpdateState.Installing) return
+
+        scope.launch {
+            try {
+                _state.value = UpdateState.Installing(p.info)
+                PlatformFileProvider.openFile(p.fileName)
+
+                pending = null
+                // Дай UI трошки часу показати “Installing”
+                delay(700)
+                exitProcess(0)
+            } catch (t: Throwable) {
+                _state.value = UpdateState.Error("Install failed: ${t.message}", t)
+            }
+        }
+    }
+
+    private fun downloadIfAvailable(info: UpdateInfo) {
         if (downloadJob?.isActive == true) return
 
         downloadJob = scope.launch(start = CoroutineStart.LAZY, context = Dispatchers.IO) {
@@ -131,7 +157,7 @@ class OtaUpdateManager(
                 val result = downloader.downloadBytesWithProgress(
                     url = info.asset.url,
                     onProgress = { downloaded, total, progress ->
-                        Napier.d(tag=TAG) { " downloaded: $downloaded, total: $total, progress:$progress " }
+                        Napier.d(tag = TAG) { " downloaded: $downloaded, total: $total, progress:$progress " }
                         lastDownloaded = downloaded
                         lastTotal = total
                         lastProgress = progress
@@ -179,31 +205,6 @@ class OtaUpdateManager(
         downloadJob?.start()
     }
 
-
-    fun installIfReadyAndExit() {
-        val p = pending ?: run {
-            _state.value = UpdateState.Error("Немає завантаженого оновлення. Спочатку скачай файл.")
-            return
-        }
-
-        // не даємо паралельні інстали
-        if (state.value is UpdateState.Installing) return
-
-        scope.launch {
-            try {
-                _state.value = UpdateState.Installing(p.info)
-                PlatformFileProvider.openFile(p.fileName)
-
-                pending = null
-                // Дай UI трошки часу показати “Installing”
-                delay(700)
-                exitProcess(0)
-            } catch (t: Throwable) {
-                _state.value = UpdateState.Error("Install failed: ${t.message}", t)
-            }
-        }
-    }
-
     private suspend fun ensureInternetOrFail() {
         if (network.isConnected.value) return
         delay(4.seconds)
@@ -240,8 +241,7 @@ class OtaUpdateManager(
         return "%.${decimals}f %s".format(value, units[digitGroups])
     }
 
-    private fun Long?.formatBytesOrDash(decimals: Int = 1): String =
-        this?.formatBytes(decimals) ?: "—"
+    private fun Long?.formatBytesOrDash(decimals: Int = 1): String = this?.formatBytes(decimals) ?: "—"
 
     private fun detectDesktopOs(): DesktopOs {
         val name = System.getProperty("os.name").lowercase()

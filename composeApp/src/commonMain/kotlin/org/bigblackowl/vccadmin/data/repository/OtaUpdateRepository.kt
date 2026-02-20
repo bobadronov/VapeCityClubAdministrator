@@ -4,7 +4,8 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.Serializable
-import org.bigblackowl.vccadmin.data.entity.UpdateManifest
+import org.bigblackowl.vccadmin.ota.UpdateManifest
+
 class OtaUpdateRepository (
     private val supabase: SupabaseClient,
 ) {

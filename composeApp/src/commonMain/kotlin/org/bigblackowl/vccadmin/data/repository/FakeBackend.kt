@@ -1,16 +1,16 @@
 package org.bigblackowl.vccadmin.data.repository
 
-import org.bigblackowl.vccadmin.data.entity.AssetInfo
-import org.bigblackowl.vccadmin.data.entity.Assets
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.DeviceType
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
-import org.bigblackowl.vccadmin.data.entity.UpdateInfo
-import org.bigblackowl.vccadmin.data.entity.UpdateManifest
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
+import org.bigblackowl.vccadmin.ota.AssetInfo
+import org.bigblackowl.vccadmin.ota.Assets
+import org.bigblackowl.vccadmin.ota.UpdateInfo
+import org.bigblackowl.vccadmin.ota.UpdateManifest
 import org.bigblackowl.vccadmin.ui.city.addEdit.CitySuggestion
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import kotlin.math.absoluteValue
@@ -77,7 +77,7 @@ object FakeBackend {
     // --------------------------
     // Preview
     // -------------------------
-    val manifest = UpdateManifest(
+    private val manifest = UpdateManifest(
         tag = "v1.2.3",
         publishedAt = "2026-02-15T12:34:56Z",
         versionName = "1.2.3",

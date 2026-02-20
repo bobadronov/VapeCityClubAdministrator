@@ -5,6 +5,8 @@ import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
+import org.bigblackowl.vccadmin.ota.OtaUpdateManager
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 actual val platformModule = module {
@@ -16,5 +18,6 @@ actual val platformModule = module {
             }
             .build()
     }
+    singleOf(::OtaUpdateManager)
 }
 actual val ktorEngine: HttpClientEngine  = CIO.create()

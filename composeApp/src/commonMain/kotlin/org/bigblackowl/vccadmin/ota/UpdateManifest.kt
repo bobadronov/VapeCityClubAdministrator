@@ -1,8 +1,11 @@
-package org.bigblackowl.vccadmin.data.entity
+package org.bigblackowl.vccadmin.ota
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.bigblackowl.vccadmin.data.entity.DesktopOs
 
+@Immutable
 @Serializable
 data class UpdateManifest(
     val tag: String? = null,
@@ -31,6 +34,7 @@ data class UpdateManifest(
     fun pickAndroidAsset(): AssetInfo? = assets.android
 }
 
+@Immutable
 @Serializable
 data class Assets(
     val windows: AssetInfo? = null,
@@ -40,7 +44,7 @@ data class Assets(
     // NEW: android apk
     val android: AssetInfo? = null
 )
-
+@Immutable
 @Serializable
 data class AssetInfo(
     val name: String,
@@ -48,7 +52,7 @@ data class AssetInfo(
     val size: Long,
     val sha256: String = ""
 )
-
+@Immutable
 data class UpdateInfo(
     val manifest: UpdateManifest,
     val asset: AssetInfo,
