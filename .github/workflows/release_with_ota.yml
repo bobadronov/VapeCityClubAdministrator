@@ -68,6 +68,31 @@ jobs:
           find . -type f -path "*/build/outputs/apk/*/*release*.apk" -exec cp -v {} dist/ \; || true
           echo "Collected files:"
           ls -la dist || true
+          
+      - name: Rename APK for GitHub Release
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -e
+          VERSION="${TAG#v}"   # v1.0.810 -> 1.0.810
+          ls -la dist || true
+
+          APK_COUNT=$(ls -1 dist/*.apk 2>/dev/null | wc -l | tr -d ' ')
+          if [ "${APK_COUNT}" -eq 0 ]; then
+            echo "No APK found in dist/"
+            exit 1
+          fi
+
+          # якщо їх кілька — беремо перший (можна посилити фільтр під твій модуль/variant)
+          APK_PATH="$(ls -1 dist/*.apk | head -n 1)"
+          NEW_NAME="VCC.Administrator-${VERSION}.apk"
+
+          echo "Renaming ${APK_PATH} -> dist/${NEW_NAME}"
+          mv -f "${APK_PATH}" "dist/${NEW_NAME}"
+
+          echo "Result:"
+          ls -la dist
 
       - name: SHA256 (debug)
         shell: bash
@@ -211,24 +236,11 @@ jobs:
           PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
           echo "Current tag: ${TAG}"
           echo "Prev tag: ${PREV_TAG}"
-
           echo "# ${TAG}" > release_notes.md
           echo "" >> release_notes.md
-
-          if [ -n "${PREV_TAG}" ]; then
-            echo "## Changes since ${PREV_TAG}" >> release_notes.md
-            echo "" >> release_notes.md
-            git log --pretty=format:"- %s (%h)" "${PREV_TAG}..${TAG}" >> release_notes.md
-          else
-            echo "## Changes" >> release_notes.md
-            echo "" >> release_notes.md
-            git log --pretty=format:"- %s (%h)" "${TAG}" >> release_notes.md
-          fi
-
+          echo "Changes" >> release_notes.md
           echo "" >> release_notes.md
-          echo "---" >> release_notes.md
-          echo "Generated automatically from git log." >> release_notes.md
-
+          git log --pretty=format:"- %s (%h)" "${TAG}" >> release_notes.md
           echo "Release notes:"
           cat release_notes.md
 
