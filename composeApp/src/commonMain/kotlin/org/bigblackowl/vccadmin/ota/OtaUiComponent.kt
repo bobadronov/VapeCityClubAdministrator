@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,21 +18,21 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FileDownloadDone
 import androidx.compose.material.icons.filled.InstallDesktop
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
@@ -56,17 +58,18 @@ import kotlinx.coroutines.delay
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
+import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
+import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.download
 import vccadministrator.composeapp.generated.resources.ota_action_check
-import vccadministrator.composeapp.generated.resources.ota_action_close
 import vccadministrator.composeapp.generated.resources.ota_action_install
 import vccadministrator.composeapp.generated.resources.ota_download_counter_template
 import vccadministrator.composeapp.generated.resources.ota_release_notes_title
@@ -108,7 +111,7 @@ private fun OtaTopBarActionWithDialog(
     onInstall: () -> Unit,
     hideNoUpdateDelayMs: Long = 1200L,
 ) {
-    var dialogOpen by remember { mutableStateOf(false) }
+    var dialogOpen by remember { mutableStateOf(true) }
     var suppressNoUpdate by remember { mutableStateOf(false) }
 
     // ref: не викликає рекомпозиції
@@ -230,69 +233,71 @@ private fun OtaOverlayContent(
         shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
         tonalElevation = 2.dp,
     ) {
-    Column(
-        modifier = Modifier.padding(DefaultValues.Padding.cardContentPadding),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        TitleText(text = stringResource(Res.string.ota_title))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+        Column(
+            modifier = Modifier.padding(DefaultValues.Padding.cardContentPadding),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier.padding(DefaultValues.Padding.cardContentPadding),
-                verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = ui.message,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    maxLines = 3,
-                )
+            TitleText(text = stringResource(Res.string.ota_title))
 
-                if (!ui.releaseNotes.isNullOrBlank()) {
-                    val notesScroll = rememberScrollState()
-                    // ✅ без Row/LazyColumn, щоб не викликати intrinsic на SubcomposeLayout
-                    HelperText(
-                        text = stringResource(Res.string.ota_release_notes_title),
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+            ) {
+                Column(
+                    modifier = Modifier.padding(DefaultValues.Padding.cardContentPadding),
+                    verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = ui.message,
                         modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        maxLines = 3,
                     )
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 220.dp)
-                            .verticalScroll(notesScroll)
-                    ) {
-                        SelectionContainer {
-                            BodyText(
-                                text = ui.releaseNotes,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Start,
-                                maxLines = Int.MAX_VALUE,
-                            )
+                    if (!ui.releaseNotes.isNullOrBlank()) {
+                        val notesScroll = rememberScrollState()
+                        // ✅ без Row/LazyColumn, щоб не викликати intrinsic на SubcomposeLayout
+                        HelperText(
+                            text = stringResource(Res.string.ota_release_notes_title),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 220.dp)
+                                .verticalScroll(notesScroll)
+                        ) {
+                            SelectionContainer {
+                                BodyText(
+                                    text = ui.releaseNotes,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Start,
+                                    maxLines = Int.MAX_VALUE,
+                                )
+                            }
                         }
                     }
+
+                    OtaFooterSimple(ui)
                 }
-
-                OtaFooterSimple(ui)
             }
-        }
 
-        OtaActionsRowSimple(
-            isBusy = !ui.isBusy,
-            canDownload = ui.canDownload,
-            isReadyToInstall = ui.isReadyToInstall,
-            onCheck = onCheck,
-            onDownload = onDownload,
-            onInstall = onInstall,
-            onClose = onClose,
-        )
-    }}
+            OtaActionsRowSimple(
+                isBusy = !ui.isBusy,
+                canDownload = ui.canDownload,
+                isReadyToInstall = ui.isReadyToInstall,
+                onCheck = onCheck,
+                onDownload = onDownload,
+                onInstall = onInstall,
+                onClose = onClose,
+            )
+        }
+    }
 }
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun OtaFooterSimple(ui: OtaUiModel) {
@@ -310,9 +315,10 @@ private fun OtaFooterSimple(ui: OtaUiModel) {
         }
 
         ui.isDownloading -> LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth(.9f))
-        else -> LoadingIndicator()
+        else -> Unit
     }
 }
+
 @Composable
 private fun OtaActionsRowSimple(
     isBusy: Boolean,
@@ -323,37 +329,44 @@ private fun OtaActionsRowSimple(
     onInstall: () -> Unit,
     onClose: () -> Unit,
 ) {
+    val showLabel: Boolean = isWideScreen()
     ButtonRowContainer {
         AnimatedVisibility(visible = isBusy, modifier = Modifier.weight(1f)) {
             OutlinedButton(onClick = onCheck) {
-                HelperText(stringResource(Res.string.ota_action_check))
+                DefaultIcon(Icons.Default.Refresh)
+                if (showLabel) {
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    HelperText(stringResource(Res.string.ota_action_check))
+                }
             }
         }
 
         AnimatedVisibility(visible = canDownload, modifier = Modifier.weight(1f)) {
-            Button(onClick = onDownload, modifier = Modifier.weight(1f)) {
-                HelperText(stringResource(Res.string.download))
+            OutlinedButton(onClick = onDownload, modifier = Modifier.weight(1f)) {
+                DefaultIcon(Icons.Default.Download)
+                if (showLabel) {
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    HelperText(stringResource(Res.string.download))
+                }
             }
         }
 
         AnimatedVisibility(visible = isReadyToInstall, modifier = Modifier.weight(1f)) {
-            Button(onClick = onInstall, modifier = Modifier.weight(1f)) {
-                HelperText(stringResource(Res.string.ota_action_install))
+            OutlinedButton(onClick = onInstall, modifier = Modifier.weight(1f)) {
+                DefaultIcon(Icons.Default.InstallDesktop)
+                if (showLabel) {
+                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                    HelperText(stringResource(Res.string.ota_action_install))
+                }
             }
         }
-
-        OutlinedButton(
-            onClick = onClose,
+        CancelButton(
             modifier = Modifier.weight(1f),
-            colors = ButtonDefaults.buttonColors().copy(
-                containerColor = MaterialTheme.colorScheme.errorContainer.copy(.15f),
-                contentColor = MaterialTheme.colorScheme.onErrorContainer,
-            ),
-        ) {
-            HelperText(stringResource(Res.string.ota_action_close))
-        }
+        ) { onClose() }
+
     }
 }
+
 private data class OtaUiModel(
     val message: String,
     val releaseNotes: String?,
@@ -369,6 +382,7 @@ private data class OtaUiModel(
     val downloadProgress: Float?,
     val downloadText: String?,
 )
+
 @Composable
 private fun UpdateState.toUiModel(): OtaUiModel {
     val message = when (this) {
@@ -432,6 +446,7 @@ private fun UpdateState.toUiModel(): OtaUiModel {
         downloadText = dlText,
     )
 }
+
 /** Показувати іконку в TopBar коли є процес/апдейт/помилка */
 private fun UpdateState.shouldShowTopBarAction(): Boolean = when (this) {
     UpdateState.NotAvailable -> false
@@ -449,18 +464,16 @@ private fun UpdateState.shouldShowTopBarAction(): Boolean = when (this) {
 }
 
 
-
-
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun OtaTopBarActionPreview_Menu() = PreviewDarkMaterialTheme(topBar = {
-    val state = UpdateState.Available(FakeBackend.updateInfoWin)
+    val state = UpdateState.ReadyToInstall(FakeBackend.updateInfoWin)
     TopAppBar(title = {}, actions = {
         OtaTopBarActionWithDialog(
             state = state,
-            onCheck = {  },
-            onDownload = {  },
+            onCheck = { },
+            onDownload = { },
             onInstall = {},
         )
     })

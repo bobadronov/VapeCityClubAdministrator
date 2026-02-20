@@ -3,11 +3,11 @@
 #       git push --tags
 
 #noinspection UnusedVersionCatalogEntry
-isDebugBuild    = "true"
-#isDebugBuild    = "false"
+#isDebugBuild    = "true"
+isDebugBuild    = "false"
 
 #noinspection UnusedVersionCatalogEntry
-subpath         = "10"
+subpath         = "11"
 #noinspection UnusedVersionCatalogEntry
 patch           = "8"
 #noinspection UnusedVersionCatalogEntry
