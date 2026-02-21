@@ -1,5 +1,5 @@
 [versions]
-#       git tag v1.0.809
+#       git tag v1.0.812
 #       git push --tags
 
 #noinspection UnusedVersionCatalogEntry
@@ -7,7 +7,7 @@
 isDebugBuild    = "false"
 
 #noinspection UnusedVersionCatalogEntry
-subpath         = "11"
+subpath         = "12"
 #noinspection UnusedVersionCatalogEntry
 patch           = "8"
 #noinspection UnusedVersionCatalogEntry
