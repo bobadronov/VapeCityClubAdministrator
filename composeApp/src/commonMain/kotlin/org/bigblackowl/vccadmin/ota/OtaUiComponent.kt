@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.FileDownloadDone
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.InstallDesktop
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -300,7 +301,7 @@ private fun OtaOverlayContent(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun OtaFooterSimple(ui: OtaUiModel) {
+fun OtaFooterSimple(ui: OtaUiModel) {
     when {
         ui.isChecking -> DefaultIcon(Icons.Default.Search)
         ui.isError -> DefaultIcon(Icons.Default.Error)
@@ -315,7 +316,7 @@ private fun OtaFooterSimple(ui: OtaUiModel) {
         }
 
         ui.isDownloading -> LinearWavyProgressIndicator(modifier = Modifier.fillMaxWidth(.9f))
-        else -> Unit
+        else -> DefaultIcon(Icons.Default.Info)
     }
 }
 
@@ -367,7 +368,7 @@ private fun OtaActionsRowSimple(
     }
 }
 
-private data class OtaUiModel(
+data class OtaUiModel(
     val message: String,
     val releaseNotes: String?,
     val isBusy: Boolean,
@@ -384,7 +385,7 @@ private data class OtaUiModel(
 )
 
 @Composable
-private fun UpdateState.toUiModel(): OtaUiModel {
+fun UpdateState.toUiModel(): OtaUiModel {
     val message = when (this) {
         UpdateState.NotAvailable -> "" // або окремий string
         UpdateState.Idle -> stringResource(Res.string.ota_state_idle)

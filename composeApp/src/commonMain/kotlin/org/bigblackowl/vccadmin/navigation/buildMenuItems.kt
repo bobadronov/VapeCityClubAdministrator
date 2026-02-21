@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.GeneratingTokens
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.bigblackowl.vccadmin.data.entity.UserRole
@@ -18,6 +19,7 @@ import vccadministrator.composeapp.generated.resources.cities
 import vccadministrator.composeapp.generated.resources.exit
 import vccadministrator.composeapp.generated.resources.file_generation
 import vccadministrator.composeapp.generated.resources.new_shop
+import vccadministrator.composeapp.generated.resources.settings
 import vccadministrator.composeapp.generated.resources.slides
 import vccadministrator.composeapp.generated.resources.slides_ai_generation
 import vccadministrator.composeapp.generated.resources.users
@@ -29,6 +31,7 @@ data class MenuItem(
     val isSelected: (Route?) -> Boolean = { false },
     val onClick: () -> Unit,
 )
+
 fun buildMenuItems(
     themeMode: ThemeMode,
     setThemeMode: (ThemeMode) -> Unit,
@@ -108,15 +111,22 @@ fun buildMenuItems(
                     )
                 )
             }
-        }
-
-        add(
-            MenuItem(
-                text = Res.string.exit,
-                icon = Icons.AutoMirrored.Filled.Logout,
-                onClick = logout
-
+            add(
+                MenuItem(
+                    text = Res.string.settings,
+                    icon = Icons.Default.Settings,
+                    isSelected = { it == Route.Settings },
+                    onClick = { navigate(Route.Settings) }
+                )
             )
-        )
+            add(
+                MenuItem(
+                    text = Res.string.exit,
+                    icon = Icons.AutoMirrored.Filled.Logout,
+                    onClick = logout
+
+                )
+            )
+        }
     }
 }

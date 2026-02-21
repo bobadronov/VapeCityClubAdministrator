@@ -238,10 +238,11 @@
     <string name="unsaved_changes_title">Незбережені зміни</string>
 
     <!-- Налаштування -->
+    <string name="theme_setting">Тема</string>
     <string name="settings">Налаштування</string>
-    <string name="theme_auto">Тема: Авто</string>
-    <string name="theme_dark">Тема: Темна</string>
-    <string name="theme_light">Тема: Світла</string>
+    <string name="theme_auto">Авто</string>
+    <string name="theme_dark">Темна</string>
+    <string name="theme_light">Світла</string>
     <string name="version">Версія %1$s</string>
 
     <!-- Час та дата -->
@@ -305,5 +306,30 @@
     <string name="ota_action_check">Перевірити</string>
     <string name="ota_action_install">Встановити</string>
     <string name="ota_action_close">Закрити</string>
+
+    <string name="interfaceLabel">Інтерфейс</string>
+    <string name="theme_description_auto">Автоматично під системну тему</string>
+    <string name="theme_description_dark">Темне оформлення</string>
+    <string name="theme_description_light">Світле оформлення</string>
+
+    <string name="clearCache">Очистити кеш</string>
+    <string name="cacheSize">Розмір кешу:</string>
+    <string name="confirmClearCacheTitle">Очистити кеш?</string>
+    <string name="confirmClearCacheMessage">Будуть видалені тимчасові файли. Дані акаунта та налаштування не постраждають.</string>
+    <string name="clear">Очистити</string>
+
+    <string name="aboutApp">Про додаток</string>
+    <string name="appVersion">Версія:</string>
+    <string name="ota_updates">Оновлення</string>
+    <string name="updates_status_idle">Оновлення не перевіряли</string>
+    <string name="updates_status_checking">Перевірка оновлень…</string>
+    <string name="updates_status_up_to_date">У вас актуальна версія</string>
+    <string name="updates_status_available">Доступне оновлення</string>
+    <string name="updates_status_failed">Не вдалося перевірити оновлення</string>
+
+    <string name="accountLabel">Акаунт</string>
+    <string name="confirmLogoutTitle">Вийти з акаунта?</string>
+    <string name="confirmLogoutMessage">Для повторного входу знадобиться авторизація.</string>
+
 
 </resources>

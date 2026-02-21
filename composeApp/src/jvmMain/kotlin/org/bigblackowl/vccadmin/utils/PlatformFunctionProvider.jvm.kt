@@ -1,11 +1,21 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 package org.bigblackowl.vccadmin.utils
 
+import coil3.ImageLoader
 import kotlinx.io.IOException
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import org.koin.core.qualifier.named
+import java.io.File
 import java.util.Locale
 
-internal actual object PlatformFunctionProvider {
 
+actual object PlatformFunctionProvider : KoinComponent {
+    private val cacheDir: File
+        get() = get(named("imageCacheDir"))
+
+    private val imageLoader: ImageLoader
+        get() = get()
     actual fun openNetwork() {
         val os = System.getProperty("os.name").orEmpty().lowercase(Locale.getDefault())
         when {
@@ -13,6 +23,21 @@ internal actual object PlatformFunctionProvider {
             os.contains("mac") || os.contains("darwin") -> openMacNetworkSettings()
             else -> openLinuxNetworkSettings()
         }
+    }
+
+
+
+    actual fun getCacheSize(): Long {
+        return cacheDir.directorySizeBytes()
+    }
+
+    actual fun clearCache() {
+        // 1) memory cache
+        imageLoader.memoryCache?.clear()
+
+        // 2) disk cache
+        cacheDir.deleteRecursively()
+        cacheDir.mkdirs()
     }
 
     private fun openWindowsNetworkSettings() {
@@ -50,5 +75,14 @@ internal actual object PlatformFunctionProvider {
         } catch (_: SecurityException) {
             false
         }
+    }
+    private fun File.directorySizeBytes(): Long {
+        if (!exists()) return 0L
+        if (isFile) return length()
+        var sum = 0L
+        walkTopDown().forEach { f ->
+            if (f.isFile) sum += f.length()
+        }
+        return sum
     }
 }

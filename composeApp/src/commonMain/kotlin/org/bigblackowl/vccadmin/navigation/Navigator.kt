@@ -30,6 +30,7 @@ import org.bigblackowl.vccadmin.ui.editSlidesSettings.EditSlidesSettingsScreen
 import org.bigblackowl.vccadmin.ui.fileGenerator.FileGenerationScreen
 import org.bigblackowl.vccadmin.ui.login.LoginScreen
 import org.bigblackowl.vccadmin.ui.main.MainScreen
+import org.bigblackowl.vccadmin.ui.settings.SettingsScreen
 import org.bigblackowl.vccadmin.ui.shopDetail.ShopDetailsScreen
 import org.bigblackowl.vccadmin.ui.slideAiGeneration.SlideAiGenerationScreen
 import org.bigblackowl.vccadmin.ui.slidesList.SlidesListScreen
@@ -169,6 +170,12 @@ fun Navigator(
 
             entry<Route.SlideAiGeneration> {
                 SlideAiGenerationScreen(
+                    snackbarHostState = snackbarHostState,
+                    navigationViewModel = navigationViewModel,
+                )
+            }
+            entry<Route.Settings> {
+                SettingsScreen(
                     snackbarHostState = snackbarHostState,
                     navigationViewModel = navigationViewModel,
                 )

@@ -54,6 +54,7 @@ import org.bigblackowl.vccadmin.ui.editSlidesSettings.EditSlidesSettingsScreenVi
 import org.bigblackowl.vccadmin.ui.fileGenerator.FileGeneratorScreenViewModel
 import org.bigblackowl.vccadmin.ui.login.LoginScreenViewModel
 import org.bigblackowl.vccadmin.ui.main.MainScreenViewModel
+import org.bigblackowl.vccadmin.ui.settings.SettingsScreenViewModel
 import org.bigblackowl.vccadmin.ui.shopDetail.ShopDetailsScreenViewModel
 import org.bigblackowl.vccadmin.ui.slideAiGeneration.SlideAiGenerationScreenViewModel
 import org.bigblackowl.vccadmin.ui.slidesList.SlidesListScreenViewModel
@@ -164,6 +165,7 @@ val screensModule = module {
     singleOf(::FileGeneratorScreenViewModel)
     singleOf(::EditSlidesSettingsScreenViewModel)
     singleOf(::SlideAiGenerationScreenViewModel)
+    singleOf(::SettingsScreenViewModel)
 }
 
 val repositoryModule = module {

@@ -49,4 +49,7 @@ sealed interface Route : NavKey {
 
     @Serializable
     data object SlideAiGeneration : Route
+
+    @Serializable
+    data object Settings : Route
 }

@@ -6,10 +6,17 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import coil3.ImageLoader
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import org.koin.core.qualifier.named
 import org.koin.java.KoinJavaComponent.inject
+import java.io.File
 
-internal actual object PlatformFunctionProvider {
+actual object PlatformFunctionProvider : KoinComponent {
     private val context: Context by inject(Context::class.java)
+    private val cacheDir: File get() = get(named("imageCacheDir"))
+    private val imageLoader: ImageLoader get() = get()
 
     actual fun openNetwork() {
         val intents = listOf(
@@ -27,5 +34,20 @@ internal actual object PlatformFunctionProvider {
             } catch (_: SecurityException) {
             }
         }
+    }
+
+    actual fun getCacheSize(): Long = cacheDir.directorySizeBytes()
+
+    actual fun clearCache() {
+        imageLoader.memoryCache?.clear()
+        cacheDir.deleteRecursively()
+        cacheDir.mkdirs()
+    }
+
+    private fun File.directorySizeBytes(): Long {
+        if (!exists()) return 0L
+        var sum = 0L
+        walkTopDown().forEach { f -> if (f.isFile) sum += f.length() }
+        return sum
     }
 }
