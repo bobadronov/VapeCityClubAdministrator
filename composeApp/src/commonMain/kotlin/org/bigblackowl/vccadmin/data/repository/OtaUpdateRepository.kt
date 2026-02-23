@@ -3,8 +3,7 @@ package org.bigblackowl.vccadmin.data.repository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
-import kotlinx.serialization.Serializable
-import org.bigblackowl.vccadmin.ota.UpdateManifest
+import org.bigblackowl.vccadmin.ota.AdminAppUpdate
 
 class OtaUpdateRepository (
     private val supabase: SupabaseClient,
@@ -13,22 +12,14 @@ class OtaUpdateRepository (
         const val UPDATE_TABLE_NAME = "admin_app_updates"
     }
 
-    suspend fun fetchLatestManifest(): UpdateManifest? {
-        val rows: List<RowLatest> = supabase
+    suspend fun fetchLatestManifest(): AdminAppUpdate? {
+        val rows: List<AdminAppUpdate> = supabase
             .from(UPDATE_TABLE_NAME)
             .select{
                 order("published_at", order= Order.DESCENDING)
             }
             .decodeList()
-        return rows.firstOrNull()?.manifest
+        return rows.firstOrNull()
     }
 
-    @Serializable
-    private data class RowLatest(
-        val tag: String,
-        val published_at: String? = null,
-        val version_name: String,
-        val desktop_version: String,
-        val manifest: UpdateManifest
-    )
 }

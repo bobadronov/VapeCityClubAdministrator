@@ -2,9 +2,14 @@
 
 package org.bigblackowl.vccadmin.ota
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
 actual class OtaUpdateManager {
-    actual val state: kotlinx.coroutines.flow.StateFlow<UpdateState>
-        get() = TODO("Not yet implemented")
+    private val _state = MutableStateFlow<UpdateState>(UpdateState.NotAvailable)
+
+    actual val state: StateFlow<UpdateState> = _state.asStateFlow()
 
     actual fun check() {
     }
