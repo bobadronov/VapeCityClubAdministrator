@@ -1,98 +1,126 @@
 <resources>
-    <!-- Загальні кнопки та дії -->
+
+    <!-- ========================================================= -->
+    <!-- Common actions / buttons -->
+    <!-- ========================================================= -->
     <string name="add">Додати</string>
     <string name="back">Назад</string>
     <string name="cancel">Скасувати</string>
     <string name="change">Замінити</string>
+    <string name="clear">Очистити</string>
     <string name="confirm">Підтвердити</string>
     <string name="copy">Копіювати</string>
     <string name="delete">Видалити</string>
     <string name="deselect_all">Зняти вибір з усіх</string>
     <string name="dismiss">Відхилити</string>
+    <string name="download">Завантажити</string>
     <string name="edit">Редагувати</string>
     <string name="generate">Згенерувати</string>
     <string name="next">Далі</string>
     <string name="open_file">Відкрити</string>
+    <string name="open_settings">Відкрити налаштування</string>
     <string name="save">Зберегти</string>
     <string name="select">Вибрати</string>
     <string name="select_all">Вибрати все</string>
     <string name="send">Відправити</string>
     <string name="share">Поділитися</string>
     <string name="update">Оновити</string>
-    <string name="download">Завантажити</string>
-    <string name="share_all_files">Відправити усе</string>
-    <string name="share_pdf_files_as_zip_file_name">Згенеровані_бланки_%1$s</string>
-    <string name="download_all_files">Завантажити всі файли</string>
-    <string name="no_files_to_share">Немає файлів для архівування</string>
-    <string name="zip_ready_to_share">ZIP підготовлено. Можна поділитися</string>
-    <string name="share_failed">Не вдалося поділитися файлом</string>
-    <string name="open_settings">Відкрити налаштування</string>
-    <string name="no_matches_with_existing_list">Немає збігів з наявним списком</string>
-    <!-- Desktop clipboard -->
+
+    <!-- ========================================================= -->
+    <!-- Clipboard (Desktop) -->
+    <!-- ========================================================= -->
+    <string name="copied_to_clipboard">Скопійовано в буфер обміну</string>
     <string name="copy_failed">Не вдалося скопіювати в буфер обміну</string>
 
-    <!-- Web download -->
-    <string name="download_started">Завантаження ZIP розпочато</string>
+    <!-- ========================================================= -->
+    <!-- Web / ZIP download & share -->
+    <!-- ========================================================= -->
+    <string name="download_all_files">Завантажити всі файли</string>
     <string name="download_failed">Не вдалося завантажити ZIP</string>
-    <!-- Помилки -->
-    <string name="add_city_error">Помилка додавання міста</string>
-    <string name="cannot_delete_self">Неможливо видалити поточного користувача</string>
-    <string name="city_not_found">Місто не знайдено</string>
-    <string name="delete_error">Помилка при видаленні користувача</string>
-    <string name="email_already_exists">Користувач із таким email уже існує</string>
+    <string name="download_started">Завантаження ZIP розпочато</string>
+    <string name="no_files_to_share">Немає файлів для архівування</string>
+    <string name="share_all_files">Відправити усе</string>
+    <string name="share_failed">Не вдалося поділитися файлом</string>
+    <string name="share_pdf_files_as_zip_file_name">Згенеровані_бланки_%1$s</string>
+    <string name="zip_ready_to_share">ZIP підготовлено. Можна поділитися</string>
+
+    <!-- ========================================================= -->
+    <!-- Generic / common errors -->
+    <!-- ========================================================= -->
     <string name="error">Помилка: %1$s</string>
     <string name="error_add_slide">Помилка при додаванні слайду</string>
-    <string name="error_delete_shop">Помилка видалення магазину</string>
-    <string name="error_delete_slide">Помилка при видаленні слайду</string>
     <string name="error_empty_name">Назва не може бути порожньою</string>
-    <string name="error_enter_comment">Вкажіть коментар для статусу Переїзд або Ремонт</string>
-    <string name="error_enter_house_number">Вкажіть номер будинку</string>
-    <string name="error_enter_street">Вкажіть вулицю</string>
     <string name="error_fetch_data">Помилка отримання даних</string>
     <string name="error_file_name_empty">Назва не може бути порожньою</string>
     <string name="error_invalid_file_name">Дозволено тільки англійські літери, цифри, пробіли та символи: . _ - ( )</string>
     <string name="error_load_data">Помилка завантаження даних</string>
+    <string name="error_load_file">Помилка завантаження файлу</string>
     <string name="error_load_settings">Помилка завантаження налаштувань</string>
-    <string name="error_load_shop">Не вдалося завантажити магазин</string>
-    <string name="error_load_shops">Помилка завантаження магазинів</string>
-    <string name="error_load_user">Error loading user</string>
     <string name="error_loading_file">Помилка завантаження %1$s: %2$s</string>
     <string name="error_loading_settings">Помилка отримання налаштувань: %s</string>
+    <string name="error_open_file">Помилка відкриття файлу</string>
     <string name="error_save_data">Помилка збереження</string>
     <string name="error_save_settings">Помилка збереження налаштувань</string>
-    <string name="error_save_shop">Помилка збереження магазину</string>
     <string name="error_saving">Помилка збереження: %s</string>
-    <string name="error_select_city">Виберіть місто</string>
-    <string name="error_select_file">Оберіть файл для додавання</string>
-    <string name="error_shop_id_not_found">Помилка: ID магазину не знайдено</string>
-    <string name="error_slide_id_missing">ID слайду відсутній</string>
     <string name="error_unknown_load">Невідома помилка під час завантаження даних</string>
-    <string name="error_update_slide">Помилка при оновленні слайду</string>
-    <string name="failed_retrieve_city">Не вдалося отримати вставлене місто</string>
-    <string name="file_name_invalid">Ім’я містить недопустимі символи. Дозволено тільки англійською, цифри, пробіли та . _ - ( )</string>
-    <string name="file_not_selected">Файл не вибрано</string>
     <string name="http_error">HTTP Помилка: %1$s - %2$s</string>
+    <string name="no_internet">Немає з’єднання з інтернетом</string>
+    <string name="not_specified">Не вказано</string>
+    <string name="unknown">Невідомо</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Cities -->
+    <!-- ========================================================= -->
+    <string name="add_city_error">Помилка додавання міста</string>
+    <string name="city_not_found">Місто не знайдено</string>
+    <string name="failed_retrieve_city">Не вдалося отримати вставлене місто</string>
     <string name="invalid_city_name">Назва міста має містити щонайменше 2 символи</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Shops -->
+    <!-- ========================================================= -->
+    <string name="error_delete_shop">Помилка видалення магазину</string>
+    <string name="error_enter_comment">Вкажіть коментар для статусу Переїзд або Ремонт</string>
+    <string name="error_enter_house_number">Вкажіть номер будинку</string>
+    <string name="error_enter_street">Вкажіть вулицю</string>
+    <string name="error_load_shop">Не вдалося завантажити магазин</string>
+    <string name="error_load_shops">Помилка завантаження магазинів</string>
+    <string name="error_save_shop">Помилка збереження магазину</string>
+    <string name="error_select_city">Виберіть місто</string>
+    <string name="error_shop_id_not_found">Помилка: ID магазину не знайдено</string>
+    <string name="shop_not_found">Магазин не знайдено</string>
+    <string name="shops_not_found">Магазини не знайдені</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Slides -->
+    <!-- ========================================================= -->
+    <string name="error_delete_slide">Помилка при видаленні слайду</string>
+    <string name="error_slide_id_missing">ID слайду відсутній</string>
+    <string name="error_update_slide">Помилка при оновленні слайду</string>
+    <string name="positions_slides_mismatch">Кількість позицій не відповідає кількості слайдів</string>
+    <string name="preview_create_error">Не вдалося створити попередній перегляд зображення</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Users / Auth -->
+    <!-- ========================================================= -->
+    <string name="cannot_delete_self">Неможливо видалити поточного користувача</string>
+    <string name="delete_error">Помилка при видаленні користувача</string>
+    <string name="email_already_exists">Користувач із таким email уже існує</string>
+    <string name="error_load_user">Error loading user</string>
     <string name="invalid_credentials">Невірний email або пароль</string>
     <string name="invalid_email">Неправильний email</string>
     <string name="invalid_email_format">Невірний формат email</string>
     <string name="login_error">Помилка входу. Спробуйте ще раз</string>
-    <string name="no_internet">Немає з’єднання з інтернетом</string>
     <string name="only_admins_can_delete">Тільки адміністратори можуть видаляти користувачів</string>
     <string name="password_min_length">Пароль має містити мінімум 8 символів</string>
-    <string name="positions_slides_mismatch">Кількість позицій не відповідає кількості слайдів</string>
-    <string name="preview_create_error">Не вдалося створити попередній перегляд зображення</string>
-    <string name="shop_not_found">Магазин не знайдено</string>
-    <string name="shops_not_found">Магазини не знайдені</string>
     <string name="update_error">Помилка при оновленні користувача</string>
     <string name="user_not_found">Користувача не знайдено</string>
     <string name="users_not_found">Користувачів не знайдено</string>
-    <string name="error_load_file">Помилка завантаження файлу</string>
-    <string name="error_open_file">Помилка відкриття файлу</string>
 
-
-    <!-- Успішні повідомлення -->
-    <string name="copied_to_clipboard">Скопійовано в буфер обміну</string>
+    <!-- ========================================================= -->
+    <!-- Success messages -->
+    <!-- ========================================================= -->
+    <string name="file_saved_success">Файл збережено: %1$d</string>
     <string name="new_city_added_success">Нове місто додано</string>
     <string name="settings_saved">Налаштування збережено</string>
     <string name="settings_updated">Налаштування оновлено</string>
@@ -104,9 +132,10 @@
     <string name="success_added">Успішно додано</string>
     <string name="success_deleted">Успішно видалено</string>
     <string name="success_updated">Успішно оновлено</string>
-    <string name="file_saved_success">Файл збережено: %1$d</string>
 
-    <!-- Магазини -->
+    <!-- ========================================================= -->
+    <!-- Shops -->
+    <!-- ========================================================= -->
     <string name="add_shop">Додати магазин</string>
     <string name="address">Адреса</string>
     <string name="address_comment">Коментар до адреси</string>
@@ -114,9 +143,7 @@
     <string name="address_comment_placeholder">наприклад: МАФ, ТЦ, павільйон</string>
     <string name="city">Місто</string>
     <string name="deselect_all_shops">Зняти вибір усіх магазинів</string>
-    <string name="select_all_tablet">Вибрати всі магазини з планшетом</string>
     <string name="deselect_all_tablet">Зняти вибір з усіх магазинів з планшетом</string>
-    <string name="select_all_tv">Вибрати всі магазини з TV</string>
     <string name="deselect_all_tv">Зняти вибір з усіх магазинів з TV</string>
     <string name="edit_shop">Редагувати магазин</string>
     <string name="house_number">Номер будинку</string>
@@ -129,6 +156,8 @@
     <string name="phone_number">Номер телефону</string>
     <string name="replenishment_amount_label">Сума поповнення</string>
     <string name="select_all_shops">Вибрати всі магазини</string>
+    <string name="select_all_tablet">Вибрати всі магазини з планшетом</string>
+    <string name="select_all_tv">Вибрати всі магазини з TV</string>
     <string name="select_shops">Виберіть магазини</string>
     <string name="shop_address">Адреса: %1$s, %2$s, %3$s</string>
     <string name="shop_details">Деталі магазину</string>
@@ -145,7 +174,9 @@
     <string name="street">Вулиця</string>
     <string name="this_shop">цей магазин</string>
 
-    <!-- Слайди -->
+    <!-- ========================================================= -->
+    <!-- Slides -->
+    <!-- ========================================================= -->
     <string name="active_slide">Активний слайд</string>
     <string name="add_slide">Додати слайд</string>
     <string name="animation_speed">Швидкість анімації: %1$s</string>
@@ -162,9 +193,9 @@
         <item quantity="one">Активний на одному магазині</item>
         <item quantity="other">Активний на %1$d магазинах</item>
     </plurals>
-    <string name="slide_not_show">Слайд ніде не показується</string>
     <string name="slide_code">Код слайдів</string>
     <string name="slide_last_modified">Остання зміна: %1$s</string>
+    <string name="slide_not_show">Слайд ніде не показується</string>
     <string name="slide_position">Позиція: %1$d</string>
     <string name="slide_switch_speed">Швидкість перемикання слайдів: %1$d с.</string>
     <string name="slides">Слайди</string>
@@ -179,18 +210,21 @@
     <string name="transition_slide_horizontal">Зсув по горизонталі</string>
     <string name="transition_slide_vertical">Зсув по вертикалі</string>
     <string name="transition_zoom">Збільшення</string>
-    <string name="unknown">Невідомо</string>
     <string name="vertical">Вертикальний</string>
 
-    <!-- Міста -->
+    <!-- ========================================================= -->
+    <!-- Cities -->
+    <!-- ========================================================= -->
     <string name="add_city">Додати місто</string>
-    <string name="enter_city_name">Введіть назву міста</string>
     <string name="add_new_city">Додати нове місто</string>
     <string name="cities">Міста</string>
     <string name="edit_city">Редагувати місто</string>
+    <string name="enter_city_name">Введіть назву міста</string>
     <string name="no_cities">Немає міст</string>
 
-    <!-- Користувачі -->
+    <!-- ========================================================= -->
+    <!-- Users / Auth -->
+    <!-- ========================================================= -->
     <string name="admin">Адміністратор</string>
     <string name="email">Email</string>
     <string name="enable_auto_login">Авто-логін</string>
@@ -207,7 +241,9 @@
     <string name="user_role">Роль користувача</string>
     <string name="users">Користувачі</string>
 
-    <!-- Файли та документи -->
+    <!-- ========================================================= -->
+    <!-- Files / Documents -->
+    <!-- ========================================================= -->
     <string name="application_for_return_of_goods">Заява на повернення товару</string>
     <string name="camera_codes">Коди камер</string>
     <string name="change_logo">Замінити логотип</string>
@@ -221,13 +257,16 @@
     <string name="delete_confirmation_message">Ви впевнені, що хочете видалити %1$s?</string>
     <string name="document_generation">Генерація документів</string>
     <string name="empty_list">Список пустий</string>
+    <string name="error_select_file">Оберіть файл для додавання</string>
     <string name="file_generation">Генерація файлів...</string>
     <string name="file_name_en">Назва файлу (англійською)</string>
     <string name="file_name_hint">Рекомендуємо: "%1$s" (тільки англійські символи, пробіли та . _ - ( ))</string>
+    <string name="file_name_invalid">Ім’я містить недопустимі символи. Дозволено тільки англійською, цифри, пробіли та . _ - ( )</string>
+    <string name="file_not_selected">Файл не вибрано</string>
     <string name="files">Файли</string>
     <string name="last_modified">Остання зміна: %1$s</string>
     <string name="last_modified_by_user">Змінено користувачем: %1$s</string>
-    <string name="not_specified">Не вказано</string>
+    <string name="no_matches_with_existing_list">Немає збігів з наявним списком</string>
     <string name="remote_number">Пультовий номер</string>
     <string name="select_fields_for_share">Виберіть поля для відправки</string>
     <string name="select_file_types">Виберіть типи файлів</string>
@@ -237,22 +276,31 @@
     <string name="unsaved_changes_message">Є незбережені зміни. Бажаєте їх зберегти?</string>
     <string name="unsaved_changes_title">Незбережені зміни</string>
 
-    <!-- Налаштування -->
-    <string name="theme_setting">Тема</string>
+    <!-- ========================================================= -->
+    <!-- Settings / Appearance -->
+    <!-- ========================================================= -->
+    <string name="about_app">Про додаток</string>
+    <string name="cache_size">Розмір кешу:</string>
+    <string name="clear_cache">Очистити кеш</string>
+    <string name="confirm_clear_cache_message">Будуть видалені тимчасові файли. Дані акаунта та налаштування не постраждають.</string>
+    <string name="confirm_clear_cache_title">Очистити кеш?</string>
+    <string name="current_app_version">Версія програми:</string>
+    <string name="interface_label">Інтерфейс</string>
+    <string name="new_app_version">Нова версія:</string>
+    <string name="select_theme">Змінити тему</string>
     <string name="settings">Налаштування</string>
     <string name="theme_auto">Авто</string>
     <string name="theme_dark">Темна</string>
+    <string name="theme_description_auto">Автоматично під системну тему</string>
+    <string name="theme_description_dark">Темне оформлення</string>
+    <string name="theme_description_light">Світле оформлення</string>
     <string name="theme_light">Світла</string>
+    <string name="theme_setting">Тема</string>
     <string name="version">Версія %1$s</string>
 
-    <!-- Час та дата -->
-    <string name="hours_minutes">%1$d год %2$d хв</string>
-    <string name="hours_only">%1$d год</string>
-    <string name="minutes_only">%1$d хв</string>
-    <string name="select_day">Виберіть день</string>
-    <string name="select_month">Виберіть місяць</string>
-    <string name="selected_day">Вибрано день</string>
-    <string name="datetime_format_full">%1$d %2$s %3$d о %4$s:%5$s</string>
+    <!-- ========================================================= -->
+    <!-- Date / time -->
+    <!-- ========================================================= -->
     <string-array name="all_months">
         <item>Січень</item>
         <item>Лютий</item>
@@ -267,69 +315,55 @@
         <item>Листопад</item>
         <item>Грудень</item>
     </string-array>
-    <string name="month_january">січня</string>
-    <string name="month_february">лютого</string>
-    <string name="month_march">березня</string>
+    <string name="datetime_format_full">%1$d %2$s %3$d о %4$s:%5$s</string>
+    <string name="hours_minutes">%1$d год %2$d хв</string>
+    <string name="hours_only">%1$d год</string>
+    <string name="minutes_only">%1$d хв</string>
     <string name="month_april">квітня</string>
-    <string name="month_may">травня</string>
-    <string name="month_june">червня</string>
-    <string name="month_july">липня</string>
     <string name="month_august">серпня</string>
-    <string name="month_september">вересня</string>
-    <string name="month_october">жовтня</string>
-    <string name="month_november">листопада</string>
     <string name="month_december">грудня</string>
+    <string name="month_february">лютого</string>
+    <string name="month_january">січня</string>
+    <string name="month_july">липня</string>
+    <string name="month_june">червня</string>
+    <string name="month_march">березня</string>
+    <string name="month_may">травня</string>
+    <string name="month_november">листопада</string>
+    <string name="month_october">жовтня</string>
+    <string name="month_september">вересня</string>
+    <string name="select_day">Виберіть день</string>
+    <string name="select_month">Виберіть місяць</string>
+    <string name="selected_day">Вибрано день</string>
 
-    <!--    TRAY    -->
+    <!-- ========================================================= -->
+    <!-- Tray -->
+    <!-- ========================================================= -->
     <string name="show_pc_window">Показати вікно</string>
     <string name="stay_online_on_close">При закритті — згортати в трей</string>
 
+    <!-- ========================================================= -->
     <!-- OTA -->
-    <string name="ota_dialog_title">Update</string>
-    <string name="ota_title">Оновлення програми</string>
-    <string name="ota_dash">—</string>
-
-    <string name="ota_state_idle">Очікування…</string>
-    <string name="ota_state_checking">Перевіряємо оновлення…</string>
-    <string name="ota_state_no_update">Оновлень немає.</string>
-    <string name="ota_state_downloading">Завантаження…</string>
-    <string name="ota_state_verifying">Перевірка цілісності (SHA256)…</string>
-    <string name="ota_state_ready_to_install">Готово до встановлення</string>
-    <string name="ota_state_installing">Запуск інсталятора</string>
-
-    <string name="ota_state_available_template">Доступне оновлення: %1$s</string>
-    <string name="ota_state_error_template">Помилка: %1$s</string>
-
-    <string name="ota_release_notes_title">Що змінилось:</string>
-    <string name="ota_download_counter_template">%1$s / %2$s</string>
-
+    <!-- ========================================================= -->
+    <string name="account_label">Акаунт</string>
+    <string name="confirm_logout_message">Для повторного входу знадобиться авторизація.</string>
+    <string name="confirm_logout_title">Вийти з акаунта?</string>
     <string name="ota_action_check">Перевірити</string>
-    <string name="ota_action_install">Встановити</string>
     <string name="ota_action_close">Закрити</string>
-
-    <string name="interfaceLabel">Інтерфейс</string>
-    <string name="theme_description_auto">Автоматично під системну тему</string>
-    <string name="theme_description_dark">Темне оформлення</string>
-    <string name="theme_description_light">Світле оформлення</string>
-
-    <string name="clearCache">Очистити кеш</string>
-    <string name="cacheSize">Розмір кешу:</string>
-    <string name="confirmClearCacheTitle">Очистити кеш?</string>
-    <string name="confirmClearCacheMessage">Будуть видалені тимчасові файли. Дані акаунта та налаштування не постраждають.</string>
-    <string name="clear">Очистити</string>
-
-    <string name="aboutApp">Про додаток</string>
-    <string name="appVersion">Версія:</string>
+    <string name="ota_action_install">Встановити</string>
+    <string name="ota_dash">—</string>
+    <string name="ota_dialog_title">Update</string>
+    <string name="ota_download_counter_template">%1$s / %2$s</string>
+    <string name="ota_release_notes_title">Що змінилось:</string>
+    <string name="ota_state_available_template">Доступне оновлення: %1$s</string>
+    <string name="ota_state_checking">Перевіряємо оновлення…</string>
+    <string name="ota_state_downloading">Завантаження…</string>
+    <string name="ota_state_error_template">Помилка: %1$s</string>
+    <string name="ota_state_idle">Оновлення не перевіряли</string>
+    <string name="ota_state_installing">Запуск інсталятора</string>
+    <string name="ota_state_no_update">Оновлень немає.</string>
+    <string name="ota_state_ready_to_install">Готово до встановлення</string>
+    <string name="ota_state_verifying">Перевірка цілісності (SHA256)…</string>
+    <string name="ota_title">Оновлення програми</string>
     <string name="ota_updates">Оновлення</string>
-    <string name="updates_status_idle">Оновлення не перевіряли</string>
-    <string name="updates_status_checking">Перевірка оновлень…</string>
-    <string name="updates_status_up_to_date">У вас актуальна версія</string>
-    <string name="updates_status_available">Доступне оновлення</string>
-    <string name="updates_status_failed">Не вдалося перевірити оновлення</string>
-
-    <string name="accountLabel">Акаунт</string>
-    <string name="confirmLogoutTitle">Вийти з акаунта?</string>
-    <string name="confirmLogoutMessage">Для повторного входу знадобиться авторизація.</string>
-
 
 </resources>

@@ -41,7 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme

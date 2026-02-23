@@ -40,8 +40,6 @@ data class Assets(
     val windows: AssetInfo? = null,
     val macos: AssetInfo? = null,
     val linux: AssetInfo? = null,
-
-    // NEW: android apk
     val android: AssetInfo? = null
 )
 @Immutable

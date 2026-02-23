@@ -16,7 +16,7 @@ import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.UserRepository
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res

@@ -13,14 +13,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
 import org.bigblackowl.vccadmin.data.utils.OtaDownloader
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
@@ -30,8 +27,6 @@ actual class OtaUpdateManager(
     private val downloader: OtaDownloader,
     private val network: NetworkMonitorProvider,
 ) {
-    private val currentVersion: String = BuildConfig.APP_VERSION
-
     private companion object {
         const val TAG = "OTA"
     }
@@ -53,7 +48,7 @@ actual class OtaUpdateManager(
         checkJob = scope.launch {
             delay(250.milliseconds) // легкий debounce
             _state.value = UpdateState.Checking
-            Napier.d(tag = TAG) { "Checking updates... local=$currentVersion (android)" }
+            Napier.d(tag = TAG) { "Checking updates... android" }
 
             try {
                 ensureInternetOrFail()
@@ -66,7 +61,7 @@ actual class OtaUpdateManager(
 
                 // ✅ для Android порівнюємо з android_version (є в твоєму JSON)
                 val remote = manifest.androidVersion ?: manifest.versionName ?: manifest.tag
-                if (!isRemoteNewer(remote)) {
+                if (!AppStringProvider.isRemoteNewer(remote)) {
                     manifest.assets.android?.name
                         ?.takeIf { it.isNotBlank() }
                         ?.let { cleanupLocalIfExists(it) }
@@ -155,8 +150,8 @@ actual class OtaUpdateManager(
 
                     _state.value = UpdateState.Downloading(
                         progress = if ((lastTotal ?: 0L) > 0L) p else null,
-                        downloaded = lastDownloaded.formatBytes(1),
-                        total = lastTotal?.formatBytesOrDash(1) ?: "—"
+                        downloaded = AppStringProvider.formatBytesToString(lastDownloaded),
+                        total = lastTotal?.let { AppStringProvider.formatBytesToString(it) } ?: "—"
                     )
                 }
 
@@ -166,7 +161,7 @@ actual class OtaUpdateManager(
                         lastDownloaded = downloaded
                         lastTotal = total
                         lastProgress = progress
-                        emit(force = true)
+                        emit(force = false)
                     }
                 )
 
@@ -217,30 +212,4 @@ actual class OtaUpdateManager(
         val exists = runCatching { PlatformFileProvider.isFileExist(fileName) }.getOrNull()
         if (exists == true) runCatching { PlatformFileProvider.deleteFile(fileName) }
     }
-
-    private fun isRemoteNewer(remote: String?): Boolean {
-        val rv = remote?.trim().orEmpty()
-        if (rv.isBlank()) return false
-
-        val r = rv.removePrefix("v").split(".").mapNotNull { it.toIntOrNull() }
-        val l = currentVersion.removePrefix("v").split(".").mapNotNull { it.toIntOrNull() }
-
-        val n = max(r.size, l.size)
-        for (i in 0 until n) {
-            val a = r.getOrNull(i) ?: 0
-            val b = l.getOrNull(i) ?: 0
-            if (a != b) return a > b
-        }
-        return false
-    }
-
-    private fun Long.formatBytes(decimals: Int = 1): String {
-        if (this <= 0L) return "0 B"
-        val units = arrayOf("B", "KB", "MB", "GB", "TB")
-        val digitGroups = (ln(this.toDouble()) / ln(1024.0)).toInt().coerceIn(0, units.lastIndex)
-        val value = this / 1024.0.pow(digitGroups.toDouble())
-        return "%.${decimals}f %s".format(value, units[digitGroups])
-    }
-
-    private fun Long?.formatBytesOrDash(decimals: Int = 1): String = this?.formatBytes(decimals) ?: "—"
 }

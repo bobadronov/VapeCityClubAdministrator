@@ -19,9 +19,9 @@ import org.bigblackowl.vccadmin.data.repository.CityRepository
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.ShopRepository
 import org.bigblackowl.vccadmin.data.repository.UserRepository
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
-import org.bigblackowl.vccadmin.utils.formatTimestamp
 import org.bigblackowl.vccadmin.utils.withRetry
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -85,7 +85,7 @@ class ShopDetailsScreenViewModel(
                             statusComment = sShop.statusComment ?: getString(Res.string.not_specified),
                             phoneNumber = sShop.phoneNumber ?: getString(Res.string.not_specified),
                             cameraCodes = sShop.cameraCodes,
-                            lastModified = formatTimestamp(sShop.lastModified),
+                            lastModified = AppStringProvider.formatTimestamp(sShop.lastModified),
                             lastModifiedUser = userRepository.getUserNameById(sShop.lastModifiedUserId),
                             internetProvider = sShop.internetProvider ?: getString(Res.string.not_specified),
                             internetProviderPersonalAccount = sShop.internetProviderPersonalAccount,

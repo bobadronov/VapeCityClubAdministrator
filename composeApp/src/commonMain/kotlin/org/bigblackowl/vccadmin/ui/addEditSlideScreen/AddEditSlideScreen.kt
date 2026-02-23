@@ -63,7 +63,7 @@ import coil3.compose.AsyncImage
 import io.github.vinceglb.filekit.coil.securelyAccessFile
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues

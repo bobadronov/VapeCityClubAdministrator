@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,15 +23,21 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
+import org.jetbrains.compose.resources.stringResource
+import vccadministrator.composeapp.generated.resources.Res
+import vccadministrator.composeapp.generated.resources.clear_cache
 
 @Composable
 fun OutlinedCardWithLabel(
     label: String,
     onTap: ((Offset) -> Unit)? = null,
     onLongPress: ((Offset) -> Unit)? = null,
-    modifier: Modifier = Modifier.Companion,
+    modifier: Modifier = Modifier,
     textColor: Color = MaterialTheme.colorScheme.primary,
     borderColor: Color = MaterialTheme.colorScheme.primary,
     titleFontSize: TextUnit = MaterialTheme.typography.bodyMedium.fontSize,
@@ -44,9 +51,9 @@ fun OutlinedCardWithLabel(
         modifier = modifier.drawWithContent {
             val canvasWidth = size.width
             val canvasHeight = size.height
-            val lineThickness = 4f
+            val lineThickness = 3f
             val radius = 52f
-            val paddingBetweenTextAndLine = 25f
+            val paddingBetweenTextAndLine = 23f
             val textLayoutResult = textMeasurer.measure(
                 text = label, style = TextStyle(fontSize = fontSize, color = borderColor)
             )
@@ -137,16 +144,43 @@ fun OutlinedCardWithLabel(
         }, contentAlignment = Alignment.CenterStart
     ) {
         Column(
-            modifier = Modifier.heightIn(min = 80.dp).fillMaxSize().padding(10.dp).padding(top = 10.dp)
-//                .padding(
-//                    start = 25.dp,
-//                    top = 25.dp,
-//                    end = 10.dp,
-//                    bottom = 10.dp
-//                )
+            modifier = Modifier
+                .heightIn(min = 110.dp)
+                .fillMaxSize()
+                .padding(10.dp)
+                .padding(top = 10.dp)
             , verticalArrangement = verticalArrangement, horizontalAlignment = horizontalAlignment
         ) {
             content()
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun OutlinedCardWithLabelPreview() = PreviewDarkMaterialTheme {
+    LazyColumn {
+        item {
+            OutlinedCardWithLabel(
+                label = stringResource(Res.string.clear_cache),
+            ) {
+
+            }
+        }
+    }
+}
+
+@Preview(device = Devices.DESKTOP)
+@Composable
+fun OutlinedCardWithLabelPreviewPC() = PreviewDarkMaterialTheme {
+    LazyColumn {
+        item {
+            OutlinedCardWithLabel(
+                label = stringResource(Res.string.clear_cache),
+            ) {
+
+            }
         }
     }
 }

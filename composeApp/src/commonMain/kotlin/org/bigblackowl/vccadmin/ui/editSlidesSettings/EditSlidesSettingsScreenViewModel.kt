@@ -17,8 +17,8 @@ import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.SlideRepository
 import org.bigblackowl.vccadmin.data.repository.UserRepository
-import org.bigblackowl.vccadmin.data.state.UIEvents
-import org.bigblackowl.vccadmin.utils.formatTimestamp
+import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res
@@ -101,7 +101,7 @@ class EditSlidesSettingsScreenViewModel(
                     transitionDuration = settings.transitionDuration,
                     transitionEffect = settings.transitionEffect,
                     autoReloadTime = settings.autoReloadTime,
-                    lastModified = formatTimestamp(settings.lastModified ?: 0L),
+                    lastModified = AppStringProvider.formatTimestamp(settings.lastModified ?: 0L),
                     lastModifiedByUser = "${user?.firstName.orEmpty()} ${user?.lastName.orEmpty()}"
                 )
             }
@@ -142,7 +142,7 @@ class EditSlidesSettingsScreenViewModel(
                     transitionDuration = settings.transitionDuration,
                     transitionEffect = settings.transitionEffect,
                     autoReloadTime = settings.autoReloadTime,
-                    lastModified = formatTimestamp(settings.lastModified ?: 0L),
+                    lastModified = AppStringProvider.formatTimestamp(settings.lastModified ?: 0L),
                     lastModifiedByUser = "${user?.firstName.orEmpty()} ${user?.lastName.orEmpty()}"
                 )
             }

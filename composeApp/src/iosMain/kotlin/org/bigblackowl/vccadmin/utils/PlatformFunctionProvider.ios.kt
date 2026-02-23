@@ -33,7 +33,7 @@ actual object PlatformFunctionProvider : KoinComponent {
         }
     }
 
-    actual fun getCacheSize(): Long = nsDirectorySizeBytes(cacheDirPath)
+    actual suspend fun getCacheSize(): Long = nsDirectorySizeBytes(cacheDirPath)
 
     @OptIn(ExperimentalForeignApi::class)
     actual fun clearCache() {

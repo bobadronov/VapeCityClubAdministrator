@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
 import org.bigblackowl.vccadmin.data.repository.AiRepository
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
 
 /**
  * =================

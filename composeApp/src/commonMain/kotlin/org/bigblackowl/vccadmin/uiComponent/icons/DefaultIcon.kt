@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 fun DefaultIcon(
     image: ImageVector,
     tint: Color = MaterialTheme.colorScheme.primary,
-    size: Dp = 24.0.dp,
+    size: Dp = 24.dp,
 ) {
     Icon(imageVector = image, contentDescription = null, modifier = Modifier.size(size), tint = tint)
 }
@@ -24,7 +24,7 @@ fun DefaultIcon(
 fun DefaultIcon(
     icon: Painter,
     color: Color = Color.Unspecified,
-    size: Dp = 24.0.dp
+    size: Dp = 24.dp
 ) {
     Icon(painter = icon, contentDescription = null, modifier = Modifier.size(size), tint = color)
 }

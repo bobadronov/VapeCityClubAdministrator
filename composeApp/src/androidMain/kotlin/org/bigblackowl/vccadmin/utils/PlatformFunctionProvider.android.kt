@@ -36,7 +36,7 @@ actual object PlatformFunctionProvider : KoinComponent {
         }
     }
 
-    actual fun getCacheSize(): Long = cacheDir.directorySizeBytes()
+    actual suspend fun getCacheSize(): Long = cacheDir.directorySizeBytes()
 
     actual fun clearCache() {
         imageLoader.memoryCache?.clear()

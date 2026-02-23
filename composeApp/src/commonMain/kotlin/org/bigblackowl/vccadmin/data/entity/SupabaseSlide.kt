@@ -2,7 +2,7 @@ package org.bigblackowl.vccadmin.data.entity
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bigblackowl.vccadmin.utils.formatTimestamp
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 
 
 @Serializable
@@ -25,9 +25,9 @@ suspend fun SupabaseSlide.toSlide(): Slide =
         shopCodes = shopCodes,
         position = position,
         isActive = isActive,
-        lastModified = formatTimestamp(lastModified),
+        lastModified = AppStringProvider.formatTimestamp(lastModified),
         lastModifiedUserName = lastModifiedUserId,
-        createdAt = formatTimestamp(createdAt)
+        createdAt = AppStringProvider.formatTimestamp(createdAt)
     )
 
 suspend fun List<SupabaseSlide>.toSlides(): List<Slide> =

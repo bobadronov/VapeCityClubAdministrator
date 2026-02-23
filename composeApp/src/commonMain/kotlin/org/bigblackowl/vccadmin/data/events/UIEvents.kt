@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.data.state
+package org.bigblackowl.vccadmin.data.events
 
 sealed interface UIEvents {
 

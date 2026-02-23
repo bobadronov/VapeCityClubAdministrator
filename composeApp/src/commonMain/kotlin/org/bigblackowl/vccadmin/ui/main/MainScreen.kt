@@ -69,8 +69,8 @@ import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.ShopsFilter
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
-import org.bigblackowl.vccadmin.data.state.UIEvents
 import org.bigblackowl.vccadmin.data.utils.ShopGroup
 import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
@@ -181,28 +181,26 @@ private fun MainScreenContent(
 
                 Spacer(Modifier.height(12.dp))
 
-                Crossfade(targetState = groupedShops, modifier = Modifier.fillMaxSize()) {
-                    if (it.isEmpty()) {
-                        BodyText(
-                            "Нічого не знайдено за поточними фільтрами",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(DefaultValues.Size.gridItemMinSize),
-                            state = lazyGridState,
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
-                            horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
-                        ) {
-                            groupedShops.forEach { (city, shops) ->
-                                stickyHeader(key = "header_${city.id}") {
-                                    StickyCityHeader(city = city)
-                                }
-                                items(items = shops, key = { it.id }) { shop ->
-                                    ShopCardItem(shop = shop, onClick = { onShopClick(shop.id) })
-                                }
+                if (groupedShops.isEmpty()) {
+                    BodyText(
+                        "Нічого не знайдено за поточними фільтрами",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(DefaultValues.Size.gridItemMinSize),
+                        state = lazyGridState,
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
+                        horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.lazyVerticalGridContentPadding),
+                    ) {
+                        groupedShops.forEach { (city, shops) ->
+                            stickyHeader(key = "header_${city.id}") {
+                                StickyCityHeader(city = city)
+                            }
+                            items(items = shops, key = { it.id }) { shop ->
+                                ShopCardItem(shop = shop, onClick = { onShopClick(shop.id) })
                             }
                         }
                     }

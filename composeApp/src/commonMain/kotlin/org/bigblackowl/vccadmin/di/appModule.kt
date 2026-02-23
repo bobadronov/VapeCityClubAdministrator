@@ -74,13 +74,13 @@ expect val platformModule: Module
 expect val ktorEngine: HttpClientEngine
 
 val networkModule = module {
-    single { LocalRepository() }
+    single(createdAtStart = true) { LocalRepository() }
     single<Json> {
         Json {
             ignoreUnknownKeys = true
         }
     }
-    single<HttpClient> {
+    single<HttpClient>(createdAtStart = true) {
         HttpClient(ktorEngine) {
             install(ContentNegotiation) {
                 json(get())
@@ -102,7 +102,7 @@ val networkModule = module {
             followRedirects = true
         }
     }
-    single<SupabaseClient> {
+    single<SupabaseClient>(createdAtStart = true) {
         val localRepository: LocalRepository = get()
         createSupabaseClient(
             supabaseUrl = BuildConfig.SUPABASE_URL,
@@ -131,7 +131,7 @@ val networkModule = module {
         )
     }
 
-    singleOf(::NetworkMonitorProvider)
+    single(createdAtStart = true) { NetworkMonitorProvider() }
     singleOf(::ErrorManager)
 }
 
@@ -178,12 +178,13 @@ val repositoryModule = module {
     single<AiRepository> { AiRepositoryImpl(get(), get()) }
     single<CitySearchRepository> { CitySearchRepositoryImpl(json = get()) }
 }
-val otaModule = module{
-    singleOf(::OtaUpdateRepository)
+val otaModule = module {
+    single(createdAtStart = true) { OtaUpdateRepository(get()) }
     singleOf(::OtaDownloader)
 }
+
 val logger = module {
-    if (BuildConfig.IS_DEBUG_BUILD) Napier.base(DebugAntilog())
+   Napier.base(DebugAntilog())
 }
 
 val coreModules = listOf(

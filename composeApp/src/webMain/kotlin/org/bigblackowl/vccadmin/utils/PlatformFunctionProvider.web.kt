@@ -11,18 +11,21 @@ import kotlin.js.Promise
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(c) => c.keys()")
 private external fun cachesKeys(caches: JsAny): Promise<JsAny?>
-
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(c, k) => c.delete(k)")
 private external fun cachesDelete(caches: JsAny, key: String): Promise<JsAny?>
-
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(arr) => arr.length")
 private external fun jsLength(arr: JsAny): Int
-
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(arr, i) => arr[i]")
 private external fun jsGetString(arr: JsAny, i: Int): String?
+@OptIn(ExperimentalWasmJsInterop::class)
+@JsFun("() => navigator.storage && navigator.storage.estimate ? navigator.storage.estimate() : null")
+private external fun storageEstimateOrNull(): Promise<JsAny?>?
+@OptIn(ExperimentalWasmJsInterop::class)
+@JsFun("(o) => o && (o.usage ?? -1)")
+private external fun estimateUsage(o: JsAny): Double
 
 actual object PlatformFunctionProvider {
     private val scope = MainScope()
@@ -32,19 +35,27 @@ actual object PlatformFunctionProvider {
         window.alert("Not available on web")
     }
 
-    actual fun getCacheSize(): Long = -1L
+    @OptIn(ExperimentalWasmJsInterop::class)
+    actual suspend fun getCacheSize(): Long {
+        val p = storageEstimateOrNull() ?: return -1L
+        val obj = p.await<JsAny?>() ?: return -1L
+        val usage = estimateUsage(obj)
+        return if (usage < 0) -1L else usage.toLong()
+    }
 
     @OptIn(ExperimentalWasmJsInterop::class)
     actual fun clearCache() {
         scope.launch {
-            val cachesObj = window.caches
-            val keysAny = cachesKeys(cachesObj).await() ?: return@launch
+            // важливо: привести до JsAny, інакше interop може дати Promise<*>
+            val cachesObj: JsAny = window.caches
+
+            // важливо: явний тип для await
+            val keysAny: JsAny = cachesKeys(cachesObj).await() ?: return@launch
 
             val len = jsLength(keysAny)
-
             for (i in 0 until len) {
                 val key = jsGetString(keysAny, i) ?: continue
-                cachesDelete(cachesObj, key).await()
+                cachesDelete(cachesObj, key).await<JsAny?>()
             }
         }
     }

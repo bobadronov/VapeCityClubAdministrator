@@ -22,9 +22,9 @@ import org.bigblackowl.vccadmin.data.repository.FileType.Companion.GLOBAL_TYPES_
 import org.bigblackowl.vccadmin.data.repository.FileType.Companion.MONTH_TYPES
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.ShopRepository
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
-import org.bigblackowl.vccadmin.utils.formatTimestamp
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.error_open_file
@@ -179,7 +179,7 @@ class FileGeneratorScreenViewModel(
                     status = shop.status,
                     statusComment = shop.statusComment ?: getString(Res.string.not_specified),
                     cameraCodes = shop.cameraCodes,
-                    lastModified = formatTimestamp(shop.lastModified),
+                    lastModified = AppStringProvider.formatTimestamp(shop.lastModified),
                     lastModifiedUser = "",
                     internetProvider = shop.internetProvider ?: getString(Res.string.not_specified),
                     internetProviderPersonalAccount = shop.internetProviderPersonalAccount,
@@ -243,7 +243,7 @@ class FileGeneratorScreenViewModel(
                     status = shop.status,
                     statusComment = shop.statusComment ?: getString(Res.string.not_specified),
                     cameraCodes = shop.cameraCodes,
-                    lastModified = formatTimestamp(shop.lastModified),
+                    lastModified = AppStringProvider.formatTimestamp(shop.lastModified),
                     lastModifiedUser = "",
                     internetProvider = shop.internetProvider ?: getString(Res.string.not_specified),
                     internetProviderPersonalAccount = shop.internetProviderPersonalAccount,

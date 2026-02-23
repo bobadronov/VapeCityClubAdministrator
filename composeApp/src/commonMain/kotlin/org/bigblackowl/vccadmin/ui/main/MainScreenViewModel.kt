@@ -20,7 +20,7 @@ import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
 import org.bigblackowl.vccadmin.data.repository.CityRepository
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.ShopRepository
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.utils.ShopGroup
 import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.jetbrains.compose.resources.getString

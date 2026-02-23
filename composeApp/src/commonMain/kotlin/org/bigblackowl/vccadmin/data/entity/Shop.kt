@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
-import org.bigblackowl.vccadmin.utils.formatTimestamp
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 
 /**
  * Data class, що представляє магазин з таблиці public.shops.
@@ -119,7 +119,7 @@ suspend fun List<SupabaseShop>.toUiShops(cities: List<City>): List<Shop> {
             internetReplenishmentAmount = supabaseShop.internetReplenishmentAmount.orEmpty(),
             remoteNumber = supabaseShop.remoteNumber.orEmpty(),
             cameraCodes = supabaseShop.cameraCodes,
-            lastModified = formatTimestamp(supabaseShop.lastModified), // ваша функція форматування
+            lastModified = AppStringProvider.formatTimestamp(supabaseShop.lastModified), // ваша функція форматування
             lastModifiedUser = supabaseShop.lastModifiedUserId, // або мапінг на ім'я користувача
 
         )

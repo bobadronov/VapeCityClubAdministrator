@@ -13,15 +13,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.entity.DesktopOs
 import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
 import org.bigblackowl.vccadmin.data.utils.OtaDownloader
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
-import kotlin.math.ln
-import kotlin.math.max
-import kotlin.math.pow
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -32,7 +29,6 @@ actual class OtaUpdateManager(
     private val downloader: OtaDownloader,
     private val network: NetworkMonitorProvider,
 ) {
-    private val currentVersion: String = BuildConfig.APP_VERSION
     private val os: DesktopOs = detectDesktopOs()
 
     private companion object {
@@ -56,7 +52,7 @@ actual class OtaUpdateManager(
         checkJob = scope.launch {
             delay(250.milliseconds) // легкий debounce
             _state.value = UpdateState.Checking
-            Napier.d(tag = TAG) { "Checking updates... local=$currentVersion os=$os" }
+            Napier.d(tag = TAG) { "Checking updates... os=$os" }
             DEFAULT_BUFFER_SIZE
             try {
                 ensureInternetOrFail()
@@ -68,7 +64,7 @@ actual class OtaUpdateManager(
                 }
 
                 val remote = manifest.desktopVersion
-                if (!isRemoteNewer(remote)) {
+                if (!AppStringProvider.isRemoteNewer(remote)) {
                     // optional cleanup: якщо є локальний файл під останній тег — прибираємо
                     manifest.pickAsset(os)?.name?.takeIf { it.isNotBlank() }?.let { cleanupLocalIfExists(it) }
                     _state.value = UpdateState.NoUpdate
@@ -149,9 +145,8 @@ actual class OtaUpdateManager(
 
                     _state.value = UpdateState.Downloading(
                         progress = if ((lastTotal ?: 0L) > 0L) p else null,
-                        downloaded = lastDownloaded.formatBytes(1),
-                        total = lastTotal?.formatBytesOrDash(1) ?: "—"
-                    )
+                        downloaded = AppStringProvider.formatBytesToString(lastDownloaded),
+                        total = lastTotal?.let { AppStringProvider.formatBytesToString(it) } ?: "—"                    )
                 }
 
                 val result = downloader.downloadBytesWithProgress(
@@ -161,8 +156,7 @@ actual class OtaUpdateManager(
                         lastDownloaded = downloaded
                         lastTotal = total
                         lastProgress = progress
-                        emit(force = true)
-                    }
+                        emit(force = false)                    }
                 )
 
                 val bytes = result.bytes
@@ -217,31 +211,6 @@ actual class OtaUpdateManager(
         if (exists == true) runCatching { PlatformFileProvider.deleteFile(fileName) }
     }
 
-    private fun isRemoteNewer(remote: String?): Boolean {
-        val rv = remote?.trim().orEmpty()
-        if (rv.isBlank()) return false
-
-        val r = rv.split(".").mapNotNull { it.toIntOrNull() }
-        val l = currentVersion.split(".").mapNotNull { it.toIntOrNull() }
-
-        val n = max(r.size, l.size)
-        for (i in 0 until n) {
-            val a = r.getOrNull(i) ?: 0
-            val b = l.getOrNull(i) ?: 0
-            if (a != b) return a > b
-        }
-        return false
-    }
-
-    private fun Long.formatBytes(decimals: Int = 1): String {
-        if (this <= 0L) return "0 B"
-        val units = arrayOf("B", "KB", "MB", "GB", "TB")
-        val digitGroups = (ln(this.toDouble()) / ln(1024.0)).toInt().coerceIn(0, units.lastIndex)
-        val value = this / 1024.0.pow(digitGroups.toDouble())
-        return "%.${decimals}f %s".format(value, units[digitGroups])
-    }
-
-    private fun Long?.formatBytesOrDash(decimals: Int = 1): String = this?.formatBytes(decimals) ?: "—"
 
     private fun detectDesktopOs(): DesktopOs {
         val name = System.getProperty("os.name").lowercase()

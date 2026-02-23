@@ -5,6 +5,6 @@ package org.bigblackowl.vccadmin.utils
 expect object PlatformFunctionProvider {
     fun openNetwork()
 
-    fun getCacheSize(): Long
+    suspend fun getCacheSize(): Long
     fun clearCache()
 }

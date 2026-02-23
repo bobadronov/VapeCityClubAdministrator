@@ -301,7 +301,7 @@ private fun OtaOverlayContent(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun OtaFooterSimple(ui: OtaUiModel) {
+private fun OtaFooterSimple(ui: OtaUiModel) {
     when {
         ui.isChecking -> DefaultIcon(Icons.Default.Search)
         ui.isError -> DefaultIcon(Icons.Default.Error)

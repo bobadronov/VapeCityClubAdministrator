@@ -27,7 +27,7 @@ actual object PlatformFunctionProvider : KoinComponent {
 
 
 
-    actual fun getCacheSize(): Long {
+    actual suspend fun getCacheSize(): Long {
         return cacheDir.directorySizeBytes()
     }
 

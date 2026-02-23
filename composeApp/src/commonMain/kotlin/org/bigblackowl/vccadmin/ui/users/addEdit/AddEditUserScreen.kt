@@ -54,7 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.UserRole
-import org.bigblackowl.vccadmin.data.state.UIEvents
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
@@ -68,8 +68,8 @@ import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
+import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.UkrainianPhoneVisualTransformation
-import org.bigblackowl.vccadmin.utils.generatePassword
 import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -289,7 +289,7 @@ private fun AddEditUserScreenContent(
                             Icon(Icons.Default.CopyAll, null)
                         }
 
-                        RetryButton(showLabel = false, onClick = { onIntent(AddEditUserScreenIntent.UpdatePassword(generatePassword())) })
+                        RetryButton(showLabel = false, onClick = { onIntent(AddEditUserScreenIntent.UpdatePassword(AppStringProvider.generatePassword())) })
                     }
                 }
             }

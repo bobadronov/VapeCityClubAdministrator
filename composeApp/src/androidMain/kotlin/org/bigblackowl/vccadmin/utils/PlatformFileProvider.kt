@@ -33,7 +33,6 @@ import java.io.FileOutputStream
 import java.security.MessageDigest
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import kotlin.time.Duration.Companion.seconds
 
 actual object PlatformFileProvider {
     private val context: Context by inject(Context::class.java)
@@ -125,9 +124,11 @@ actual object PlatformFileProvider {
     }
     actual suspend fun deleteFile(fileName: String): Boolean {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
-        file.delete()
-        delay(1.seconds)
-        return file.exists()
+        return runCatching {
+            file.delete()
+            delay(200) // 1s не обов’язково
+            !file.exists()
+        }.getOrDefault(false)
     }
     suspend fun sha256OfSavedFile(name: String): String {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
