@@ -60,100 +60,103 @@ fun OutlinedCardWithLabel(
     val textMeasurer: TextMeasurer = rememberTextMeasurer()
 
     Box(
-        modifier = modifier.drawWithContent {
-            val canvasWidth = size.width
-            val canvasHeight = size.height
-            val lineThickness = 3f
-            val radius = 52f
-            val paddingBetweenTextAndLine = 20f
-            val textLayoutResult = textMeasurer.measure(
-                text = label, style = TextStyle(fontSize = fontSize, color = borderColor)
-            )
-            val textWidth = textLayoutResult.size.width.toFloat()
-            val textHeight = textLayoutResult.size.height.toFloat()
+        modifier = modifier
+            .drawWithContent {
+                val canvasWidth = size.width
+                val canvasHeight = size.height
+                val lineThickness = 3f
+                val radius = 52f
+                val paddingBetweenTextAndLine = 20f
+                val textLayoutResult = textMeasurer.measure(
+                    text = label, style = TextStyle(fontSize = fontSize, color = borderColor)
+                )
+                val textWidth = textLayoutResult.size.width.toFloat()
+                val textHeight = textLayoutResult.size.height.toFloat()
 
-            val textCenterY = textHeight / 2
+                val textCenterY = textHeight / 2
 
-            // Текст на початку
-            drawText(
-                textMeasurer = textMeasurer,
-                text = label,
-                topLeft = Offset(radius + paddingBetweenTextAndLine, 0f),
-                style = TextStyle(fontSize = titleFontSize, color = textColor)
-            )
+                // Текст на початку
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = label,
+                    topLeft = Offset(radius + paddingBetweenTextAndLine, 0f),
+                    style = TextStyle(fontSize = titleFontSize, color = textColor)
+                )
 
-            // Верхня горизонтальна лінія
-            drawLine(
-                color = borderColor,
-                start = Offset(textWidth + paddingBetweenTextAndLine * 2 + radius, textCenterY),
-                end = Offset(canvasWidth - radius, textCenterY),
-                strokeWidth = lineThickness
-            )
+                // Верхня горизонтальна лінія
+                drawLine(
+                    color = borderColor,
+                    start = Offset(textWidth + paddingBetweenTextAndLine * 2 + radius, textCenterY),
+                    end = Offset(canvasWidth - radius, textCenterY),
+                    strokeWidth = lineThickness
+                )
 
-            // Бокові вертикальні лінії
-            drawLine(
-                color = borderColor, start = Offset(0f, 0f + textCenterY + radius), end = Offset(0f, canvasHeight - radius), strokeWidth = lineThickness
-            )
-            drawLine(
-                color = borderColor,
-                start = Offset(canvasWidth, 0f + textCenterY + radius),
-                end = Offset(canvasWidth, canvasHeight - radius),
-                strokeWidth = lineThickness
-            )
+                // Бокові вертикальні лінії
+                drawLine(
+                    color = borderColor, start = Offset(0f, 0f + textCenterY + radius), end = Offset(0f, canvasHeight - radius), strokeWidth = lineThickness
+                )
+                drawLine(
+                    color = borderColor,
+                    start = Offset(canvasWidth, 0f + textCenterY + radius),
+                    end = Offset(canvasWidth, canvasHeight - radius),
+                    strokeWidth = lineThickness
+                )
 
-            // Нижня горизонтальна лінія
-            drawLine(
-                color = borderColor, start = Offset(radius, canvasHeight), end = Offset(canvasWidth - radius, canvasHeight), strokeWidth = lineThickness
-            )
+                // Нижня горизонтальна лінія
+                drawLine(
+                    color = borderColor, start = Offset(radius, canvasHeight), end = Offset(canvasWidth - radius, canvasHeight), strokeWidth = lineThickness
+                )
 
-            // Кути
-            // Верхній лівий
-            drawArc(
-                color = borderColor,
-                startAngle = 180f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(0f, 0f + textCenterY),
-                size = Size(2 * radius, 2 * radius),
-                style = Stroke(lineThickness)
-            )
-            // Верхній правий
-            drawArc(
-                color = borderColor,
-                startAngle = 270f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(canvasWidth - radius * 2, 0f + textCenterY),
-                size = Size(2 * radius, 2 * radius),
-                style = Stroke(lineThickness)
-            )
-            // Нижній лівий
-            drawArc(
-                color = borderColor,
-                startAngle = 90f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(0f, canvasHeight - 2 * radius),
-                size = Size(2 * radius, 2 * radius),
-                style = Stroke(lineThickness)
-            )
-            // Нижній правий
-            drawArc(
-                color = borderColor,
-                startAngle = 0f,
-                sweepAngle = 90f,
-                useCenter = false,
-                topLeft = Offset(canvasWidth - 2 * radius, canvasHeight - 2 * radius),
-                size = Size(2 * radius, 2 * radius),
-                style = Stroke(lineThickness)
-            )
+                // Кути
+                // Верхній лівий
+                drawArc(
+                    color = borderColor,
+                    startAngle = 180f,
+                    sweepAngle = 90f,
+                    useCenter = false,
+                    topLeft = Offset(0f, 0f + textCenterY),
+                    size = Size(2 * radius, 2 * radius),
+                    style = Stroke(lineThickness)
+                )
+                // Верхній правий
+                drawArc(
+                    color = borderColor,
+                    startAngle = 270f,
+                    sweepAngle = 90f,
+                    useCenter = false,
+                    topLeft = Offset(canvasWidth - radius * 2, 0f + textCenterY),
+                    size = Size(2 * radius, 2 * radius),
+                    style = Stroke(lineThickness)
+                )
+                // Нижній лівий
+                drawArc(
+                    color = borderColor,
+                    startAngle = 90f,
+                    sweepAngle = 90f,
+                    useCenter = false,
+                    topLeft = Offset(0f, canvasHeight - 2 * radius),
+                    size = Size(2 * radius, 2 * radius),
+                    style = Stroke(lineThickness)
+                )
+                // Нижній правий
+                drawArc(
+                    color = borderColor,
+                    startAngle = 0f,
+                    sweepAngle = 90f,
+                    useCenter = false,
+                    topLeft = Offset(canvasWidth - 2 * radius, canvasHeight - 2 * radius),
+                    size = Size(2 * radius, 2 * radius),
+                    style = Stroke(lineThickness)
+                )
 
-            drawContent()
-        }.pointerInput(Unit) {
-            detectTapGestures(
-                onTap = onTap, onLongPress = onLongPress
-            )
-        }, contentAlignment = Alignment.CenterStart
+                drawContent()
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = onTap, onLongPress = onLongPress
+                )
+            },
+        contentAlignment = Alignment.CenterStart
     ) {
         Column(
             modifier = Modifier
@@ -172,13 +175,20 @@ fun OutlinedCardWithLabel(
 @Composable
 fun OutlinedCardWithLabelPreview() = PreviewDarkMaterialTheme {
     LazyColumn(
-        modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp).fillMaxHeight(),
+        modifier = Modifier
+            .padding(DefaultValues.Padding.mainBoxPadding)
+            .sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp)
+            .fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
             OutlinedCardWithLabel(
                 label = stringResource(Res.string.clear_cache),
             ) {
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.rowItemPadding)
+                ) {
                     DefaultIcon(Icons.Default.Info)
                     BodyText(stringResource(Res.string.clear_cache))
                 }
@@ -191,13 +201,20 @@ fun OutlinedCardWithLabelPreview() = PreviewDarkMaterialTheme {
 @Composable
 fun OutlinedCardWithLabelPreviewPC() = PreviewDarkMaterialTheme {
     LazyColumn(
-        modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp).fillMaxHeight(),
+        modifier = Modifier
+            .padding(DefaultValues.Padding.mainBoxPadding)
+            .sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp)
+            .fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
             OutlinedCardWithLabel(
                 label = stringResource(Res.string.clear_cache),
             ) {
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.rowItemPadding)
+                ) {
                     DefaultIcon(Icons.Default.Info)
                     BodyText(stringResource(Res.string.clear_cache))
                 }
