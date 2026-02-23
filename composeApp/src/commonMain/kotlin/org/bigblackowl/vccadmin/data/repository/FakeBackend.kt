@@ -7,10 +7,9 @@ import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
+import org.bigblackowl.vccadmin.ota.AdminAppUpdate
 import org.bigblackowl.vccadmin.ota.AssetInfo
-import org.bigblackowl.vccadmin.ota.Assets
 import org.bigblackowl.vccadmin.ota.UpdateInfo
-import org.bigblackowl.vccadmin.ota.UpdateManifest
 import org.bigblackowl.vccadmin.ui.city.addEdit.CitySuggestion
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import kotlin.math.absoluteValue
@@ -77,50 +76,67 @@ object FakeBackend {
     // --------------------------
     // Preview
     // -------------------------
-    private val manifest = UpdateManifest(
-        tag = "v1.2.3",
-        publishedAt = "2026-02-15T12:34:56Z",
-        versionName = "1.2.3",
-        desktopVersion = "1.2.303",
+    // 2026-02-15T12:34:56Z -> epoch millis
+    private const val PUBLISHED_AT_MS: Long = 1771158896000L
+
+    private val manifest = AdminAppUpdate(
+        id = "00000000-0000-0000-0000-000000000000",
+        version = "1.2.303",
+        publishedAt = PUBLISHED_AT_MS,
         releaseNotes = """
             - Додали OTA-оновлення для Desktop
             - Виправили SHA256 перевірку
             - Покращили прогрес завантаження
             - Дрібні UI/UX правки
         """.trimIndent(),
-        androidVersion = "1.2.3",
-        androidVersionCode = 10203,
-        assets = Assets(
-            windows = AssetInfo(
-                name = "VCC-Admin-Setup-1.2.303.msi",
-                url = "https://example.com/VCC-Admin-Setup-1.2.303.msi",
-                size = 120L * 1024 * 1024,
-                sha256 = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-            ),
-            macos = AssetInfo(
-                name = "VCC-Admin-1.2.303.dmg",
-                url = "https://example.com/VCC-Admin-1.2.303.dmg",
-                size = 140L * 1024 * 1024,
-                sha256 = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
-            ),
-            linux = AssetInfo(
-                name = "vcc-admin_1.2.303_amd64.deb",
-                url = "https://example.com/vcc-admin_1.2.303_amd64.deb",
-                size = 110L * 1024 * 1024,
-                sha256 = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
-            ),
-            android = AssetInfo(
-                name = "vcc-admin-1.2.3-release.apk",
-                url = "https://example.com/vcc-admin-1.2.3-release.apk",
-                size = 45L * 1024 * 1024,
-                sha256 = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
-            ),
-        )
+        windows = AssetInfo(
+            name = "VCC-Admin-Setup-1.2.303.msi",
+            url = "https://example.com/VCC-Admin-Setup-1.2.303.msi",
+            size = 120L * 1024 * 1024,
+            sha256 = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+        ),
+        macos = AssetInfo(
+            name = "VCC-Admin-1.2.303.dmg",
+            url = "https://example.com/VCC-Admin-1.2.303.dmg",
+            size = 140L * 1024 * 1024,
+            sha256 = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+        ),
+        linux = AssetInfo(
+            name = "vcc-admin_1.2.303_amd64.deb",
+            url = "https://example.com/vcc-admin_1.2.303_amd64.deb",
+            size = 110L * 1024 * 1024,
+            sha256 = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+        ),
+        android = AssetInfo(
+            name = "vcc-admin-1.2.303-release.apk",
+            url = "https://example.com/vcc-admin-1.2.303-release.apk",
+            size = 45L * 1024 * 1024,
+            sha256 = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+        ),
+        // createdAt опційно
+        createdAt = "2026-02-15T12:34:56Z",
     )
+
+    // ---- UpdateInfo під кожну ОС ----
 
     val updateInfoWin = UpdateInfo(
         manifest = manifest,
-        asset = manifest.assets.windows!!
+        asset = requireNotNull(manifest.windows) { "Fake windows asset is null" }
+    )
+
+    val updateInfoMac = UpdateInfo(
+        manifest = manifest,
+        asset = requireNotNull(manifest.macos) { "Fake macos asset is null" }
+    )
+
+    val updateInfoLinux = UpdateInfo(
+        manifest = manifest,
+        asset = requireNotNull(manifest.linux) { "Fake linux asset is null" }
+    )
+
+    val updateInfoAndroid = UpdateInfo(
+        manifest = manifest,
+        asset = requireNotNull(manifest.android) { "Fake android asset is null" }
     )
     private val previewSuggestions = listOf(
         CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
