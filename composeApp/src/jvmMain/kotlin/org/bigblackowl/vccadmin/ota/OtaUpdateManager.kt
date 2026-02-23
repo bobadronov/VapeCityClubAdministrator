@@ -50,23 +50,32 @@ actual class OtaUpdateManager(
     actual fun check() {
         if (checkJob?.isActive == true) return
         checkJob = scope.launch {
-            delay(250.milliseconds) // легкий debounce
+            delay(250.milliseconds) // debounce
             _state.value = UpdateState.Checking
             Napier.d(tag = TAG) { "Checking updates... os=$os" }
-            DEFAULT_BUFFER_SIZE
+
             try {
                 ensureInternetOrFail()
 
-                val manifest = repo.fetchLatestManifest()
-                if (manifest == null) {
+                // ✅ тепер повертає AdminAppUpdate?
+                val manifest: AdminAppUpdate = repo.fetchLatestManifest() ?: run {
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
 
-                val remote = manifest.desktopVersion
+                // ✅ версія тепер у manifest.version
+                val remote = manifest.version?.trim().orEmpty()
+                if (remote.isBlank()) {
+                    _state.value = UpdateState.Error("Manifest has blank version")
+                    return@launch
+                }
+
                 if (!AppStringProvider.isRemoteNewer(remote)) {
-                    // optional cleanup: якщо є локальний файл під останній тег — прибираємо
-                    manifest.pickAsset(os)?.name?.takeIf { it.isNotBlank() }?.let { cleanupLocalIfExists(it) }
+                    // optional cleanup
+                    manifest.pickAsset(os)?.name
+                        ?.takeIf { it.isNotBlank() }
+                        ?.let { cleanupLocalIfExists(it) }
+
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
@@ -98,16 +107,14 @@ actual class OtaUpdateManager(
             return
         }
 
-        // не даємо паралельні інстали
         if (state.value is UpdateState.Installing) return
 
         scope.launch {
             try {
                 _state.value = UpdateState.Installing(p.info)
-                PlatformFileProvider.openFile(p.fileName)
+                PlatformFileProvider.startUpdates(p.fileName)
 
                 pending = null
-                // Дай UI трошки часу показати “Installing”
                 delay(700)
                 exitProcess(0)
             } catch (t: Throwable) {
@@ -132,10 +139,8 @@ actual class OtaUpdateManager(
                 var lastProgress: Float? = null
 
                 fun emit(force: Boolean = false) {
-                    // перший емiт — одразу як тільки є байти
                     val shouldFirst = !firstEmitted && lastDownloaded > 0
                     val timeOk = lastEmit.elapsedNow() >= 200.milliseconds
-
                     if (!force && !shouldFirst && !timeOk) return
 
                     firstEmitted = true
@@ -146,7 +151,8 @@ actual class OtaUpdateManager(
                     _state.value = UpdateState.Downloading(
                         progress = if ((lastTotal ?: 0L) > 0L) p else null,
                         downloaded = AppStringProvider.formatBytesToString(lastDownloaded),
-                        total = lastTotal?.let { AppStringProvider.formatBytesToString(it) } ?: "—"                    )
+                        total = lastTotal?.let { AppStringProvider.formatBytesToString(it) } ?: "—"
+                    )
                 }
 
                 val result = downloader.downloadBytesWithProgress(
@@ -156,36 +162,34 @@ actual class OtaUpdateManager(
                         lastDownloaded = downloaded
                         lastTotal = total
                         lastProgress = progress
-                        emit(force = false)                    }
+                        emit(force = false)
+                    }
                 )
 
                 val bytes = result.bytes
 
-                // ---- примусовий фінальний емiт (щоб не "зависнути" на 99%) ----
-                lastDownloaded = lastDownloaded.coerceAtLeast(result.bytes.size.toLong())
-                lastTotal = lastTotal ?: result.bytes.size.toLong()
+                // фінальний емiт
+                lastDownloaded = lastDownloaded.coerceAtLeast(bytes.size.toLong())
+                lastTotal = lastTotal ?: bytes.size.toLong()
                 lastProgress = 1f
                 emit(force = true)
 
                 val fileName = info.asset.name
 
-                // (краще tmp + rename, але тут мінімальна правка)
                 cleanupLocalIfExists(fileName)
                 PlatformFileProvider.saveFile(fileName, bytes)
 
                 _state.value = UpdateState.Verifying(info)
 
-                // ---- SHA перевіряємо по файлу, а не по bytes ----
-                val computed = PlatformFileProvider.sha256OfSavedFile(fileName)
-
-                if (info.asset.sha256.isNotBlank() &&
-                    !computed.equals(info.asset.sha256, ignoreCase = true)
-                ) {
-                    Napier.e(tag = TAG) {
-                        "SHA256 mismatch. expected=${info.asset.sha256} computed=$computed"
+                // ✅ SHA по файлу, і тільки якщо є expected
+                val expected = info.asset.sha256?.trim().orEmpty()
+                if (expected.isNotBlank()) {
+                    val computed = PlatformFileProvider.sha256OfSavedFile(fileName)
+                    if (!computed.equals(expected, ignoreCase = true)) {
+                        Napier.e(tag = TAG) { "SHA256 mismatch. expected=$expected computed=$computed" }
+                        _state.value = UpdateState.Error("SHA256 mismatch. File may be corrupted.")
+                        return@launch
                     }
-                    _state.value = UpdateState.Error("SHA256 mismatch. File may be corrupted.")
-                    return@launch
                 }
 
                 pending = PendingInstall(fileName, info)
@@ -211,7 +215,6 @@ actual class OtaUpdateManager(
         if (exists == true) runCatching { PlatformFileProvider.deleteFile(fileName) }
     }
 
-
     private fun detectDesktopOs(): DesktopOs {
         val name = System.getProperty("os.name").lowercase()
         return when {
@@ -219,5 +222,14 @@ actual class OtaUpdateManager(
             name.contains("mac") -> DesktopOs.MACOS
             else -> DesktopOs.LINUX
         }
+    }
+
+    /**
+     * ✅ Під нову схему AdminAppUpdate: assets лежать прямо в windows/macos/linux/android
+     */
+    private fun AdminAppUpdate.pickAsset(os: DesktopOs): AssetInfo? = when (os) {
+        DesktopOs.WINDOWS -> windows
+        DesktopOs.MACOS -> macos
+        DesktopOs.LINUX -> linux
     }
 }

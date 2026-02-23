@@ -49,6 +49,100 @@ actual object PlatformFileProvider {
         FileKit.openFileWithDefaultApplication(file)
     }
 
+    fun startUpdates(fileName: String) {
+        val file = File(downloadFolderPath, fileName)
+        require(file.exists()) { "Update file not found: ${file.absolutePath}" }
+
+        val os = System.getProperty("os.name").lowercase()
+        when {
+            os.contains("win") -> startOnWindows(file)
+            os.contains("mac") -> startOnMac(file)
+            else -> startOnLinux(file)
+        }
+    }
+
+    fun startOnWindows(file: File) {
+        val path = file.absolutePath
+        val ext = file.extension.lowercase()
+
+        when (ext) {
+            "msi" -> {
+                // Варіант 1 (рекомендовано): стандартний GUI інсталер
+                // Це найменше ламається і нормально просить UAC якщо треба.
+                runCmd(listOf("cmd", "/c", "start", "", "\"$path\""))
+            }
+            "exe" -> {
+                runCmd(listOf("cmd", "/c", "start", "", "\"$path\""))
+            }
+            else -> {
+                // fallback: просто відкрити як файл
+                openWithDesktop(file)
+            }
+        }
+    }
+
+    private fun startOnMac(file: File) {
+        val path = file.absolutePath
+        val ext = file.extension.lowercase()
+
+        when (ext) {
+            "dmg" -> {
+                // 1) приєднати dmg
+                runCmd(listOf("hdiutil", "attach", path, "-nobrowse"))
+                // 2) відкрити Finder на змонтованому volume (користувач натисне installer)
+                // Зазвичай volume в /Volumes/<Name>
+                runCmd(listOf("open", "/Volumes"))
+            }
+            "pkg" -> {
+                runCmd(listOf("open", path))
+            }
+            else -> openWithDesktop(file)
+        }
+    }
+
+    private fun startOnLinux(file: File) {
+        val path = file.absolutePath
+        val ext = file.extension.lowercase()
+
+        when (ext) {
+            "deb" -> {
+                // Спочатку пробуємо xdg-open (GUI installer, якщо є)
+                if (!runCmdNoThrow(listOf("xdg-open", path))) {
+                    // Якщо pkexec доступний — спробувати встановити (попросить пароль)
+                    // Не всі дистрибутиви мають pkexec (PolicyKit).
+                    if (!runCmdNoThrow(listOf("pkexec", "sh", "-c", "dpkg -i '${path.replace("'", "'\\''")}'"))) {
+                        // Fallback: просто відкриємо теку
+                        runCmdNoThrow(listOf("xdg-open", file.parentFile.absolutePath))
+                    }
+                }
+            }
+            else -> openWithDesktop(file)
+        }
+    }
+
+    private fun openWithDesktop(file: File) {
+        if (Desktop.isDesktopSupported()) {
+            runCatching { Desktop.getDesktop().open(file) }
+                .getOrElse { throw IllegalStateException("Cannot open file: ${file.absolutePath}", it) }
+        } else {
+            throw IllegalStateException("Desktop API is not supported on this system")
+        }
+    }
+
+    private fun runCmd(cmd: List<String>) {
+        val ok = runCmdNoThrow(cmd)
+        if (!ok) error("Command failed: ${cmd.joinToString(" ")}")
+    }
+
+    private fun runCmdNoThrow(cmd: List<String>): Boolean =
+        runCatching {
+            val p = ProcessBuilder(cmd)
+                .redirectErrorStream(true)
+                .start()
+            // Не чекаємо завершення інсталятора, але можемо зачекати старт
+            val exit = p.waitFor()
+            exit == 0
+        }.getOrDefault(false)
     suspend fun saveFile(name: String, content: ByteArray) {
         if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
@@ -56,7 +150,6 @@ actual object PlatformFileProvider {
             file.write(content)
         }
     }
-
     suspend fun sha256OfSavedFile(name: String): String {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
         return file.withScopedAccess { f ->
@@ -66,7 +159,6 @@ actual object PlatformFileProvider {
             digest.joinToString("") { "%02x".format(it) }
         }
     }
-
     actual suspend fun downloadFile(name: String, content: ByteArray) {
         if (!PlatformFile(downloadFolderPath).exists()) PlatformFile(downloadFolderPath).createDirectories(true)
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
@@ -74,16 +166,13 @@ actual object PlatformFileProvider {
             file.write(content)
         }
     }
-
     actual fun isFileExist(fileName: String): Boolean? = PlatformFile("$downloadFolderPath${File.separator}$fileName").exists()
-
     actual suspend fun shareWithTelegram(data: String) {
         withContext(Dispatchers.IO) {
             val encodedText = URLEncoder.encode(data, StandardCharsets.UTF_8.toString())
             Desktop.getDesktop().browse(URI("https://t.me/share/url?url=$encodedText"))
         }
     }
-
     actual suspend fun shareFilesAsZip(files: List<GeneratedFile>): ShareResult {
         val okFiles = files.asSequence().filter { it.error == null && it.content != null }.toList()
         if (okFiles.isEmpty()) {
@@ -112,19 +201,18 @@ actual object PlatformFileProvider {
             )
         }
     }
-
     actual suspend fun deleteFile(fileName: String): Boolean {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
         file.delete()
         delay(1.seconds)
         return file.exists()
     }
-
     actual fun openDownloadFolder() {
         FileKit.openFileWithDefaultApplication(PlatformFile(downloadFolderPath))
     }
-
-
+    
+    
+    
     private fun copyFileToClipboard(file: File) {
         val clipboard = Toolkit.getDefaultToolkit().systemClipboard
 

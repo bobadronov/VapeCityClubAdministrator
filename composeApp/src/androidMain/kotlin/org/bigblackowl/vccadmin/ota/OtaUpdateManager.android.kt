@@ -46,23 +46,29 @@ actual class OtaUpdateManager(
     actual fun check() {
         if (checkJob?.isActive == true) return
         checkJob = scope.launch {
-            delay(250.milliseconds) // легкий debounce
+            delay(250.milliseconds) // debounce
             _state.value = UpdateState.Checking
             Napier.d(tag = TAG) { "Checking updates... android" }
 
             try {
                 ensureInternetOrFail()
 
-                val manifest = repo.fetchLatestManifest()
-                if (manifest == null) {
+                // ✅ тепер це AdminAppUpdate?
+                val manifest: AdminAppUpdate = repo.fetchLatestManifest() ?: run {
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
 
-                // ✅ для Android порівнюємо з android_version (є в твоєму JSON)
-                val remote = manifest.androidVersion ?: manifest.versionName ?: manifest.tag
-                if (!AppStringProvider.isRemoteNewer(remote)) {
-                    manifest.assets.android?.name
+                // ✅ Android порівнюємо по manifest.version
+                val remoteVersion = manifest.version?.trim().orEmpty()
+                if (remoteVersion.isBlank()) {
+                    _state.value = UpdateState.Error("Manifest has blank version")
+                    return@launch
+                }
+
+                if (!AppStringProvider.isRemoteNewer(remoteVersion)) {
+                    // якщо оновлення не треба — можна прибрати попередній apk, якщо раптом залишився
+                    manifest.android?.name
                         ?.takeIf { it.isNotBlank() }
                         ?.let { cleanupLocalIfExists(it) }
 
@@ -70,19 +76,19 @@ actual class OtaUpdateManager(
                     return@launch
                 }
 
-                // ✅ беремо android asset
-                val asset = manifest.assets.android ?: run {
+                // ✅ беремо android asset напряму
+                val asset = manifest.android ?: run {
                     _state.value = UpdateState.Error("No android asset in manifest")
                     return@launch
                 }
 
-                // guard: очікуємо apk
                 if (!asset.name.endsWith(".apk", ignoreCase = true)) {
                     Napier.w(tag = TAG) { "Android asset is not .apk: ${asset.name}" }
                 }
 
                 cleanupLocalIfExists(asset.name)
 
+                // UpdateInfo має вміти тримати manifest + asset як раніше
                 _state.value = UpdateState.Available(UpdateInfo(manifest, asset))
                 Napier.d(tag = TAG) { "Update available: ${asset.name}, size=${asset.size}" }
             } catch (t: Throwable) {
@@ -114,7 +120,6 @@ actual class OtaUpdateManager(
                 _state.value = UpdateState.Installing(p.info)
                 PlatformFileProvider.openDownloadFolder()
                 pending = null
-                // Можна лишити ReadyToInstall, щоб кнопка “Install” лишалась як “Open folder”
                 delay(300)
                 _state.value = UpdateState.ReadyToInstall(p.info)
             } catch (t: Throwable) {
@@ -180,14 +185,15 @@ actual class OtaUpdateManager(
 
                 _state.value = UpdateState.Verifying(info)
 
-                // SHA перевіряємо по файлу
-                val computed = PlatformFileProvider.sha256OfSavedFile(fileName)
-                if (info.asset.sha256.isNotBlank() &&
-                    !computed.equals(info.asset.sha256, ignoreCase = true)
-                ) {
-                    Napier.e(tag = TAG) { "SHA256 mismatch. expected=${info.asset.sha256} computed=$computed" }
-                    _state.value = UpdateState.Error("SHA256 mismatch. File may be corrupted.")
-                    return@launch
+                // ✅ SHA перевіряємо лише якщо sha256 заданий в маніфесті
+                val expected = info.asset.sha256?.trim().orEmpty()
+                if (expected.isNotBlank()) {
+                    val computed = PlatformFileProvider.sha256OfSavedFile(fileName)
+                    if (!computed.equals(expected, ignoreCase = true)) {
+                        Napier.e(tag = TAG) { "SHA256 mismatch. expected=$expected computed=$computed" }
+                        _state.value = UpdateState.Error("SHA256 mismatch. File may be corrupted.")
+                        return@launch
+                    }
                 }
 
                 pending = PendingOpen(fileName, info)

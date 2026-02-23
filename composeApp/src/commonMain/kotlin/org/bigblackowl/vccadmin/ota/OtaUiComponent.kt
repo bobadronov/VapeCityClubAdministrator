@@ -112,7 +112,8 @@ private fun OtaTopBarActionWithDialog(
     onInstall: () -> Unit,
     hideNoUpdateDelayMs: Long = 1200L,
 ) {
-    var dialogOpen by remember { mutableStateOf(true) }
+    // ✅ старт: діалог закритий
+    var dialogOpen by remember { mutableStateOf(false) }
     var suppressNoUpdate by remember { mutableStateOf(false) }
 
     // ref: не викликає рекомпозиції
@@ -127,15 +128,30 @@ private fun OtaTopBarActionWithDialog(
         prevRef[0] = state
 
         when (state) {
-            UpdateState.Checking -> suppressNoUpdate = false
+            UpdateState.Checking -> {
+                suppressNoUpdate = false
+                // ✅ НЕ відкриваємо діалог автоматично при перевірці
+                // dialogOpen не чіпаємо: якщо користувач сам відкрив — хай бачить прогрес
+            }
+
+            is UpdateState.Available -> {
+                suppressNoUpdate = false
+                // ✅ Авто відкриття ТІЛЬКИ коли реально з'явилось оновлення
+                val wasAvailable = prev is UpdateState.Available
+                if (!wasAvailable) dialogOpen = true
+            }
 
             UpdateState.NoUpdate -> {
+                // ✅ як було: якщо це результат "Checking" — швидко сховати
                 if (prev === UpdateState.Checking) {
                     delay(hideNoUpdateDelayMs)
                     suppressNoUpdate = true
                     dialogOpen = false
                 } else {
                     suppressNoUpdate = false
+                    // якщо користувач відкрив діалог сам — можна лишити відкритим,
+                    // але зазвичай NoUpdate краще закрити:
+                    dialogOpen = false
                 }
             }
 
@@ -145,22 +161,20 @@ private fun OtaTopBarActionWithDialog(
                 dialogOpen = false
             }
 
-            // всі “робочі” стани не ховаємо
-            is UpdateState.Available,
+            // ✅ Робочі/помилкові стани: кнопку показуємо, діалог не відкриваємо автоматично
             is UpdateState.Downloading,
             is UpdateState.Verifying,
             is UpdateState.ReadyToInstall,
             is UpdateState.Installing,
-            is UpdateState.Error -> suppressNoUpdate = false
+            is UpdateState.Error -> {
+                suppressNoUpdate = false
+                // dialogOpen не змінюємо
+            }
         }
     }
 
-    val showButton by remember {
-        derivedStateOf {
-            state.shouldShowTopBarAction() &&
-                    !(state === UpdateState.NoUpdate && suppressNoUpdate)
-        }
-    }
+    // ✅ Кнопку показуємо коли є процес/апдейт/помилка (твоя логіка)
+    val showButton by remember { derivedStateOf { state.shouldShowTopBarAction() && !(state === UpdateState.NoUpdate && suppressNoUpdate) } }
 
     AnimatedVisibility(visible = showButton) {
         OtaTopBarStatusButton(state = state, onClick = { dialogOpen = true })
@@ -393,7 +407,7 @@ fun UpdateState.toUiModel(): OtaUiModel {
         UpdateState.NoUpdate -> stringResource(Res.string.ota_state_no_update)
 
         is UpdateState.Available -> {
-            val version = info.manifest.desktopVersion ?: "—"
+            val version = info.manifest.version ?: "—"
             stringResource(Res.string.ota_state_available_template, version)
         }
 

@@ -34,21 +34,22 @@ class SettingsScreenViewModel(
     init {
         viewModelScope.launch {
             otaUpdateManager.state.collect { state ->
+                val newVersion = state.extractRemoteVersionLabel()
+
                 _uiState.update {
                     it.copy(
-                        updateState = state, newAppVersionLabel = state.availableVersionLabel()
+                        updateState = state,
+                        newAppVersionLabel = newVersion
                     )
                 }
             }
         }
 
-        viewModelScope.launch {
-            refreshCacheSize()
-        }
+        viewModelScope.launch { refreshCacheSize() }
 
         _uiState.update {
             it.copy(
-                appBuildLabel = BuildConfig.APP_VERSION, // або BuildConfig.BUILD_TYPE / git hash
+                appBuildLabel = BuildConfig.APP_VERSION,
                 isInitialLoading = false
             )
         }
@@ -57,38 +58,21 @@ class SettingsScreenViewModel(
     fun onIntent(intent: SettingsIntent) {
         when (intent) {
             is SettingsIntent.SetTheme -> setTheme(intent.state)
-
             is SettingsIntent.SetLogoutDialog -> _uiState.update { it.copy(logoutDialogVisible = intent.visible) }
-
             is SettingsIntent.SetClearCacheDialog -> _uiState.update { it.copy(clearCacheDialogVisible = intent.visible) }
-
             SettingsIntent.ClearCache -> clearCache()
-
             SettingsIntent.CheckUpdates -> otaUpdateManager.check()
             SettingsIntent.DownloadUpdate -> otaUpdateManager.download()
             SettingsIntent.InstallUpdate -> otaUpdateManager.install()
-
             SettingsIntent.Logout -> logout()
         }
     }
 
-    private fun UpdateState.availableVersionLabel(): String = when (this) {
-        is UpdateState.Available -> with(info.manifest) {
-            androidVersion ?: versionName ?: desktopVersion ?: ""
-        }
-
-        is UpdateState.Verifying -> with(info.manifest) {
-            androidVersion ?: versionName ?: desktopVersion ?: ""
-        }
-
-        is UpdateState.ReadyToInstall -> with(info.manifest) {
-            androidVersion ?: versionName ?: desktopVersion ?: ""
-        }
-
-        is UpdateState.Installing -> with(info.manifest) {
-            androidVersion ?: versionName ?: desktopVersion ?: ""
-        }
-
+    private fun UpdateState.extractRemoteVersionLabel(): String = when (this) {
+        is UpdateState.Available -> info.manifest.version.orEmpty()
+        is UpdateState.Verifying -> info.manifest.version.orEmpty()
+        is UpdateState.ReadyToInstall -> info.manifest.version.orEmpty()
+        is UpdateState.Installing -> info.manifest.version.orEmpty()
         else -> ""
     }
 

@@ -3,55 +3,53 @@ package org.bigblackowl.vccadmin.ota
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bigblackowl.vccadmin.data.entity.DesktopOs
 
 @Immutable
 @Serializable
-data class UpdateManifest(
-    val tag: String? = null,
-    val publishedAt: String? = null,
-    val versionName: String? = null,
+data class AdminAppUpdate(
+    @SerialName("id")
+    val id: String? = null, // uuid у Postgres; якщо вставляєш — можна null, БД згенерує
 
-    @SerialName("desktop_version")
-    val desktopVersion: String? = null,
+    @SerialName("version")
+    val version: String? = null,
 
+    @SerialName("published_at")
+    val publishedAt: Long? = null, // bigint (epoch millis, як у тебе)
+
+    @SerialName("release_notes")
     val releaseNotes: String? = null,
 
-    @SerialName("android_version")
-    val androidVersion: String? = null,
-
-    @SerialName("android_version_code")
-    val androidVersionCode: Long? = null,
-
-    val assets: Assets = Assets(), // ✅ важливо
-) {
-    fun pickAsset(os: DesktopOs): AssetInfo? = when (os) {
-        DesktopOs.WINDOWS -> assets.windows
-        DesktopOs.MACOS -> assets.macos
-        DesktopOs.LINUX -> assets.linux
-    }
-
-    fun pickAndroidAsset(): AssetInfo? = assets.android
-}
-
-@Immutable
-@Serializable
-data class Assets(
+    @SerialName("windows")
     val windows: AssetInfo? = null,
+
+    @SerialName("macos")
     val macos: AssetInfo? = null,
+
+    @SerialName("linux")
     val linux: AssetInfo? = null,
-    val android: AssetInfo? = null
+
+    @SerialName("android")
+    val android: AssetInfo? = null,
+
+    @SerialName("created_at")
+    val createdAt: String? = null, // timestamptz; зазвичай читаємо як String ISO (або Instant, якщо треба)
 )
-@Immutable
+
 @Serializable
 data class AssetInfo(
+    @SerialName("name")
     val name: String,
+
+    @SerialName("url")
     val url: String,
+
+    @SerialName("size")
     val size: Long,
-    val sha256: String = ""
+
+    @SerialName("sha256")
+    val sha256: String? = null,
 )
-@Immutable
 data class UpdateInfo(
-    val manifest: UpdateManifest,
-    val asset: AssetInfo,
+    val manifest: AdminAppUpdate,
+    val asset: AssetInfo
 )

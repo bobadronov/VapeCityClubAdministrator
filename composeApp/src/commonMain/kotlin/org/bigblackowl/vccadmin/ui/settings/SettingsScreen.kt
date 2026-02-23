@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.DiscFull
@@ -287,7 +288,7 @@ private fun UpdatesSettingCard(
         UpdateState.Idle -> stringResource(Res.string.ota_state_idle)
         UpdateState.Checking -> stringResource(Res.string.ota_state_checking)
         UpdateState.NoUpdate -> stringResource(Res.string.ota_state_no_update)
-        is UpdateState.Available -> stringResource(Res.string.ota_state_available_template, updateState.info.manifest.desktopVersion ?: "—")
+        is UpdateState.Available -> stringResource(Res.string.ota_state_available_template, updateState.info.manifest.version?: "—")
         is UpdateState.Downloading -> stringResource(Res.string.ota_state_downloading)
         is UpdateState.Verifying -> stringResource(Res.string.ota_state_verifying)
         is UpdateState.ReadyToInstall -> stringResource(Res.string.ota_state_ready_to_install)
@@ -300,11 +301,15 @@ private fun UpdatesSettingCard(
             // ✅ твоя функція іконок (як у фрагменті)
             OtaStatusIcon(updateState.toUiModel())
 
-            Column(
+            SelectionContainer(
                 modifier = Modifier.weight(1f),
             ) {
-                BodyText(text = "${stringResource(Res.string.current_app_version)} $currentBuildLabel")
-                HelperText(progressText)
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    BodyText(text = "${stringResource(Res.string.current_app_version)} $currentBuildLabel")
+                    HelperText(progressText)
+                }
             }
 
             when (updateState) {
@@ -374,8 +379,6 @@ private fun SettingCard(
 }
 
 
-
-
 @Preview
 @Composable
 private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
@@ -396,10 +399,10 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items(demoStates(FakeBackend.updateInfoWin)) { state ->
             val buildLabel = when (state) {
-                is UpdateState.Available -> state.info.manifest.versionName.orEmpty()
-                is UpdateState.Verifying -> state.info.manifest.versionName.orEmpty()
-                is UpdateState.ReadyToInstall -> state.info.manifest.versionName.orEmpty()
-                is UpdateState.Installing -> state.info.manifest.versionName.orEmpty()
+                is UpdateState.Available -> state.info.manifest.version.orEmpty()
+                is UpdateState.Verifying -> state.info.manifest.version.orEmpty()
+                is UpdateState.ReadyToInstall -> state.info.manifest.version.orEmpty()
+                is UpdateState.Installing -> state.info.manifest.version.orEmpty()
                 else -> BuildConfig.APP_VERSION // або ""
             }
 
@@ -407,6 +410,7 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
         }
     }
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialTheme {
@@ -420,6 +424,7 @@ private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialThem
             updateState = UpdateState.Downloading(),
         ), onIntent = {}, goBack = {})
 }
+
 @Preview(device = Devices.DESKTOP)
 @Composable
 private fun Preview_SettingsContent_ClearCacheDialogPC() = PreviewDarkMaterialTheme {
@@ -448,6 +453,7 @@ private fun Preview_SettingsContent_LogoutDialog() = PreviewDarkMaterialTheme {
             logoutDialogVisible = true
         ), onIntent = {}, goBack = {})
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialTheme {
@@ -457,6 +463,7 @@ private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialThem
             newAppVersionLabel = "1.2.3", appBuildLabel = "123", updateState = UpdateState.Idle
         ), onIntent = {}, goBack = {})
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_Loading() = PreviewDarkMaterialTheme {
