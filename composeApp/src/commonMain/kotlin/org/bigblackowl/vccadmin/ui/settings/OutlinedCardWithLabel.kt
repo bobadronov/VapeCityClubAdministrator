@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
+import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.jetbrains.compose.resources.stringResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.clear_cache
@@ -147,9 +150,8 @@ fun OutlinedCardWithLabel(
             modifier = Modifier
                 .heightIn(min = 110.dp)
                 .fillMaxSize()
-                .padding(10.dp)
-                .padding(top = 10.dp)
-            , verticalArrangement = verticalArrangement, horizontalAlignment = horizontalAlignment
+                .padding(20.dp)
+                .padding(top = 10.dp), verticalArrangement = verticalArrangement, horizontalAlignment = horizontalAlignment
         ) {
             content()
         }
@@ -165,7 +167,7 @@ fun OutlinedCardWithLabelPreview() = PreviewDarkMaterialTheme {
             OutlinedCardWithLabel(
                 label = stringResource(Res.string.clear_cache),
             ) {
-
+                DefaultIcon(Icons.Default.Info)
             }
         }
     }

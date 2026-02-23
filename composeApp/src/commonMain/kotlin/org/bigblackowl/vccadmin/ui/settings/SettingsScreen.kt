@@ -67,6 +67,7 @@ import org.bigblackowl.vccadmin.ota.toUiModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
+import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.theme.ThemeMode
 import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
@@ -94,7 +95,7 @@ import vccadministrator.composeapp.generated.resources.confirm_clear_cache_title
 import vccadministrator.composeapp.generated.resources.confirm_logout_message
 import vccadministrator.composeapp.generated.resources.confirm_logout_title
 import vccadministrator.composeapp.generated.resources.current_app_version
-import vccadministrator.composeapp.generated.resources.exit
+import vccadministrator.composeapp.generated.resources.exit_from_account
 import vccadministrator.composeapp.generated.resources.ota_state_available_template
 import vccadministrator.composeapp.generated.resources.ota_state_checking
 import vccadministrator.composeapp.generated.resources.ota_state_downloading
@@ -309,12 +310,14 @@ private fun CacheCard(
         ) {
             DefaultIcon(Icons.Default.DiscFull)
             Spacer(Modifier.width(12.dp))
-
-            Text(
-                text = "${stringResource(Res.string.cache_size)} $cacheSizeText",
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium
-            )
+            SelectionContainer(Modifier.weight(1f)) {
+                Column {
+                    BodyText(
+                        text = stringResource(Res.string.cache_size),
+                    )
+                    HelperText(cacheSizeText)
+                }
+            }
             AnimatedVisibility(
                 visible = cacheSizeBytes > 0,
                 enter = slideInHorizontally { it } + fadeIn(),
@@ -461,18 +464,15 @@ private fun AccountCard(
         ) {
             DefaultIcon(Icons.AutoMirrored.Filled.Logout)
             Spacer(Modifier.width(12.dp))
-            Text(
-                text = stringResource(Res.string.exit),
-                style = MaterialTheme.typography.titleMedium
-            )
+            BodyText(text = stringResource(Res.string.exit_from_account))
         }
     }
 }
 
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
-
     fun demoStates(demoInfo: UpdateInfo) = listOf(
         UpdateState.NotAvailable,
         UpdateState.Idle,
@@ -485,7 +485,6 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
         UpdateState.Installing(demoInfo),
         UpdateState.Error("Network error")
     )
-
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items(demoStates(FakeBackend.updateInfoWin)) { state ->
             val buildLabel = when (state) {
@@ -512,20 +511,6 @@ private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialThem
             newAppVersionLabel = "1.2.3",
             appBuildLabel = "123",
             updateState = UpdateState.Downloading(progress = .2f),
-        ), onIntent = {}, goBack = {})
-}
-
-@Preview(device = Devices.DESKTOP)
-@Composable
-private fun Preview_SettingsContent_ClearCacheDialogPC() = PreviewDarkMaterialTheme {
-    SettingsContent(
-        uiState = SettingsUiState(
-            isInitialLoading = false,
-            isDarkEffective = true,
-            cacheSizeBytes = 42L * 1024 * 1024,
-            newAppVersionLabel = "1.2.3",
-            appBuildLabel = "123",
-            updateState = UpdateState.Downloading(),
         ), onIntent = {}, goBack = {})
 }
 
@@ -571,4 +556,32 @@ private fun CacheCardPreview() = PreviewDarkMaterialTheme {
             CacheCard(2650L, {})
         }
     }
+}
+
+@Preview(device = Devices.DESKTOP)
+@Composable
+private fun Preview_SettingsContentDark_ClearCacheDialogPC() = PreviewDarkMaterialTheme {
+    SettingsContent(
+        uiState = SettingsUiState(
+            isInitialLoading = false,
+            isDarkEffective = true,
+            cacheSizeBytes = 42L * 1024 * 1024,
+            newAppVersionLabel = "1.2.3",
+            appBuildLabel = "123",
+            updateState = UpdateState.Downloading(),
+        ), onIntent = {}, goBack = {})
+}
+
+@Preview(device = Devices.DESKTOP)
+@Composable
+private fun Preview_SettingsContentLight_ClearCacheDialogPC() = PreviewLightMaterialTheme {
+    SettingsContent(
+        uiState = SettingsUiState(
+            isInitialLoading = false,
+            isDarkEffective = true,
+            cacheSizeBytes = 42L * 1024 * 1024,
+            newAppVersionLabel = "1.2.3",
+            appBuildLabel = "123",
+            updateState = UpdateState.Downloading(),
+        ), onIntent = {}, goBack = {})
 }

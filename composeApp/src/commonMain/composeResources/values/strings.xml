@@ -230,6 +230,7 @@
     <string name="enable_auto_login">Авто-логін</string>
     <string name="enter_user_role">Виберіть роль для користувача:</string>
     <string name="exit">Вийти</string>
+    <string name="exit_from_account">Вийти з облікового запису</string>
     <string name="first_name">Імʼя</string>
     <string name="last_name">Прізвище</string>
     <string name="login">Вхід</string>
