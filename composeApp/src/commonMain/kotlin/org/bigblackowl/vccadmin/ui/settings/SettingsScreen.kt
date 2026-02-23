@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -35,9 +36,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -47,6 +54,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,10 +74,12 @@ import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.ota.UpdateState
 import org.bigblackowl.vccadmin.ota.toUiModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.LocalAppLocale
 import org.bigblackowl.vccadmin.theme.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.theme.ThemeMode
+import org.bigblackowl.vccadmin.theme.customAppLocale
 import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
@@ -98,6 +108,7 @@ import vccadministrator.composeapp.generated.resources.confirm_logout_message
 import vccadministrator.composeapp.generated.resources.confirm_logout_title
 import vccadministrator.composeapp.generated.resources.current_app_version
 import vccadministrator.composeapp.generated.resources.exit_from_account
+import vccadministrator.composeapp.generated.resources.language
 import vccadministrator.composeapp.generated.resources.ota_state_available_template
 import vccadministrator.composeapp.generated.resources.ota_state_checking
 import vccadministrator.composeapp.generated.resources.ota_state_downloading
@@ -127,6 +138,7 @@ fun SettingsScreen(
                     delay(1.seconds)
                     navigationViewModel.logout()
                 }
+
                 else -> {}
             }
         }
@@ -181,7 +193,11 @@ private fun SettingsContent(
                         }
                     )
                 }
-
+                item {
+                    LanguageCard(onChange = { iso ->
+                        onIntent(SettingsIntent.SetLanguage(iso))
+                    })
+                }
                 item(key = "cache") {
                     CacheCard(
                         cacheSizeBytes = uiState.cacheSizeBytes,
@@ -252,6 +268,76 @@ private fun SettingsContent(
                 }
             }
         )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguageCard(
+    onChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    data class LanguageOption(
+        val tag: String,   // "uk", "en", "ru"
+        val label: String, // "Українська", "English", "Русский"
+    )
+
+    val options = remember {
+        listOf(
+            LanguageOption("uk", "Українська"),
+            LanguageOption("en", "English"),
+            LanguageOption("ru", "Русский"),
+        )
+    }
+
+    fun normalize(tag: String): String =
+        tag.replace('_', '-').lowercase().substringBefore("-") // "uk-UA"/"uk_UA" -> "uk"
+
+    val currentBaseTag = normalize(customAppLocale ?: LocalAppLocale.current)
+
+    val selected = remember(currentBaseTag) {
+        options.firstOrNull { it.tag == currentBaseTag } ?: options[0]
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+
+    OutlinedCardWithLabel(
+        label = stringResource(Res.string.language),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = selected.label,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+                modifier = Modifier
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                    .fillMaxWidth(),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        onClick = {
+                            expanded = false
+                            onChange(option.tag) // "uk"/"en"/"ru"
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -443,6 +529,7 @@ private fun OtaStatusIcon(state: UpdateState) {
                 CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
             }
         }
+
         else -> DefaultIcon(Icons.Default.Info)
     }
 }
@@ -461,9 +548,9 @@ private fun AccountCard(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            DefaultIcon(Icons.AutoMirrored.Filled.Logout)
+            DefaultIcon(Icons.AutoMirrored.Filled.Logout, tint = MaterialTheme.colorScheme.error)
             Spacer(Modifier.width(12.dp))
-            BodyText(text = stringResource(Res.string.exit_from_account))
+            BodyText(text = stringResource(Res.string.exit_from_account), color = MaterialTheme.colorScheme.error)
         }
     }
 }

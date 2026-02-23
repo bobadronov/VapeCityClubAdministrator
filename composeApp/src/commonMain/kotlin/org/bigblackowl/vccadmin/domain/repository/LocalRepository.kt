@@ -15,4 +15,7 @@ interface LocalRepository {
     fun getWindowClosableState(): Boolean
 
     fun clearLocalStorage()
+
+    fun getLanguage(): String?
+    fun setLanguage(iso: String)
 }

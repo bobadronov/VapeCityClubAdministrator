@@ -1,5 +1,5 @@
-
 <!doctype html>
+<!--suppress HtmlUnknownTarget -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,20 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
     <link rel="manifest" href="./manifest.json">
+    <script>
+        var currentLanguagesImplementation = Object.getOwnPropertyDescriptor(Navigator.prototype, "languages");
+        var newLanguagesImplementation = Object.assign({}, currentLanguagesImplementation, {
+            get: function () {
+                if (window.__customLocale) {
+                    return [window.__customLocale];
+                } else {
+                    return currentLanguagesImplementation.get.apply(this);
+                }
+            }
+        });
+
+        Object.defineProperty(Navigator.prototype, "languages", newLanguagesImplementation)
+    </script>
     <title>VCC Administrator</title>
     <style>
         html,

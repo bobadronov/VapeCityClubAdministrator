@@ -7,6 +7,7 @@ class LocalRepositoryImpl : LocalRepository {
     private companion object {
         private const val AUTO_ENTER_KEY = "AUTO_ENTER_KEY"
         private const val THEME_MODE_KEY = "THEME_MODE_KEY"
+        private const val LANGUAGE_KEY = "LANGUAGE_KEY"
         const val ERROR_BUFFER_KEY = "error_buffer"
         private const val WINDOW_CLOSABLE_STATE = "WINDOW_CLOSABLE_STATE"
         private val settings: Settings = Settings()
@@ -24,4 +25,7 @@ class LocalRepositoryImpl : LocalRepository {
     override fun setWindowClosable(state: Boolean) = settings.putBoolean(WINDOW_CLOSABLE_STATE, state)
     override fun getWindowClosableState(): Boolean = settings.getBoolean(WINDOW_CLOSABLE_STATE, false)
     override fun clearLocalStorage() = settings.clear()
+
+    override fun getLanguage(): String? = settings.getStringOrNull(LANGUAGE_KEY)
+    override fun setLanguage(iso: String) = settings.putString(LANGUAGE_KEY, iso)
 }

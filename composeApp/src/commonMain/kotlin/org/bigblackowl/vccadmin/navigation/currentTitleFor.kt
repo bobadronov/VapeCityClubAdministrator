@@ -12,6 +12,7 @@ import vccadministrator.composeapp.generated.resources.edit_city
 import vccadministrator.composeapp.generated.resources.edit_shop
 import vccadministrator.composeapp.generated.resources.edit_slide
 import vccadministrator.composeapp.generated.resources.login
+import vccadministrator.composeapp.generated.resources.settings
 import vccadministrator.composeapp.generated.resources.shop_details
 import vccadministrator.composeapp.generated.resources.shops
 import vccadministrator.composeapp.generated.resources.slides
@@ -35,5 +36,6 @@ fun currentTitleFor(route: Route?): String = when (route) {
         if (route.id == null) stringResource(Res.string.add_city) else stringResource(Res.string.edit_city)
 
     is Route.SlideAiGeneration -> stringResource(Res.string.slides_ai_generation)
+    is Route.Settings -> stringResource(Res.string.settings)
     else -> BuildConfig.APP_NAME
 }

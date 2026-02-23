@@ -16,6 +16,8 @@ import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUpdateManager
 import org.bigblackowl.vccadmin.ota.UpdateState
+import org.bigblackowl.vccadmin.theme.LocalAppLocale
+import org.bigblackowl.vccadmin.theme.customAppLocale
 import org.bigblackowl.vccadmin.ui.login.LoginScreenIntent
 import org.bigblackowl.vccadmin.ui.login.LoginScreenViewModel
 import org.bigblackowl.vccadmin.utils.PlatformFunctionProvider
@@ -72,6 +74,16 @@ class SettingsScreenViewModel(
             SettingsIntent.DownloadUpdate -> otaUpdateManager.download()
             SettingsIntent.InstallUpdate -> otaUpdateManager.install()
             SettingsIntent.Logout -> logout()
+            is SettingsIntent.SetLanguage -> onLanguageSelected(intent.iso)
+        }
+    }
+
+    private fun onLanguageSelected(iso: String?) {
+        val normalized = iso?.replace('_', '-') // BCP-47
+        if (normalized != null) {
+            customAppLocale = normalized
+            LocalAppLocale.applyLanguage(normalized)
+            localRepository.setLanguage(iso = normalized)
         }
     }
 

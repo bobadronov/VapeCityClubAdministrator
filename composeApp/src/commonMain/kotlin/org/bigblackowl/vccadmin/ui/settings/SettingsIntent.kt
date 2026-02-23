@@ -13,4 +13,6 @@ sealed interface SettingsIntent {
     object InstallUpdate : SettingsIntent
 
     object Logout : SettingsIntent
+    data class SetLanguage(val iso: String) : SettingsIntent
+
 }

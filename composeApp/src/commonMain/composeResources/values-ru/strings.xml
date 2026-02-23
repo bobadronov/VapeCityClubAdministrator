@@ -1,0 +1,371 @@
+<resources>
+
+    <!-- ========================================================= -->
+    <!-- Common actions / buttons -->
+    <!-- ========================================================= -->
+    <string name="add">Добавить</string>
+    <string name="back">Назад</string>
+    <string name="cancel">Отмена</string>
+    <string name="change">Заменить</string>
+    <string name="clear">Очистить</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="copy">Копировать</string>
+    <string name="delete">Удалить</string>
+    <string name="deselect_all">Снять выбор со всех</string>
+    <string name="dismiss">Отклонить</string>
+    <string name="download">Скачать</string>
+    <string name="edit">Редактировать</string>
+    <string name="generate">Сгенерировать</string>
+    <string name="next">Далее</string>
+    <string name="open_file">Открыть</string>
+    <string name="open_settings">Открыть настройки</string>
+    <string name="save">Сохранить</string>
+    <string name="select">Выбрать</string>
+    <string name="select_all">Выбрать все</string>
+    <string name="send">Отправить</string>
+    <string name="share">Поделиться</string>
+    <string name="update">Обновить</string>
+    <string name="language">Язык</string>
+
+    <!-- ========================================================= -->
+    <!-- Clipboard (Desktop) -->
+    <!-- ========================================================= -->
+    <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="copy_failed">Не удалось скопировать в буфер обмена</string>
+
+    <!-- ========================================================= -->
+    <!-- Web / ZIP download & share -->
+    <!-- ========================================================= -->
+    <string name="download_all_files">Скачать все файлы</string>
+    <string name="download_failed">Не удалось скачать ZIP</string>
+    <string name="download_started">Скачивание ZIP начато</string>
+    <string name="no_files_to_share">Нет файлов для архивирования</string>
+    <string name="share_all_files">Отправить всё</string>
+    <string name="share_failed">Не удалось поделиться файлом</string>
+    <string name="share_pdf_files_as_zip_file_name">Сгенерированные_бланки_%1$s</string>
+    <string name="zip_ready_to_share">ZIP подготовлен. Можно поделиться</string>
+
+    <!-- ========================================================= -->
+    <!-- Generic / common errors -->
+    <!-- ========================================================= -->
+    <string name="error">Ошибка: %1$s</string>
+    <string name="error_add_slide">Ошибка при добавлении слайда</string>
+    <string name="error_empty_name">Название не может быть пустым</string>
+    <string name="error_fetch_data">Ошибка получения данных</string>
+    <string name="error_file_name_empty">Название не может быть пустым</string>
+    <string name="error_invalid_file_name">Разрешены только английские буквы, цифры, пробелы и символы: . _ - ( )</string>
+    <string name="error_load_data">Ошибка загрузки данных</string>
+    <string name="error_load_file">Ошибка загрузки файла</string>
+    <string name="error_load_settings">Ошибка загрузки настроек</string>
+    <string name="error_loading_file">Ошибка загрузки %1$s: %2$s</string>
+    <string name="error_loading_settings">Ошибка получения настроек: %s</string>
+    <string name="error_open_file">Ошибка открытия файла</string>
+    <string name="error_save_data">Ошибка сохранения</string>
+    <string name="error_save_settings">Ошибка сохранения настроек</string>
+    <string name="error_saving">Ошибка сохранения: %s</string>
+    <string name="error_unknown_load">Неизвестная ошибка при загрузке данных</string>
+    <string name="http_error">HTTP Ошибка: %1$s - %2$s</string>
+    <string name="no_internet">Нет подключения к интернету</string>
+    <string name="not_specified">Не указано</string>
+    <string name="unknown">Неизвестно</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Cities -->
+    <!-- ========================================================= -->
+    <string name="add_city_error">Ошибка добавления города</string>
+    <string name="city_not_found">Город не найден</string>
+    <string name="failed_retrieve_city">Не удалось получить добавленный город</string>
+    <string name="invalid_city_name">Название города должно содержать минимум 2 символа</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Shops -->
+    <!-- ========================================================= -->
+    <string name="error_delete_shop">Ошибка удаления магазина</string>
+    <string name="error_enter_comment">Укажите комментарий для статуса Переезд или Ремонт</string>
+    <string name="error_enter_house_number">Укажите номер дома</string>
+    <string name="error_enter_street">Укажите улицу</string>
+    <string name="error_load_shop">Не удалось загрузить магазин</string>
+    <string name="error_load_shops">Ошибка загрузки магазинов</string>
+    <string name="error_save_shop">Ошибка сохранения магазина</string>
+    <string name="error_select_city">Выберите город</string>
+    <string name="error_shop_id_not_found">Ошибка: ID магазина не найден</string>
+    <string name="shop_not_found">Магазин не найден</string>
+    <string name="shops_not_found">Магазины не найдены</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Slides -->
+    <!-- ========================================================= -->
+    <string name="error_delete_slide">Ошибка при удалении слайда</string>
+    <string name="error_slide_id_missing">Отсутствует ID слайда</string>
+    <string name="error_update_slide">Ошибка при обновлении слайда</string>
+    <string name="positions_slides_mismatch">Количество позиций не соответствует количеству слайдов</string>
+    <string name="preview_create_error">Не удалось создать предварительный просмотр изображения</string>
+
+    <!-- ========================================================= -->
+    <!-- Domain-specific errors: Users / Auth -->
+    <!-- ========================================================= -->
+    <string name="cannot_delete_self">Невозможно удалить текущего пользователя</string>
+    <string name="delete_error">Ошибка при удалении пользователя</string>
+    <string name="email_already_exists">Пользователь с таким email уже существует</string>
+    <string name="error_load_user">Error loading user</string>
+    <string name="invalid_credentials">Неверный email или пароль</string>
+    <string name="invalid_email">Неверный email</string>
+    <string name="invalid_email_format">Неверный формат email</string>
+    <string name="login_error">Ошибка входа. Попробуйте ещё раз</string>
+    <string name="only_admins_can_delete">Только администраторы могут удалять пользователей</string>
+    <string name="password_min_length">Пароль должен содержать минимум 8 символов</string>
+    <string name="update_error">Ошибка при обновлении пользователя</string>
+    <string name="user_not_found">Пользователь не найден</string>
+    <string name="users_not_found">Пользователи не найдены</string>
+
+    <!-- ========================================================= -->
+    <!-- Success messages -->
+    <!-- ========================================================= -->
+    <string name="file_saved_success">Файл сохранён: %1$d</string>
+    <string name="new_city_added_success">Новый город добавлен</string>
+    <string name="settings_saved">Настройки сохранены</string>
+    <string name="settings_updated">Настройки обновлены</string>
+    <string name="shop_added_success">Магазин успешно добавлен</string>
+    <string name="shop_updated_success">Магазин успешно обновлён</string>
+    <string name="slide_added_success">Слайд успешно добавлен</string>
+    <string name="slide_deleted_success">Слайд успешно удалён</string>
+    <string name="slide_updated_success">Слайд успешно обновлён</string>
+    <string name="success_added">Успешно добавлено</string>
+    <string name="success_deleted">Успешно удалено</string>
+    <string name="success_updated">Успешно обновлено</string>
+
+    <!-- ========================================================= -->
+    <!-- Shops -->
+    <!-- ========================================================= -->
+    <string name="add_shop">Добавить магазин</string>
+    <string name="address">Адрес</string>
+    <string name="address_comment">Комментарий к адресу</string>
+    <string name="address_comment_label">Комментарий к адресу</string>
+    <string name="address_comment_placeholder">например: МАФ, ТЦ, павильон</string>
+    <string name="city">Город</string>
+    <string name="deselect_all_shops">Снять выбор всех магазинов</string>
+    <string name="deselect_all_tablet">Снять выбор всех магазинов с планшетом</string>
+    <string name="deselect_all_tv">Снять выбор всех магазинов с TV</string>
+    <string name="edit_shop">Редактировать магазин</string>
+    <string name="house_number">Номер дома</string>
+    <string name="internet_provider">Интернет-провайдер</string>
+    <string name="internet_provider_account">Лицевой счёт провайдера</string>
+    <string name="internet_provider_personal_account">Лицевой счёт провайдера</string>
+    <string name="internet_replenishment_amount">Сумма пополнения</string>
+    <string name="internet_replenishment_day">День пополнения интернета</string>
+    <string name="new_shop">Новый магазин</string>
+    <string name="phone_number">Номер телефона</string>
+    <string name="replenishment_amount_label">Сумма пополнения</string>
+    <string name="select_all_shops">Выбрать все магазины</string>
+    <string name="select_all_tablet">Выбрать все магазины с планшетом</string>
+    <string name="select_all_tv">Выбрать все магазины с TV</string>
+    <string name="select_shops">Выберите магазины</string>
+    <string name="shop_address">Адрес: %1$s, %2$s, %3$s</string>
+    <string name="shop_details">Детали магазина</string>
+    <string name="shops">Магазины</string>
+    <string name="shops_phone_list">Список номеров телефонов</string>
+    <string name="status">Статус</string>
+    <string name="status_active">Активный</string>
+    <string name="status_closed">Закрыт</string>
+    <string name="status_comment">Комментарий</string>
+    <string name="status_inactive">Неактивный</string>
+    <string name="status_relocating">Переезд</string>
+    <string name="status_under_repair">Ремонт</string>
+    <string name="store_leftovers">Минимальные остатки по магазину</string>
+    <string name="street">Улица</string>
+    <string name="this_shop">этот магазин</string>
+
+    <!-- ========================================================= -->
+    <!-- Slides -->
+    <!-- ========================================================= -->
+    <string name="active_slide">Активный слайд</string>
+    <string name="add_slide">Добавить слайд</string>
+    <string name="animation_speed">Скорость анимации: %1$s</string>
+    <string name="delete_slide_confirmation">Удалить слайд?</string>
+    <string name="device_for_slides">Устройство для показа слайдов</string>
+    <string name="device_none">Нет устройства</string>
+    <string name="device_tablet">Планшет</string>
+    <string name="device_tv">Телевизор</string>
+    <string name="edit_slide">Редактировать слайд</string>
+    <string name="effect">Эффект</string>
+    <string name="horizontal">Горизонтальный</string>
+    <string name="no_slides">Нет слайдов</string>
+    <plurals name="slide_active_shops">
+        <item quantity="one">Активен в одном магазине</item>
+        <item quantity="other">Активен в %1$d магазинах</item>
+    </plurals>
+    <string name="slide_code">Код слайдов</string>
+    <string name="slide_last_modified">Последнее изменение: %1$s</string>
+    <string name="slide_not_show">Слайд нигде не показывается</string>
+    <string name="slide_position">Позиция: %1$d</string>
+    <string name="slide_switch_speed">Скорость переключения слайдов: %1$d с.</string>
+    <string name="slides">Слайды</string>
+    <string name="slides_ai_generation">AI генерация слайдов</string>
+    <string name="slides_list_empty">Слайды отсутствуют</string>
+    <string name="slides_preview">Предпросмотр</string>
+    <string name="slides_refresh_interval">Обновлять список слайдов каждые: %1$s</string>
+    <string name="transition_effect">Эффект перехода</string>
+    <string name="transition_fade">Затемнение</string>
+    <string name="transition_pop">Поп-эффект</string>
+    <string name="transition_slide_fade">Сдвиг + затемнение</string>
+    <string name="transition_slide_horizontal">Сдвиг по горизонтали</string>
+    <string name="transition_slide_vertical">Сдвиг по вертикали</string>
+    <string name="transition_zoom">Увеличение</string>
+    <string name="vertical">Вертикальный</string>
+
+    <!-- ========================================================= -->
+    <!-- Cities -->
+    <!-- ========================================================= -->
+    <string name="add_city">Добавить город</string>
+    <string name="add_new_city">Добавить новый город</string>
+    <string name="cities">Города</string>
+    <string name="edit_city">Редактировать город</string>
+    <string name="enter_city_name">Введите название города</string>
+    <string name="no_cities">Нет городов</string>
+
+    <!-- ========================================================= -->
+    <!-- Users / Auth -->
+    <!-- ========================================================= -->
+    <string name="admin">Администратор</string>
+    <string name="email">Email</string>
+    <string name="enable_auto_login">Авто-логин</string>
+    <string name="enter_user_role">Выберите роль пользователя:</string>
+    <string name="exit">Выйти</string>
+    <string name="exit_from_account">Выйти из аккаунта</string>
+    <string name="first_name">Имя</string>
+    <string name="last_name">Фамилия</string>
+    <string name="login">Вход</string>
+    <string name="login_button">Войти</string>
+    <string name="min_8_symbols">Минимум 8 символов</string>
+    <string name="password">Пароль</string>
+    <string name="this_user">этого пользователя</string>
+    <string name="user">Пользователь</string>
+    <string name="user_role">Роль пользователя</string>
+    <string name="users">Пользователи</string>
+
+    <!-- ========================================================= -->
+    <!-- Files / Documents -->
+    <!-- ========================================================= -->
+    <string name="application_for_return_of_goods">Заявление на возврат товара</string>
+    <string name="camera_codes">Коды камер</string>
+    <string name="change_logo">Заменить логотип</string>
+    <string name="cleaning_rules">График уборки</string>
+    <string name="cleaning_schedule">Создать бланк уборки</string>
+    <string name="code">Код</string>
+    <string name="collection_schedule">Создать бланк инкассации</string>
+    <string name="copy_value">Скопировать: %1$s</string>
+    <string name="created">Создан</string>
+    <string name="current_value">Текущее значение</string>
+    <string name="delete_confirmation_message">Вы уверены, что хотите удалить %1$s?</string>
+    <string name="document_generation">Генерация документов</string>
+    <string name="empty_list">Список пуст</string>
+    <string name="error_select_file">Выберите файл для добавления</string>
+    <string name="file_generation">Генерация файлов...</string>
+    <string name="file_name_en">Название файла (на английском)</string>
+    <string name="file_name_hint">Рекомендуем: "%1$s" (только английские символы, пробелы и . _ - ( ))</string>
+    <string name="file_name_invalid">Имя содержит недопустимые символы. Разрешены только английские буквы, цифры, пробелы и . _ - ( )</string>
+    <string name="file_not_selected">Файл не выбран</string>
+    <string name="files">Файлы</string>
+    <string name="last_modified">Последнее изменение: %1$s</string>
+    <string name="last_modified_by_user">Изменено пользователем: %1$s</string>
+    <string name="no_matches_with_existing_list">Нет совпадений с существующим списком</string>
+    <string name="remote_number">Пультовый номер</string>
+    <string name="select_fields_for_share">Выберите поля для отправки</string>
+    <string name="select_file_types">Выберите типы файлов</string>
+    <string name="select_image">Выбрать изображение</string>
+    <string name="select_logo">Выбрать логотип</string>
+    <string name="show_qr_code">Показать QR-код</string>
+    <string name="unsaved_changes_message">Есть несохранённые изменения. Хотите сохранить их?</string>
+    <string name="unsaved_changes_title">Несохранённые изменения</string>
+
+    <!-- ========================================================= -->
+    <!-- Settings / Appearance -->
+    <!-- ========================================================= -->
+    <string name="about_app">О приложении</string>
+    <string name="cache_size">Размер кеша:</string>
+    <string name="clear_cache">Очистить кеш</string>
+    <string name="confirm_clear_cache_message">Будут удалены временные файлы. Данные аккаунта и настройки не пострадают.</string>
+    <string name="confirm_clear_cache_title">Очистить кеш?</string>
+    <string name="current_app_version">Версия приложения:</string>
+    <string name="interface_label">Интерфейс</string>
+    <string name="new_app_version">Новая версия:</string>
+    <string name="select_theme">Сменить тему</string>
+    <string name="settings">Настройки</string>
+    <string name="theme_auto">Авто</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_description_auto">Автоматически под системную тему</string>
+    <string name="theme_description_dark">Тёмное оформление</string>
+    <string name="theme_description_light">Светлое оформление</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_setting">Тема</string>
+    <string name="version">Версия %1$s</string>
+
+    <!-- ========================================================= -->
+    <!-- Date / time -->
+    <!-- ========================================================= -->
+    <string-array name="all_months">
+        <item>Январь</item>
+        <item>Февраль</item>
+        <item>Март</item>
+        <item>Апрель</item>
+        <item>Май</item>
+        <item>Июнь</item>
+        <item>Июль</item>
+        <item>Август</item>
+        <item>Сентябрь</item>
+        <item>Октябрь</item>
+        <item>Ноябрь</item>
+        <item>Декабрь</item>
+    </string-array>
+    <string name="datetime_format_full">%1$d %2$s %3$d в %4$s:%5$s</string>
+    <string name="hours_minutes">%1$d ч %2$d мин</string>
+    <string name="hours_only">%1$d ч</string>
+    <string name="minutes_only">%1$d мин</string>
+    <string name="month_april">апреля</string>
+    <string name="month_august">августа</string>
+    <string name="month_december">декабря</string>
+    <string name="month_february">февраля</string>
+    <string name="month_january">января</string>
+    <string name="month_july">июля</string>
+    <string name="month_june">июня</string>
+    <string name="month_march">марта</string>
+    <string name="month_may">мая</string>
+    <string name="month_november">ноября</string>
+    <string name="month_october">октября</string>
+    <string name="month_september">сентября</string>
+    <string name="select_day">Выберите день</string>
+    <string name="select_month">Выберите месяц</string>
+    <string name="selected_day">Выбран день</string>
+
+    <!-- ========================================================= -->
+    <!-- Tray -->
+    <!-- ========================================================= -->
+    <string name="show_pc_window">Показать окно</string>
+    <string name="stay_online_on_close">При закрытии — сворачивать в трей</string>
+
+    <!-- ========================================================= -->
+    <!-- OTA -->
+    <!-- ========================================================= -->
+    <string name="account_label">Аккаунт</string>
+    <string name="confirm_logout_message">Для повторного входа потребуется авторизация.</string>
+    <string name="confirm_logout_title">Выйти из аккаунта?</string>
+    <string name="ota_action_check">Проверить</string>
+    <string name="ota_action_close">Закрыть</string>
+    <string name="ota_action_install">Установить</string>
+    <string name="ota_dash">—</string>
+    <string name="ota_dialog_title">Update</string>
+    <string name="ota_download_counter_template">%1$s / %2$s</string>
+    <string name="ota_release_notes_title">Что изменилось:</string>
+    <string name="ota_state_available_template">Доступно обновление: %1$s</string>
+    <string name="ota_state_checking">Проверяем обновления…</string>
+    <string name="ota_state_downloading">Загрузка…</string>
+    <string name="ota_state_error_template">Ошибка: %1$s</string>
+    <string name="ota_state_idle">Обновления не проверялись</string>
+    <string name="ota_state_installing">Запуск установщика</string>
+    <string name="ota_state_no_update">Обновлений нет.</string>
+    <string name="ota_state_ready_to_install">Готово к установке</string>
+    <string name="ota_state_verifying">Проверка целостности (SHA256)…</string>
+    <string name="ota_title">Обновление приложения</string>
+    <string name="ota_updates">Обновления</string>
+
+</resources>
