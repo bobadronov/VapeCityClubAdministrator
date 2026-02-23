@@ -53,7 +53,6 @@ class SettingsScreenViewModel(
                     _uiEvent.emit(it)
                 }
             }
-            launch { refreshCacheSize() }
         }
 
         _uiState.update {
@@ -66,6 +65,7 @@ class SettingsScreenViewModel(
 
     fun onIntent(intent: SettingsIntent) {
         when (intent) {
+            SettingsIntent.Init -> viewModelScope.launch { refreshCacheSize() }
             is SettingsIntent.SetTheme -> setTheme(intent.state)
             is SettingsIntent.SetLogoutDialog -> _uiState.update { it.copy(logoutDialogVisible = intent.visible) }
             is SettingsIntent.SetClearCacheDialog -> _uiState.update { it.copy(clearCacheDialogVisible = intent.visible) }

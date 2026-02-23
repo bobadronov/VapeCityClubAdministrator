@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -130,6 +131,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.onIntent(SettingsIntent.Init)
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
@@ -173,10 +175,10 @@ private fun SettingsContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
-            Modifier.weight(1f).sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp)
+            Modifier.weight(1f).fillMaxHeight().sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp)
         ) {
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).fillMaxHeight(),
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -353,7 +355,7 @@ private fun ThemeCard(
         modifier = modifier.fillMaxWidth(),
     ) {
         SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(.8f)
         ) {
             ThemeMode.entries.forEachIndexed { index, item ->
                 SegmentedButton(

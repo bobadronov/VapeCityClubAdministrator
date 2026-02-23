@@ -7,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import coil3.ImageLoader
+import coil3.disk.DiskCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
@@ -15,8 +18,9 @@ import java.io.File
 
 actual object PlatformFunctionProvider : KoinComponent {
     private val context: Context by inject(Context::class.java)
-    private val cacheDir: File get() = get(named("imageCacheDir"))
+    private val cacheDir: File get() = get(named("coil3_disk_cache"))
     private val imageLoader: ImageLoader get() = get()
+    private val diskCache: DiskCache get() = get()   // <- додай
 
     actual fun openNetwork() {
         val intents = listOf(
@@ -36,12 +40,21 @@ actual object PlatformFunctionProvider : KoinComponent {
         }
     }
 
-    actual suspend fun getCacheSize(): Long = cacheDir.directorySizeBytes()
+    actual suspend fun getCacheSize(): Long = withContext(Dispatchers.IO) {
+        val mem = imageLoader.memoryCache?.size ?: 0L
+        val netMem = imageLoader.diskCache?.size ?: 0L
+        val disk = cacheDir.directorySizeBytes()
+        mem + disk + netMem
+    }
 
     actual fun clearCache() {
         imageLoader.memoryCache?.clear()
-        cacheDir.deleteRecursively()
-        cacheDir.mkdirs()
+        runCatching { diskCache.clear() }
+            .onFailure {
+                // fallback лише якщо clear() не зміг
+                cacheDir.deleteRecursively()
+                cacheDir.mkdirs()
+            }
     }
 
     private fun File.directorySizeBytes(): Long {
