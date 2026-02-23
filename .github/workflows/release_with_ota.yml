@@ -68,7 +68,7 @@ jobs:
           find . -type f -path "*/build/outputs/apk/*/*release*.apk" -exec cp -v {} dist/ \; || true
           echo "Collected files:"
           ls -la dist || true
-          
+
       - name: Rename APK for GitHub Release
         shell: bash
         env:
@@ -84,7 +84,6 @@ jobs:
             exit 1
           fi
 
-          # якщо їх кілька — беремо перший (можна посилити фільтр під твій модуль/variant)
           APK_PATH="$(ls -1 dist/*.apk | head -n 1)"
           NEW_NAME="VCC.Administrator-${VERSION}.apk"
 
@@ -198,7 +197,7 @@ jobs:
           if-no-files-found: warn
 
   release:
-    name: Publish GitHub Release + update manifest + upsert Supabase
+    name: Publish GitHub Release + update manifest + write Supabase row
     needs: [android, desktop]
     runs-on: ubuntu-latest
 
@@ -225,14 +224,12 @@ jobs:
           echo "Downloaded artifacts:"
           find dist -type f -print || true
 
-      # ---- Generate release notes (опис змін) ----
       - name: Generate release notes (release_notes.md)
         shell: bash
         env:
           TAG: ${{ github.ref_name }}
         run: |
           set -e
-          # знайдемо попередній тег; якщо його нема — беремо всю історію
           PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
           echo "Current tag: ${TAG}"
           echo "Prev tag: ${PREV_TAG}"
@@ -244,7 +241,6 @@ jobs:
           echo "Release notes:"
           cat release_notes.md
 
-      # ---- Create/Update GitHub Release + attach assets + body ----
       - name: Upload to GitHub Release (assets + notes)
         uses: softprops/action-gh-release@v2
         with:
@@ -257,7 +253,6 @@ jobs:
             dist/**/*.msi
             dist/**/*.deb
             dist/**/*.pkg
-            dist/**/*.exe
           fail_on_unmatched_files: false
 
       - name: Setup Python
@@ -281,7 +276,7 @@ jobs:
           gh api "repos/${REPO}/releases/tags/${TAG}" > release.json
           jq '.tag_name, .published_at, (.assets|length), (.body|length)' release.json
 
-      - name: Generate manifest + write composeApp/ota/update.json + upsert Supabase
+      - name: Generate composeApp/ota/update.json + update/insert Supabase admin_app_updates
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -289,6 +284,7 @@ jobs:
         run: |
           python - <<'PY'
           import os, json, re, pathlib, hashlib
+          from datetime import datetime, timezone
           import tomllib
           from supabase import create_client
 
@@ -319,18 +315,29 @@ jobs:
             rx = re.compile(regex, re.I)
             for a in assets:
               name = a.get("name","")
-              if rx.search(name):
-                size = a.get("size")
-                local = find_local_asset(name, size)
-                return {
-                  "name": name,
-                  "url": a.get("browser_download_url"),
-                  "size": size,
-                  "sha256": sha256_file(local) if local else ""
-                }
+              if not rx.search(name):
+                continue
+
+              size = a.get("size")
+              url = a.get("browser_download_url")
+
+              local = find_local_asset(name, size)
+              if not local:
+                raise SystemExit(f"ERROR: local file for asset not found in dist/: {name} (size={size})")
+
+              sha = sha256_file(local)
+              if not sha:
+                raise SystemExit(f"ERROR: sha256 empty for asset: {name}")
+
+              return {
+                "name": name,
+                "url": url,
+                "size": size,
+                "sha256": sha,
+              }
             return None
 
-          # versions from libs.versions.toml
+          # ВЕРСІЯ (якщо хочеш — можеш брати з TAG, але ти вже маєш libs.versions.toml)
           toml_path = pathlib.Path("gradle/libs.versions.toml")
           data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
           v = data.get("versions", {})
@@ -341,32 +348,34 @@ jobs:
           subpath = int(v["subpath"])
 
           desktop_build = patch * 100 + subpath
-          version_name = f"{major}.{minor}.{desktop_build}"
-          desktop_version = f"{major}.{minor}.{desktop_build}"
-
-          # android version code (простий стабільний формат)
-          android_version = version_name
-          android_version_code = major * 1000 + minor * 100 + patch * 10 + subpath
+          version = f"{major}.{minor}.{desktop_build}"
 
           rel = json.loads(pathlib.Path("release.json").read_text(encoding="utf-8"))
           assets = rel.get("assets", [])
-
           release_notes = rel.get("body") or ""
 
+          # published_at з GitHub -> epoch millis (bigint)
+          published_iso = rel.get("published_at")
+          if not published_iso:
+            raise SystemExit("ERROR: release.published_at is missing")
+          # приклад: 2026-02-15T12:34:56Z
+          dt = datetime.fromisoformat(published_iso.replace("Z", "+00:00")).astimezone(timezone.utc)
+          published_at_ms = int(dt.timestamp() * 1000)
+
+          windows = pick_asset(assets, r"\.msi$")
+          macos   = pick_asset(assets, r"\.(dmg|pkg)$")
+          linux   = pick_asset(assets, r"\.deb$")
+          android = pick_asset(assets, r"\.apk$")
+
+          # JSON для клієнта/дебагу: 1:1 як таблиця admin_app_updates
           manifest = {
-            "tag": rel.get("tag_name"),
-            "publishedAt": rel.get("published_at"),
-            "versionName": version_name,
-            "desktop_version": desktop_version,
-            "android_version": android_version,
-            "android_version_code": android_version_code,
-            "releaseNotes": release_notes,
-            "assets": {
-              "android": pick_asset(assets, r"\.apk$"),
-              "windows": pick_asset(assets, r"\.(msi|exe)$"),
-              "macos":   pick_asset(assets, r"\.(dmg|pkg)$"),
-              "linux":   pick_asset(assets, r"\.deb$")
-            }
+            "version": version,
+            "published_at": published_at_ms,
+            "release_notes": release_notes,
+            "windows": windows,
+            "macos": macos,
+            "linux": linux,
+            "android": android,
           }
 
           out_path = pathlib.Path("composeApp/ota/update.json")
@@ -379,18 +388,25 @@ jobs:
           supabase = create_client(sb_url, sb_key)
 
           row = {
-            "tag": manifest["tag"],
-            "published_at": manifest.get("publishedAt"),
-            "version_name": manifest.get("versionName"),
-            "desktop_version": manifest.get("desktop_version"),
-            "android_version": manifest.get("android_version"),
-            "android_version_code": manifest.get("android_version_code"),
-            "release_notes": manifest.get("releaseNotes"),
-            "manifest": manifest,
+            "version": manifest["version"],
+            "published_at": manifest["published_at"],
+            "release_notes": manifest["release_notes"],
+            "windows": manifest["windows"],
+            "macos": manifest["macos"],
+            "linux": manifest["linux"],
+            "android": manifest["android"],
           }
 
-          res = supabase.table("admin_app_updates").upsert(row).execute()
-          print("Upsert result:", res.data)
+          # "upsert" по version без UNIQUE не працює коректно.
+          # Робимо: update де version=...; якщо нічого не оновилось — insert.
+          upd = supabase.table("admin_app_updates").update(row).eq("version", row["version"]).execute()
+          updated_count = len(upd.data or [])
+          if updated_count > 0:
+            print(f"Updated rows: {updated_count}")
+          else:
+            ins = supabase.table("admin_app_updates").insert(row).execute()
+            print("Inserted:", ins.data)
+
           PY
 
       - name: Commit and push update.json
