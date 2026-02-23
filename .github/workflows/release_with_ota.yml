@@ -226,23 +226,35 @@ jobs:
           find dist -type f -print || true
 
       # ---- Generate release notes (опис змін) ----
-      - name: Generate release notes (release_notes.md)
+      - name: Generate release notes (body + plain)
         shell: bash
         env:
           TAG: ${{ github.ref_name }}
         run: |
           set -e
-          # знайдемо попередній тег; якщо його нема — беремо всю історію
+
           PREV_TAG="$(git describe --tags --abbrev=0 "${TAG}^" 2>/dev/null || true)"
           echo "Current tag: ${TAG}"
           echo "Prev tag: ${PREV_TAG}"
-          echo "# ${TAG}" > release_notes.md
-          echo "" >> release_notes.md
-          echo "Changes" >> release_notes.md
-          echo "" >> release_notes.md
-          git log --pretty=format:"- %s (%h)" "${TAG}" >> release_notes.md
-          echo "Release notes:"
-          cat release_notes.md
+
+          if [ -n "${PREV_TAG}" ]; then
+            RANGE="${PREV_TAG}..${TAG}"
+          else
+            RANGE="${TAG}"
+          fi
+
+          # 1) Plain notes for manifest/db: only subjects, no hashes, no markdown headers
+          git log --no-merges --pretty=format:"%s" ${RANGE} > release_notes.txt
+
+          # 2) Markdown body for GitHub release (optional formatting)
+          {
+            echo "Changes"
+            echo ""
+            sed 's/^/- /' release_notes.txt
+          } > release_body.md
+
+          echo "Plain notes:"
+          cat release_notes.txt
 
       # ---- Create/Update GitHub Release + attach assets + body ----
       - name: Upload to GitHub Release (assets + notes)
