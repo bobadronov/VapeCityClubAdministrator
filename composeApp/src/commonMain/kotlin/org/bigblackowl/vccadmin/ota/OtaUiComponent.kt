@@ -37,6 +37,7 @@ import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
@@ -87,10 +89,20 @@ import vccadministrator.composeapp.generated.resources.ota_title
 
 
 @Composable
-fun OtaUiComponent() {
-    val otaUpdateManager: OtaUpdateManager = koinInject()
+fun OtaUiComponent(
+    snackbarHostState: SnackbarHostState,
+    otaUpdateManager: OtaUpdateManager = koinInject(),
+) {
 
-    LaunchedEffect(Unit) { otaUpdateManager.check() }
+    LaunchedEffect(Unit) {
+        otaUpdateManager.check()
+        otaUpdateManager.uiEvent.collect { event ->
+            when (event) {
+                is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
+                else -> {}
+            }
+        }
+    }
 
     val state by otaUpdateManager.state.collectAsState()
 

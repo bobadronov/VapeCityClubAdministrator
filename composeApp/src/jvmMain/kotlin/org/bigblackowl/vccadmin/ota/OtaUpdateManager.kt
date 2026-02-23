@@ -9,19 +9,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.AdminAppUpdate
 import org.bigblackowl.vccadmin.data.entity.AssetInfo
 import org.bigblackowl.vccadmin.data.entity.DesktopOs
 import org.bigblackowl.vccadmin.data.entity.UpdateInfo
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
+import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.utils.OtaDownloader
+import org.bigblackowl.vccadmin.domain.repository.OtaUpdateRepository
 import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
+import org.jetbrains.compose.resources.getString
+import vccadministrator.composeapp.generated.resources.Res
+import vccadministrator.composeapp.generated.resources.no_internet
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -30,7 +37,7 @@ import kotlin.time.TimeSource
 actual class OtaUpdateManager(
     private val repo: OtaUpdateRepository,
     private val downloader: OtaDownloader,
-    private val network: NetworkMonitorProvider,
+    private val networkMonitorProvider: NetworkMonitorProvider,
 ) {
     private val os: DesktopOs = detectDesktopOs()
 
@@ -43,6 +50,9 @@ actual class OtaUpdateManager(
     private val _state = MutableStateFlow<UpdateState>(UpdateState.Idle)
     actual val state: StateFlow<UpdateState> = _state.asStateFlow()
 
+    private val _uiEvent = MutableSharedFlow<UIEvents>(replay = 0)
+    actual val uiEvent: SharedFlow<UIEvents> = _uiEvent.asSharedFlow()
+
     private var pending: PendingInstall? = null
 
     private var checkJob: Job? = null
@@ -53,15 +63,19 @@ actual class OtaUpdateManager(
     actual fun check() {
         if (checkJob?.isActive == true) return
         checkJob = scope.launch {
-            delay(250.milliseconds) // debounce
+            delay(1.seconds) // debounce
             _state.value = UpdateState.Checking
             Napier.d(tag = TAG) { "Checking updates... os=$os" }
 
+            if (networkMonitorProvider.isConnected.value.not()) {
+                showMessage(message = getString(Res.string.no_internet))
+                return@launch
+            }
             try {
-                ensureInternetOrFail()
 
                 // ✅ тепер повертає AdminAppUpdate?
                 val manifest: AdminAppUpdate = repo.fetchLatestManifest() ?: run {
+                    delay(1.seconds) // debounce
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
@@ -69,6 +83,7 @@ actual class OtaUpdateManager(
                 // ✅ версія тепер у manifest.version
                 val remote = manifest.version?.trim().orEmpty()
                 if (remote.isBlank()) {
+                    delay(1.seconds) // debounce
                     _state.value = UpdateState.Error("Manifest has blank version")
                     return@launch
                 }
@@ -78,18 +93,20 @@ actual class OtaUpdateManager(
                     manifest.pickAsset(os)?.name
                         ?.takeIf { it.isNotBlank() }
                         ?.let { cleanupLocalIfExists(it) }
-
+                    delay(1.seconds) // debounce
                     _state.value = UpdateState.NoUpdate
                     return@launch
                 }
 
                 val asset = manifest.pickAsset(os) ?: run {
+                    delay(1.seconds) // debounce
                     _state.value = UpdateState.Error("No asset for OS=$os")
                     return@launch
                 }
 
                 cleanupLocalIfExists(asset.name)
 
+                delay(1.seconds) // debounce
                 _state.value = UpdateState.Available(UpdateInfo(manifest, asset))
                 Napier.d(tag = TAG) { "Update available: ${asset.name}, size=${asset.size}" }
             } catch (t: Throwable) {
@@ -116,9 +133,8 @@ actual class OtaUpdateManager(
             try {
                 _state.value = UpdateState.Installing(p.info)
                 PlatformFileProvider.startUpdates(p.fileName)
-
                 pending = null
-                delay(700)
+                delay(1.seconds) // debounce
                 exitProcess(0)
             } catch (t: Throwable) {
                 _state.value = UpdateState.Error("Install failed: ${t.message}", t)
@@ -181,7 +197,7 @@ actual class OtaUpdateManager(
 
                 cleanupLocalIfExists(fileName)
                 PlatformFileProvider.saveFile(fileName, bytes)
-
+                delay(1.seconds) // debounce
                 _state.value = UpdateState.Verifying(info)
 
                 // ✅ SHA по файлу, і тільки якщо є expected
@@ -190,12 +206,14 @@ actual class OtaUpdateManager(
                     val computed = PlatformFileProvider.sha256OfSavedFile(fileName)
                     if (!computed.equals(expected, ignoreCase = true)) {
                         Napier.e(tag = TAG) { "SHA256 mismatch. expected=$expected computed=$computed" }
+                        delay(1.seconds) // debounce
                         _state.value = UpdateState.Error("SHA256 mismatch. File may be corrupted.")
                         return@launch
                     }
                 }
 
                 pending = PendingInstall(fileName, info)
+                delay(1.seconds) // debounce
                 _state.value = UpdateState.ReadyToInstall(info)
             } catch (t: Throwable) {
                 Napier.e(tag = TAG, throwable = t) { "Download failed" }
@@ -206,11 +224,6 @@ actual class OtaUpdateManager(
         downloadJob?.start()
     }
 
-    private suspend fun ensureInternetOrFail() {
-        if (network.isConnected.value) return
-        delay(4.seconds)
-        if (!network.isConnected.value) error("No internet")
-    }
 
     private suspend fun cleanupLocalIfExists(fileName: String) {
         if (fileName.isBlank()) return
@@ -234,5 +247,9 @@ actual class OtaUpdateManager(
         DesktopOs.WINDOWS -> windows
         DesktopOs.MACOS -> macos
         DesktopOs.LINUX -> linux
+    }
+    private fun showMessage(message: String) = scope.launch {
+        Napier.d(tag = "ShopAddEditScreenViewModel") { message }
+        _uiEvent.emit(UIEvents.ShowMessage(message))
     }
 }
