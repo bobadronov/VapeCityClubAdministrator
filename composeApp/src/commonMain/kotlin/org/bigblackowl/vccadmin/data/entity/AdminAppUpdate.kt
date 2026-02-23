@@ -31,8 +31,6 @@ data class AdminAppUpdate(
     @SerialName("android")
     val android: AssetInfo? = null,
 
-    @SerialName("created_at")
-    val createdAt: String? = null, // timestamp
 )
 
 @Serializable
