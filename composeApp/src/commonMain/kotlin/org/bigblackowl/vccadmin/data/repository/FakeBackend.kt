@@ -1,15 +1,15 @@
 package org.bigblackowl.vccadmin.data.repository
 
+import org.bigblackowl.vccadmin.data.entity.AdminAppUpdate
+import org.bigblackowl.vccadmin.data.entity.AssetInfo
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.DeviceType
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
+import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
-import org.bigblackowl.vccadmin.data.entity.AdminAppUpdate
-import org.bigblackowl.vccadmin.data.entity.AssetInfo
-import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.ui.city.addEdit.CitySuggestion
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import kotlin.math.absoluteValue
@@ -113,8 +113,6 @@ object FakeBackend {
             size = 45L * 1024 * 1024,
             sha256 = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
         ),
-        // createdAt опційно
-        createdAt = "2026-02-15T12:34:56Z",
     )
 
     // ---- UpdateInfo під кожну ОС ----

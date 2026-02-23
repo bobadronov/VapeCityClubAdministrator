@@ -237,8 +237,6 @@ jobs:
           echo "Current tag: ${TAG}"
           echo "Prev tag: ${PREV_TAG:-<none>}"
       
-          echo "# ${TAG}" > release_notes.md
-          echo "" >> release_notes.md
           echo "Changes" >> release_notes.md
           echo "" >> release_notes.md
       
