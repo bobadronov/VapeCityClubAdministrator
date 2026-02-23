@@ -236,10 +236,7 @@ jobs:
       
           echo "Current tag: ${TAG}"
           echo "Prev tag: ${PREV_TAG:-<none>}"
-      
-          echo "Changes" >> release_notes.md
-          echo "" >> release_notes.md
-      
+
           if [ -n "${PREV_TAG}" ]; then
             # ✅ тільки зміни між попереднім і поточним тегом
             git log --pretty=format:"- %s (%h)" "${PREV_TAG}..${TAG}" >> release_notes.md

@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -31,16 +30,11 @@ import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import vccadministrator.composeapp.generated.resources.Res
 
 @Composable
 private fun PlaygroundContent() {
 
-    var update by remember { mutableStateOf<AdminAppUpdate?>(null) }
-
-    LaunchedEffect(Unit) {
-        update = loadUpdateFromResources()
-    }
+    var update by remember { mutableStateOf(loadUpdateFromResources()) }
 
     Surface(Modifier.fillMaxSize()) {
         Column(
@@ -52,25 +46,23 @@ private fun PlaygroundContent() {
         ) {
             Text("Playground", style = MaterialTheme.typography.titleLarge)
             val u = update
-            if (u != null) {
-                UpdateHeader(u)
+            UpdateHeader(u)
 
-                if (!u.releaseNotes.isNullOrBlank()) {
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Release notes", style = MaterialTheme.typography.titleMedium)
-                            Text(u.releaseNotes)
-                        }
+            if (!u.releaseNotes.isNullOrBlank()) {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Release notes", style = MaterialTheme.typography.titleMedium)
+                        Text(u.releaseNotes)
                     }
                 }
+            }
 
-                val assets = u.assets()
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Assets (${assets.size})", style = MaterialTheme.typography.titleMedium)
-                        assets.forEach { info ->
-                            AssetRow(info.asset)
-                        }
+            val assets = u.assets()
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Assets (${assets.size})", style = MaterialTheme.typography.titleMedium)
+                    assets.forEach { info ->
+                        AssetRow(info.asset)
                     }
                 }
             }
@@ -120,9 +112,37 @@ private val UpdateJson = Json {
 }
 
 @OptIn(ExperimentalResourceApi::class)
-private suspend fun loadUpdateFromResources(): AdminAppUpdate {
-    val bytes = Res.readBytes("files/update.json")
-    return UpdateJson.decodeFromString<AdminAppUpdate>(bytes.decodeToString())
+private fun loadUpdateFromResources(): AdminAppUpdate {
+    val data = "{\n" +
+            "  \"version\": \"1.2.603\",\n" +
+            "  \"published_at\": 1771845913000,\n" +
+            "  \"release_notes\": \"Changes\\n\\n- Fix OTA overlay crash (a1b2c3d)\\n- Improve caching on Settings screen (d4e5f6a)\\n- Bump dependencies (1a2b3c4)\\n\",\n" +
+            "  \"windows\": {\n" +
+            "    \"name\": \"VCC-Admin-Setup-1.2.603.msi\",\n" +
+            "    \"url\": \"https://github.com/OWNER/REPO/releases/download/v1.2.603/VCC-Admin-Setup-1.2.603.msi\",\n" +
+            "    \"size\": 125829120,\n" +
+            "    \"sha256\": \"9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08\"\n" +
+            "  },\n" +
+            "  \"macos\": {\n" +
+            "    \"name\": \"VCC-Admin-1.2.603.dmg\",\n" +
+            "    \"url\": \"https://github.com/OWNER/REPO/releases/download/v1.2.603/VCC-Admin-1.2.603.dmg\",\n" +
+            "    \"size\": 104857600,\n" +
+            "    \"sha256\": \"3a7bd3e2360a3d80d64f0c1b3d1d2f1b6a6b1f1a9fd0c3b3b3d5d3f1a2b3c4d5\"\n" +
+            "  },\n" +
+            "  \"linux\": {\n" +
+            "    \"name\": \"vcc-admin_1.2.603_amd64.deb\",\n" +
+            "    \"url\": \"https://github.com/OWNER/REPO/releases/download/v1.2.603/vcc-admin_1.2.603_amd64.deb\",\n" +
+            "    \"size\": 94371840,\n" +
+            "    \"sha256\": \"b2e98ad6f6eb8508dd6a14cfa704bad7f05f6fb1b2a3c4d5e6f708192a3b4c5d\"\n" +
+            "  },\n" +
+            "  \"android\": {\n" +
+            "    \"name\": \"VCC.Administrator-1.2.603.apk\",\n" +
+            "    \"url\": \"https://github.com/OWNER/REPO/releases/download/v1.2.603/VCC.Administrator-1.2.603.apk\",\n" +
+            "    \"size\": 50331648,\n" +
+            "    \"sha256\": \"c0535e4be2b79ffd93291305436bf889314e4a3faec05ecffcbb7df31ad9e51a\"\n" +
+            "  }\n" +
+            "}"
+    return UpdateJson.decodeFromString<AdminAppUpdate>(data)
 }
 
 private fun AdminAppUpdate.assets(): List<UpdateInfo> = buildList {
