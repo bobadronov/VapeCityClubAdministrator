@@ -134,10 +134,9 @@ private fun SettingsContent(
     onIntent: (SettingsIntent) -> Unit,
     goBack: () -> Unit,
 ) {
-    val listState = rememberLazyListState()
-
     var themeMode by LocalThemeMode.current
     val systemDark = rememberIsDarkTheme()
+    val listState = rememberLazyListState()
 
     if (uiState.isInitialLoading) {
         LoadingComponent()
@@ -158,28 +157,58 @@ private fun SettingsContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
-                    ThemeSettingCard(
-                        mode = themeMode, onModeChange = {
-                            themeMode = it
-                            onIntent(
-                                SettingsIntent.SetTheme(
-                                    when (it) {
-                                        ThemeMode.AUTO -> systemDark
-                                        ThemeMode.DARK -> true
-                                        ThemeMode.LIGHT -> false
-                                    }
-                                )
-                            )
+                    OutlinedCardWithLabel(label = stringResource(Res.string.theme_setting), modifier = Modifier.fillMaxWidth()) {
+                        BodyText(text = stringResource(Res.string.select_theme), modifier = Modifier.align(Alignment.CenterHorizontally))
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        ) {
+                            ThemeMode.entries.forEachIndexed { index, item ->
+                                SegmentedButton(
+                                    selected = themeMode == item,
+                                    onClick = {
+                                        themeMode = item
+                                        onIntent(
+                                            SettingsIntent.SetTheme(
+                                                when (themeMode) {
+                                                    ThemeMode.AUTO -> systemDark
+                                                    ThemeMode.DARK -> true
+                                                    ThemeMode.LIGHT -> false
+                                                }
+                                            )
+                                        )
+                                    },
+                                    icon = { SegmentedButtonDefaults.Icon(themeMode == item, { DefaultIcon(item.icon) }) },
+                                    shape = SegmentedButtonDefaults.itemShape(index, ThemeMode.entries.size)
+                                ) {
+                                    BodyText(stringResource(item.label))
+                                }
+                            }
                         }
-                    )
+                    }
                 }
 
                 item {
-                    SettingCard(
+                    OutlinedCardWithLabel(
                         label = stringResource(Res.string.clear_cache),
-                        icon = { DefaultIcon(Icons.Default.DiscFull) },
-                        description = "${stringResource(Res.string.cache_size)} ${AppStringProvider.formatBytesToString(uiState.cacheSizeBytes)}",
-                        onTap = { onIntent(SettingsIntent.SetClearCacheDialog(true)) })
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DefaultIcon(Icons.Default.DiscFull)
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                text = "${stringResource(Res.string.cache_size)} ${AppStringProvider.formatBytesToString(uiState.cacheSizeBytes)}",
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            OutlinedButton(
+                                onClick = { onIntent(SettingsIntent.SetClearCacheDialog(true)) },
+                            ) {
+                                Text(stringResource(Res.string.clear_cache))
+                            }
+                        }
+                    }
                 }
 
                 item {
@@ -189,16 +218,23 @@ private fun SettingsContent(
                         onCheck = { onIntent(SettingsIntent.CheckUpdates) },
                         onDownload = { onIntent(SettingsIntent.DownloadUpdate) },
                         onInstall = { onIntent(SettingsIntent.InstallUpdate) },
-
-                        )
+                    )
                 }
 
                 item {
-                    SettingCard(
+                    OutlinedCardWithLabel(
                         label = stringResource(Res.string.account_label),
-                        icon = { DefaultIcon(Icons.AutoMirrored.Filled.Logout) },
-                        description = stringResource(Res.string.exit),
-                        onTap = { onIntent(SettingsIntent.SetLogoutDialog(true)) })
+                        modifier = Modifier.fillMaxWidth(),
+                        onTap = { onIntent(SettingsIntent.SetLogoutDialog(true)) }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            DefaultIcon(Icons.AutoMirrored.Filled.Logout)
+                            Spacer(Modifier.width(12.dp))
+                            Text(stringResource(Res.string.exit), style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
             }
 
@@ -251,29 +287,6 @@ private fun SettingsContent(
     }
 }
 
-@Composable
-private fun ThemeSettingCard(
-    mode: ThemeMode,
-    onModeChange: (ThemeMode) -> Unit,
-) {
-    OutlinedCardWithLabel(label = stringResource(Res.string.theme_setting), modifier = Modifier.fillMaxWidth()) {
-        BodyText(text = stringResource(Res.string.select_theme), modifier = Modifier.align(Alignment.CenterHorizontally))
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            ThemeMode.entries.forEachIndexed { index, item ->
-                SegmentedButton(
-                    selected = mode == item,
-                    onClick = { onModeChange(item) },
-                    icon = { SegmentedButtonDefaults.Icon(mode == item, { DefaultIcon(item.icon) }) },
-                    shape = SegmentedButtonDefaults.itemShape(index, ThemeMode.entries.size)
-                ) {
-                    BodyText(stringResource(item.label))
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun UpdatesSettingCard(
@@ -288,7 +301,7 @@ private fun UpdatesSettingCard(
         UpdateState.Idle -> stringResource(Res.string.ota_state_idle)
         UpdateState.Checking -> stringResource(Res.string.ota_state_checking)
         UpdateState.NoUpdate -> stringResource(Res.string.ota_state_no_update)
-        is UpdateState.Available -> stringResource(Res.string.ota_state_available_template, updateState.info.manifest.version?: "—")
+        is UpdateState.Available -> stringResource(Res.string.ota_state_available_template, updateState.info.manifest.version ?: "—")
         is UpdateState.Downloading -> stringResource(Res.string.ota_state_downloading)
         is UpdateState.Verifying -> stringResource(Res.string.ota_state_verifying)
         is UpdateState.ReadyToInstall -> stringResource(Res.string.ota_state_ready_to_install)
@@ -351,30 +364,6 @@ private fun OtaStatusIcon(ui: OtaUiModel) {
         ui.downloadProgress != null -> CircularWavyProgressIndicator(progress = { ui.downloadProgress }, modifier = Modifier.size(24.dp))
         ui.isDownloading -> CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
         else -> DefaultIcon(Icons.Default.Info)
-    }
-}
-
-@Composable
-private fun SettingCard(
-    label: String,
-    icon: @Composable () -> Unit,
-    description: String? = null,
-    onTap: (() -> Unit)? = null,
-) {
-    OutlinedCardWithLabel(
-        label = label, modifier = Modifier.fillMaxWidth(), onTap = { onTap?.invoke() }) {
-        Row(
-            modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
-        ) {
-            icon()
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.titleMedium)
-                if (!description.isNullOrBlank()) {
-                    Text(description, style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
     }
 }
 
