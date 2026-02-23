@@ -1,35 +1,29 @@
 {
-  "tag": "v1.0.813",
-  "publishedAt": "2026-02-23T08:37:59Z",
-  "versionName": "1.0.813",
-  "desktop_version": "1.0.813",
-  "android_version": "1.0.813",
-  "android_version_code": 1093,
-  "releaseNotes": "# v1.0.813\n\nChanges\n\n- v1.0.813 (5fe5831)\n- Merge remote-tracking branch 'origin/master' (957b072)\n- code cleanup, small UI changes, code optimization (73d64fa)\n- chore(ota): update manifest for v1.0.812 (71fd89e)\n- v1.0.812 (9858c5a)\n- add SettingsScreen (99cf3d3)\n- Merge remote-tracking branch 'origin/master' (2b4176c)\n- v1.0.811 (726df8b)\n- chore(ota): update manifest for v1.0.811 (0597db5)\n- Update release_with_ota.yml (cb6b393)\n- OTA moved to shared UI (1433262)\n- code cleanup (eaacdc1)\n- Merge remote-tracking branch 'origin/master' (b3f8ca2)\n- delete old files (c7d583d)\n- chore(ota): update manifest for v1.0.810 (ac3c368)\n- v1.0.810 (03febd7)\n- OTA update for desktop (f5de647)\n- auto show/hide network icon (2bff161)\n- add sha check (9178fa4)\n- add res for ota (3c8dff8)\n- rename param (c192b25)\n- rename param (14751c9)\n- add Timeout param for HttpClient (24424e9)\n- Merge remote-tracking branch 'origin/master' (d0e20b5)\n- version conf sync (67b9560)\n- Update release_with_ota.yml (dd5c043)\n- chore(ota): update manifest for v1.0.809 (3725e6c)\n- v1.0.809 (8bab3c6)\n- added open download folder in file generation (126d78a)\n- Merge remote-tracking branch 'origin/master' (e849352)\n- navigation update (29d2d54)\n- Delete .github/workflows/android.yml (6d0fe68)\n- Rename desktop-release_with_ota_json.yml to release_with_ota.yml (176b42f)\n- Update desktop-release_with_ota_json.yml (7bcf3ae)\n- chore(ota): update manifest for v1.0.808 (7b85884)\n- v1.0.808 (8cefe15)\n- Enhance Android CI to build and release APK (c441829)\n- v1.0.808 (6f9b9e6)\n- v1.0.808 (0487344)\n- Update GitHub Actions workflow for release manifest (ac697e3)\n- Update update.json generation with local sha256 (bd0a1d3)\n- chore(update): v1.0.807 [skip ci] (d04ce75)\n- v1.0.807 (9fb89d8)\n- Merge remote-tracking branch 'origin/master' (c14c319)\n- v1.0.807 (499aefc)\n- v1.0.806 (88e63ae)\n- v1.0.805 (bbd6624)\n- Delete .github/workflows/desktop-release.yml (84d97a1)\n- Add GitHub Actions workflow for desktop releases (ee1fbf5)\n- Merge remote-tracking branch 'origin/master' (71ed182)\n- v1.0.805 (32ba8a2)\n- Enhance desktop release workflow with versioning (6d3694e)\n- v1.0.805 (dd2e3f0)\n- v1.0.805 (fa986d3)\n- v1.0.805 (cb6dc28)\n- v1.0.805 (fa19819)\n- Merge remote-tracking branch 'origin/master' (0cca2dd)\n- v1.0.804 (ab2ed84)\n- v1.0.804 (273eb02)\n- Update desktop-release.yml (22e8d38)\n- Merge remote-tracking branch 'origin/master' (d8dbadc)\n- v1.0.804 (50aad21)\n- Update desktop-release.yml (1aeb1cf)\n- Modify desktop release workflow for artifact handling (efe0510)\n- Update desktop-release.yml (86ed0c0)\n- Merge remote-tracking branch 'origin/master' (d6ba290)\n- v1.0.8 (289b8e6)\n- Enhance GitHub Actions workflow for desktop release (c341aad)\n- Merge branch 'master' of https://github.com/bobadronov/VapeCityClubAdministrator # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit. (add4c3b)\n- Refactor desktop-release workflow for better clarity (62f2b59)\n- Fix gradlew permissions and LF (4cbd7fe)\n- Create .env file with Supabase secrets (5733cd0)\n- Merge remote-tracking branch 'origin/master' (b525063)\n- v1.0.803 (7f1be4b)\n- Add GitHub Actions workflow for desktop package builds (446fe0f)\n- Initial commit (ced081d)\n- Initial commit (61888bc)",
-  "assets": {
-    "android": {
-      "name": "VCC.Administrator-1.0.813.apk",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.813/VCC.Administrator-1.0.813.apk",
-      "size": 7338912,
-      "sha256": "9dd04293e9e8e01beba29ef1e2e09834317e028281338a2c43b974615d65851a"
-    },
-    "windows": {
-      "name": "VCC.Administrator-1.0.813.msi",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.813/VCC.Administrator-1.0.813.msi",
-      "size": 126685640,
-      "sha256": "280c2b0f905c922ca6679d01098925c1f668d038daf30029183154abfbc5279c"
-    },
-    "macos": {
-      "name": "VCC.Administrator-1.0.813.dmg",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.813/VCC.Administrator-1.0.813.dmg",
-      "size": 138091643,
-      "sha256": "a17b35a9cda55841abc15fdd23b11c7c0c6a13f6a955d16bdadf6b2120594960"
-    },
-    "linux": {
-      "name": "vcc-administrator_1.0.813_amd64.deb",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.813/vcc-administrator_1.0.813_amd64.deb",
-      "size": 115192718,
-      "sha256": "b2ea8866c6c128b6a6edc81bcfb5b519b9177e4adba8d8d3f0da04945abca005"
-    }
+  "version": "1.0.815",
+  "published_at": 1771841911000,
+  "release_notes": "# v1.0.815\n\nChanges\n\n- v1.0.815 (49a1a3a)\n- v1.0.814 (3f383f9)\n- v1.0.814 (a27b4ea)\n- Merge remote-tracking branch 'origin/master' (f76d252)\n- v1.0.814 (c9792c5)\n- Refactor release workflow and manifest generation (c9d32a3)\n- Merge remote-tracking branch 'origin/master' (35a97f1)\n- update for new db (ada3a99)\n- Update release notes generation in workflow (af91ae2)\n- chore(ota): update manifest for v1.0.813 (a781588)\n- v1.0.813 (5fe5831)\n- Merge remote-tracking branch 'origin/master' (957b072)\n- code cleanup, small UI changes, code optimization (73d64fa)\n- chore(ota): update manifest for v1.0.812 (71fd89e)\n- v1.0.812 (9858c5a)\n- add SettingsScreen (99cf3d3)\n- Merge remote-tracking branch 'origin/master' (2b4176c)\n- v1.0.811 (726df8b)\n- chore(ota): update manifest for v1.0.811 (0597db5)\n- Update release_with_ota.yml (cb6b393)\n- OTA moved to shared UI (1433262)\n- code cleanup (eaacdc1)\n- Merge remote-tracking branch 'origin/master' (b3f8ca2)\n- delete old files (c7d583d)\n- chore(ota): update manifest for v1.0.810 (ac3c368)\n- v1.0.810 (03febd7)\n- OTA update for desktop (f5de647)\n- auto show/hide network icon (2bff161)\n- add sha check (9178fa4)\n- add res for ota (3c8dff8)\n- rename param (c192b25)\n- rename param (14751c9)\n- add Timeout param for HttpClient (24424e9)\n- Merge remote-tracking branch 'origin/master' (d0e20b5)\n- version conf sync (67b9560)\n- Update release_with_ota.yml (dd5c043)\n- chore(ota): update manifest for v1.0.809 (3725e6c)\n- v1.0.809 (8bab3c6)\n- added open download folder in file generation (126d78a)\n- Merge remote-tracking branch 'origin/master' (e849352)\n- navigation update (29d2d54)\n- Delete .github/workflows/android.yml (6d0fe68)\n- Rename desktop-release_with_ota_json.yml to release_with_ota.yml (176b42f)\n- Update desktop-release_with_ota_json.yml (7bcf3ae)\n- chore(ota): update manifest for v1.0.808 (7b85884)\n- v1.0.808 (8cefe15)\n- Enhance Android CI to build and release APK (c441829)\n- v1.0.808 (6f9b9e6)\n- v1.0.808 (0487344)\n- Update GitHub Actions workflow for release manifest (ac697e3)\n- Update update.json generation with local sha256 (bd0a1d3)\n- chore(update): v1.0.807 [skip ci] (d04ce75)\n- v1.0.807 (9fb89d8)\n- Merge remote-tracking branch 'origin/master' (c14c319)\n- v1.0.807 (499aefc)\n- v1.0.806 (88e63ae)\n- v1.0.805 (bbd6624)\n- Delete .github/workflows/desktop-release.yml (84d97a1)\n- Add GitHub Actions workflow for desktop releases (ee1fbf5)\n- Merge remote-tracking branch 'origin/master' (71ed182)\n- v1.0.805 (32ba8a2)\n- Enhance desktop release workflow with versioning (6d3694e)\n- v1.0.805 (dd2e3f0)\n- v1.0.805 (fa986d3)\n- v1.0.805 (cb6dc28)\n- v1.0.805 (fa19819)\n- Merge remote-tracking branch 'origin/master' (0cca2dd)\n- v1.0.804 (ab2ed84)\n- v1.0.804 (273eb02)\n- Update desktop-release.yml (22e8d38)\n- Merge remote-tracking branch 'origin/master' (d8dbadc)\n- v1.0.804 (50aad21)\n- Update desktop-release.yml (1aeb1cf)\n- Modify desktop release workflow for artifact handling (efe0510)\n- Update desktop-release.yml (86ed0c0)\n- Merge remote-tracking branch 'origin/master' (d6ba290)\n- v1.0.8 (289b8e6)\n- Enhance GitHub Actions workflow for desktop release (c341aad)\n- Merge branch 'master' of https://github.com/bobadronov/VapeCityClubAdministrator # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit. (add4c3b)\n- Refactor desktop-release workflow for better clarity (62f2b59)\n- Fix gradlew permissions and LF (4cbd7fe)\n- Create .env file with Supabase secrets (5733cd0)\n- Merge remote-tracking branch 'origin/master' (b525063)\n- v1.0.803 (7f1be4b)\n- Add GitHub Actions workflow for desktop package builds (446fe0f)\n- Initial commit (ced081d)\n- Initial commit (61888bc)",
+  "windows": {
+    "name": "VCC.Administrator-1.0.815.msi",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.815/VCC.Administrator-1.0.815.msi",
+    "size": 126677450,
+    "sha256": "b8bc08aa1a44daf779c7409fbf17de9092c3b97e7b43504679bc2968a5104fbe"
+  },
+  "macos": {
+    "name": "VCC.Administrator-1.0.815.dmg",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.815/VCC.Administrator-1.0.815.dmg",
+    "size": 138060200,
+    "sha256": "35d6dbbda3f548558245eee7b0a734d7b94a41e12434473a3d55a0842e943d61"
+  },
+  "linux": {
+    "name": "vcc-administrator_1.0.815_amd64.deb",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.815/vcc-administrator_1.0.815_amd64.deb",
+    "size": 115174504,
+    "sha256": "bd6d47c4a4c41bbdf19068ce7282679e95a193f9307bdb948b63307dd29d7d20"
+  },
+  "android": {
+    "name": "VCC.Administrator-1.0.815.apk",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.815/VCC.Administrator-1.0.815.apk",
+    "size": 7338912,
+    "sha256": "3c15c0e97f39afd58671d3b555952618708bf680e78aa8272b072e2ae638c9f6"
   }
 }
