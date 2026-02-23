@@ -1,35 +1,35 @@
 {
-  "tag": "v1.0.811",
-  "publishedAt": "2026-02-20T22:23:25Z",
-  "versionName": "1.0.810",
-  "desktop_version": "1.0.810",
-  "android_version": "1.0.810",
-  "android_version_code": 1090,
-  "releaseNotes": "# v1.0.811\n\n## Changes since v1.0.810\n\n- OTA moved to shared UI (1433262)\n- code cleanup (eaacdc1)\n- Merge remote-tracking branch 'origin/master' (b3f8ca2)\n- delete old files (c7d583d)\n- chore(ota): update manifest for v1.0.810 (ac3c368)\n---\nGenerated automatically from git log.\n",
+  "tag": "v1.0.812",
+  "publishedAt": "2026-02-21T19:12:58Z",
+  "versionName": "1.0.812",
+  "desktop_version": "1.0.812",
+  "android_version": "1.0.812",
+  "android_version_code": 1092,
+  "releaseNotes": "# v1.0.812\n\nChanges\n\n- v1.0.812 (9858c5a)\n- add SettingsScreen (99cf3d3)\n- Merge remote-tracking branch 'origin/master' (2b4176c)\n- v1.0.811 (726df8b)\n- chore(ota): update manifest for v1.0.811 (0597db5)\n- Update release_with_ota.yml (cb6b393)\n- OTA moved to shared UI (1433262)\n- code cleanup (eaacdc1)\n- Merge remote-tracking branch 'origin/master' (b3f8ca2)\n- delete old files (c7d583d)\n- chore(ota): update manifest for v1.0.810 (ac3c368)\n- v1.0.810 (03febd7)\n- OTA update for desktop (f5de647)\n- auto show/hide network icon (2bff161)\n- add sha check (9178fa4)\n- add res for ota (3c8dff8)\n- rename param (c192b25)\n- rename param (14751c9)\n- add Timeout param for HttpClient (24424e9)\n- Merge remote-tracking branch 'origin/master' (d0e20b5)\n- version conf sync (67b9560)\n- Update release_with_ota.yml (dd5c043)\n- chore(ota): update manifest for v1.0.809 (3725e6c)\n- v1.0.809 (8bab3c6)\n- added open download folder in file generation (126d78a)\n- Merge remote-tracking branch 'origin/master' (e849352)\n- navigation update (29d2d54)\n- Delete .github/workflows/android.yml (6d0fe68)\n- Rename desktop-release_with_ota_json.yml to release_with_ota.yml (176b42f)\n- Update desktop-release_with_ota_json.yml (7bcf3ae)\n- chore(ota): update manifest for v1.0.808 (7b85884)\n- v1.0.808 (8cefe15)\n- Enhance Android CI to build and release APK (c441829)\n- v1.0.808 (6f9b9e6)\n- v1.0.808 (0487344)\n- Update GitHub Actions workflow for release manifest (ac697e3)\n- Update update.json generation with local sha256 (bd0a1d3)\n- chore(update): v1.0.807 [skip ci] (d04ce75)\n- v1.0.807 (9fb89d8)\n- Merge remote-tracking branch 'origin/master' (c14c319)\n- v1.0.807 (499aefc)\n- v1.0.806 (88e63ae)\n- v1.0.805 (bbd6624)\n- Delete .github/workflows/desktop-release.yml (84d97a1)\n- Add GitHub Actions workflow for desktop releases (ee1fbf5)\n- Merge remote-tracking branch 'origin/master' (71ed182)\n- v1.0.805 (32ba8a2)\n- Enhance desktop release workflow with versioning (6d3694e)\n- v1.0.805 (dd2e3f0)\n- v1.0.805 (fa986d3)\n- v1.0.805 (cb6dc28)\n- v1.0.805 (fa19819)\n- Merge remote-tracking branch 'origin/master' (0cca2dd)\n- v1.0.804 (ab2ed84)\n- v1.0.804 (273eb02)\n- Update desktop-release.yml (22e8d38)\n- Merge remote-tracking branch 'origin/master' (d8dbadc)\n- v1.0.804 (50aad21)\n- Update desktop-release.yml (1aeb1cf)\n- Modify desktop release workflow for artifact handling (efe0510)\n- Update desktop-release.yml (86ed0c0)\n- Merge remote-tracking branch 'origin/master' (d6ba290)\n- v1.0.8 (289b8e6)\n- Enhance GitHub Actions workflow for desktop release (c341aad)\n- Merge branch 'master' of https://github.com/bobadronov/VapeCityClubAdministrator # Please enter a commit message to explain why this merge is necessary, # especially if it merges an updated upstream into a topic branch. # # Lines starting with '#' will be ignored, and an empty message aborts # the commit. (add4c3b)\n- Refactor desktop-release workflow for better clarity (62f2b59)\n- Fix gradlew permissions and LF (4cbd7fe)\n- Create .env file with Supabase secrets (5733cd0)\n- Merge remote-tracking branch 'origin/master' (b525063)\n- v1.0.803 (7f1be4b)\n- Add GitHub Actions workflow for desktop package builds (446fe0f)\n- Initial commit (ced081d)\n- Initial commit (61888bc)",
   "assets": {
     "android": {
-      "name": "composeApp-release.apk",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.811/composeApp-release.apk",
-      "size": 7305804,
-      "sha256": "893e627a3b731175c4f9f2b82f50085d47f03795b886008d0fdf667159862976"
+      "name": "VCC.Administrator-1.0.812.apk",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.812/VCC.Administrator-1.0.812.apk",
+      "size": 7338916,
+      "sha256": "1e98bad2afad412360c1b8071e6a2f4054e4b7e5658744ebab9651d4aa219687"
     },
     "windows": {
-      "name": "VCC.Administrator-1.0.810.msi",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.811/VCC.Administrator-1.0.810.msi",
-      "size": 126583242,
-      "sha256": "69c24b666a276d76d615cd80e920dd62a26a684b562fc1e4ab2a145bba8d15ab"
+      "name": "VCC.Administrator-1.0.812.msi",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.812/VCC.Administrator-1.0.812.msi",
+      "size": 126673350,
+      "sha256": "4e6b1ae1fdc82d66b41ee14d2a9fede68b488c7c42509fcbd50f968d428f9406"
     },
     "macos": {
-      "name": "VCC.Administrator-1.0.810.dmg",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.811/VCC.Administrator-1.0.810.dmg",
-      "size": 137910187,
-      "sha256": "acfee16675d87d2c16f87477d277d4c8ec18d72ba249f1de98e2247145d64db7"
+      "name": "VCC.Administrator-1.0.812.dmg",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.812/VCC.Administrator-1.0.812.dmg",
+      "size": 138075056,
+      "sha256": "8f12d49474891d01d31d6ecd2fd8ba735535eb18abdfd59446f9665d196655b4"
     },
     "linux": {
-      "name": "vcc-administrator_1.0.810_amd64.deb",
-      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.811/vcc-administrator_1.0.810_amd64.deb",
-      "size": 115142028,
-      "sha256": "12e88d05ec6240c90fdac070a3279f16e4e77b978a9b94011f5b4fadaf9d0b99"
+      "name": "vcc-administrator_1.0.812_amd64.deb",
+      "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.812/vcc-administrator_1.0.812_amd64.deb",
+      "size": 115167886,
+      "sha256": "e58b4d1c474e50099042439f00305f9475b3c7dc6b9ff1f87cef0636f5f2ef36"
     }
   }
 }
