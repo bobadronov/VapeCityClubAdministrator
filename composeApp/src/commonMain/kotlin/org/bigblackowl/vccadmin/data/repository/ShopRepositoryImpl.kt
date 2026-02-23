@@ -6,16 +6,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import org.bigblackowl.vccadmin.data.entity.NewShop
 import org.bigblackowl.vccadmin.data.entity.SupabaseShop
-
-// Інтерфейси репозиторіїв: для тестування та модульності.
-interface ShopRepository {
-    suspend fun getStores(): List<SupabaseShop>
-    suspend fun addShop(newShop: NewShop)
-    suspend fun getShopById(id: String): SupabaseShop?
-    suspend fun deleteShop(id: String)
-    fun getCurrentUserId(): String?
-    suspend fun updateShop(shopToUpdate: SupabaseShop)
-}
+import org.bigblackowl.vccadmin.domain.repository.ShopRepository
 
 // Імплементації репозиторіїв: використовують Supabase Postgrest для запитів.
 class ShopRepositoryImpl(

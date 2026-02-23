@@ -20,7 +20,7 @@ fun App(
 
     AppTheme(onThemeChanged) {
         Scaffold(
-            topBar = { MainTopAppBar(navigationViewModel = navigationViewModel) },
+            topBar = { MainTopAppBar(snackbarHostState = snackbarHostState, navigationViewModel = navigationViewModel) },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { padding ->
             Navigator(

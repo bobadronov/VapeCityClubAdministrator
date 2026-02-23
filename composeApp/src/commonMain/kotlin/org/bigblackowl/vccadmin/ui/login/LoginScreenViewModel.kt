@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.AuthRepository
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.AuthRepository
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res

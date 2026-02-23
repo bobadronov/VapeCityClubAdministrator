@@ -14,9 +14,9 @@ import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.UserRole
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.UserRepository
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res

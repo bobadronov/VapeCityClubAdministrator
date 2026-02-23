@@ -17,16 +17,19 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.DeviceType
+import org.bigblackowl.vccadmin.data.entity.Shop
+import org.bigblackowl.vccadmin.data.entity.ShopGroup
 import org.bigblackowl.vccadmin.data.entity.SupabaseSlide
 import org.bigblackowl.vccadmin.data.entity.toUiShops
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.CityRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.ShopRepository
-import org.bigblackowl.vccadmin.data.repository.SlideRepository
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.ShopRepository
+import org.bigblackowl.vccadmin.domain.repository.SlideRepository
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -282,9 +285,12 @@ class AddEditSlideViewModel(
         }
         Napier.d(tag = TAG) { "onShopToggled: code=$code, _isDirty=true" }
     }
+    private fun recalcAllDerived(current: AddSlideState): AddSlideState {
+        val grouped = getGroupedShops(current.allShopList, current.cities)
+        return recalcSelectionDerived(current.copy(groupedShops = grouped))
+    }
 
     // ---------- Save / Load / Delete ----------
-
     private fun onSave() {
         viewModelScope.launch {
             if (networkMonitorProvider.isConnected.value.not()) {
@@ -320,7 +326,7 @@ class AddEditSlideViewModel(
                 val cities = citiesDeferred.await()
 
                 _uiState.update { current ->
-                    recalcSelectionDerived(
+                    recalcAllDerived(
                         current.copy(
                             allShopList = allShops.toUiShops(cities),
                             cities = cities
@@ -334,7 +340,7 @@ class AddEditSlideViewModel(
                 Napier.d(tag = "SUPABASE GET SLIDE") { supabaseSlide.fileName }
 
                 _uiState.update { current ->
-                    recalcSelectionDerived(
+                    recalcAllDerived(
                         current.copy(
                             slideId = slideId,
                             fileName = supabaseSlide.fileName,
@@ -474,14 +480,17 @@ class AddEditSlideViewModel(
                 _uiState.update { it.copy(fileNameError = getString(Res.string.error_file_name_empty)) }
                 false
             }
+
             !FILE_NAME_REGEX.matches(trimmedName) -> {
                 _uiState.update { it.copy(fileNameError = getString(Res.string.error_invalid_file_name)) }
                 false
             }
+
             state.selectedFile == null && state.slideId == null -> {
                 onEvent(UIEvents.ShowMessage(getString(Res.string.error_select_file)))
                 false
             }
+
             else -> true
         }
     }
@@ -505,5 +514,29 @@ class AddEditSlideViewModel(
 
     private fun onEvent(event: UIEvents) = viewModelScope.launch {
         _uiEvent.emit(event)
+    }
+
+    /**
+     * Групує магазини по містах та сортує:
+     * 1. Міста — за назвою (алфавітно)
+     * 2. Магазини в кожному місті — за кодом (алфавітно)
+     */
+    private fun getGroupedShops(
+        shops: List<Shop>,
+        cities: List<City>
+    ): List<ShopGroup> {
+        // Створюємо map: cityId -> City
+        val cityMap = cities.associateBy { it.id }
+
+        return shops
+            .groupBy { it.cityId }
+            .mapNotNull { (cityId, shopsInCity) ->
+                val city = cityMap[cityId] ?: return@mapNotNull null // якщо місто не знайдено — пропускаємо
+                ShopGroup(
+                    city = city,
+                    shops = shopsInCity.sortedBy { it.street }
+                )
+            }
+            .sortedBy { it.city.name } // сортування міст за назвою
     }
 }

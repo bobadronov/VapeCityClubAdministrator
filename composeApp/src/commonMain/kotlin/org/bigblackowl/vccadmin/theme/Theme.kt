@@ -15,7 +15,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import org.bigblackowl.vccadmin.data.entity.ShopStatusColors
 import org.bigblackowl.vccadmin.data.entity.UserRoleColors
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.koin.compose.koinInject
 
 val LocalThemeMode = compositionLocalOf { mutableStateOf(ThemeMode.AUTO) }

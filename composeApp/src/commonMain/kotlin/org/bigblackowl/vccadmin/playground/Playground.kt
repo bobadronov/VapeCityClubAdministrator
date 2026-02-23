@@ -116,7 +116,7 @@ private fun loadUpdateFromResources(): AdminAppUpdate {
     val data = "{\n" +
             "  \"version\": \"1.2.603\",\n" +
             "  \"published_at\": 1771845913000,\n" +
-            "  \"release_notes\": \"Changes\\n\\n- Fix OTA overlay crash (a1b2c3d)\\n- Improve caching on Settings screen (d4e5f6a)\\n- Bump dependencies (1a2b3c4)\\n\",\n" +
+            "  \"release_notes\": \"- Fix OTA overlay crash (a1b2c3d)\\n- Improve caching on Settings screen (d4e5f6a)\\n- Bump dependencies (1a2b3c4)\\n\",\n" +
             "  \"windows\": {\n" +
             "    \"name\": \"VCC-Admin-Setup-1.2.603.msi\",\n" +
             "    \"url\": \"https://github.com/OWNER/REPO/releases/download/v1.2.603/VCC-Admin-Setup-1.2.603.msi\",\n" +

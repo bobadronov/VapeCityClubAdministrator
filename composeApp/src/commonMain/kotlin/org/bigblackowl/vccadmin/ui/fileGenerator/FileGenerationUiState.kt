@@ -5,7 +5,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
-import org.bigblackowl.vccadmin.data.repository.FileType
+import org.bigblackowl.vccadmin.domain.repository.FileType
 import kotlin.time.Clock
 
 data class FileGenerationUiState(

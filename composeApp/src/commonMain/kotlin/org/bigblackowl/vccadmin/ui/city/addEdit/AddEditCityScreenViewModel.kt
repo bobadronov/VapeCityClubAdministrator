@@ -18,10 +18,10 @@ import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.CityRepository
-import org.bigblackowl.vccadmin.data.repository.CitySearchRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.CitySearchRepository
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res
@@ -105,7 +105,7 @@ class AddEditCityScreenViewModel(
                 if (intent.suggestion.exists) return
                 _state.update { it.copy(newCityName = intent.suggestion.city.name) }
                 _isDirty.value = computeHasUnsavedChanges()
-                _cityAutocomplete.update { it.copy( highlightedIndex = -1) }
+                _cityAutocomplete.value = CityAutocompleteUiState(isLoading = false, suggestions = emptyList(), highlightedIndex = -1)
                 // важливо: можна не тригерити пошук тут, бо ми закрили dropdown і вже маємо фінальний текст
             }
         }
@@ -114,7 +114,7 @@ class AddEditCityScreenViewModel(
     private fun clearAll() {
         searchJob?.cancel()
         _state.value = AddEditCityScreenUiState()
-        _cityAutocomplete.value = CityAutocompleteUiState(isLoading = false,suggestions = emptyList(), highlightedIndex = -1)
+        _cityAutocomplete.value = CityAutocompleteUiState(isLoading = false, suggestions = emptyList(), highlightedIndex = -1)
         _isDirty.value = false
     }
 
@@ -146,7 +146,7 @@ class AddEditCityScreenViewModel(
 
         _state.update { it.copy(newCityName = suggestion.city.name) }
         _isDirty.value = computeHasUnsavedChanges()
-        _cityAutocomplete.update { it.copy( highlightedIndex = -1) }
+        _cityAutocomplete.update { it.copy(highlightedIndex = -1) }
     }
 
     private fun triggerCitySearch(text: String) {

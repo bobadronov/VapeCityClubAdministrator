@@ -79,9 +79,9 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
-import org.bigblackowl.vccadmin.data.repository.FakeBackend
-import org.bigblackowl.vccadmin.data.repository.FileType
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.repository.FakeBackend
+import org.bigblackowl.vccadmin.domain.repository.FileType
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme

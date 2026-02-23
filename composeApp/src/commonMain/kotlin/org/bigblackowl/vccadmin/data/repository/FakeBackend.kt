@@ -5,8 +5,10 @@ import org.bigblackowl.vccadmin.data.entity.AssetInfo
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.DeviceType
 import org.bigblackowl.vccadmin.data.entity.Shop
+import org.bigblackowl.vccadmin.data.entity.ShopGroup
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
+import org.bigblackowl.vccadmin.data.entity.SuggestionCityDto
 import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
@@ -57,6 +59,7 @@ object FakeBackend {
         cities = cities,
         shopsPerCityRange = 3..9
     )
+    val groupedShops = getGroupedShops(shops, cities)
 
     // -------------------------
     // Slides (зв’язані з shops)
@@ -73,6 +76,7 @@ object FakeBackend {
     val singleShop: Shop = shops.first()
     val singleSlide: Slide = slides.first()
     val singleUser: User = users.first()
+
     // --------------------------
     // Preview
     // -------------------------
@@ -137,14 +141,14 @@ object FakeBackend {
         asset = requireNotNull(manifest.android) { "Fake android asset is null" }
     )
     private val previewSuggestions = listOf(
-        CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
-        CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
-        CitySuggestion(CityDto(name = "Ірпінь", oblast = "Київська область"), false),
-        CitySuggestion(CityDto(name = "Біла Церква", oblast = "Київська область"), false),
-        CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
-        CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
-        CitySuggestion(CityDto(name = "Київ", oblast = "Київ"), exists = true),
-        CitySuggestion(CityDto(name = "Київська", oblast = "Київська область"), true),
+        CitySuggestion(SuggestionCityDto(name = "Київ", oblast = "Київ"), exists = true),
+        CitySuggestion(SuggestionCityDto(name = "Київська", oblast = "Київська область"), true),
+        CitySuggestion(SuggestionCityDto(name = "Ірпінь", oblast = "Київська область"), false),
+        CitySuggestion(SuggestionCityDto(name = "Біла Церква", oblast = "Київська область"), false),
+        CitySuggestion(SuggestionCityDto(name = "Київ", oblast = "Київ"), exists = true),
+        CitySuggestion(SuggestionCityDto(name = "Київська", oblast = "Київська область"), true),
+        CitySuggestion(SuggestionCityDto(name = "Київ", oblast = "Київ"), exists = true),
+        CitySuggestion(SuggestionCityDto(name = "Київська", oblast = "Київська область"), true),
     )
 
     val previewSuggestionsList = previewSuggestions
@@ -234,6 +238,30 @@ object FakeBackend {
                 logoUrl = "https://picsum.photos/seed/city_$id/256/256"
             )
         }
+    }
+
+    /**
+     * Групує магазини по містах та сортує:
+     * 1. Міста — за назвою (алфавітно)
+     * 2. Магазини в кожному місті — за кодом (алфавітно)
+     */
+    private fun getGroupedShops(
+        shops: List<Shop>,
+        cities: List<City>
+    ): List<ShopGroup> {
+        // Створюємо map: cityId -> City
+        val cityMap = cities.associateBy { it.id }
+
+        return shops
+            .groupBy { it.cityId }
+            .mapNotNull { (cityId, shopsInCity) ->
+                val city = cityMap[cityId] ?: return@mapNotNull null // якщо місто не знайдено — пропускаємо
+                ShopGroup(
+                    city = city,
+                    shops = shopsInCity.sortedBy { it.street }
+                )
+            }
+            .sortedBy { it.city.name } // сортування міст за назвою
     }
 
     private fun buildShops(

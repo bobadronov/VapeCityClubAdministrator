@@ -2,7 +2,7 @@ package org.bigblackowl.vccadmin.ui.city.addEdit
 
 import io.github.vinceglb.filekit.PlatformFile
 import org.bigblackowl.vccadmin.data.entity.City
-import org.bigblackowl.vccadmin.data.repository.CityDto
+import org.bigblackowl.vccadmin.data.entity.SuggestionCityDto
 
 data class AddEditCityScreenUiState(
     val isLoading: Boolean = false,
@@ -13,7 +13,7 @@ data class AddEditCityScreenUiState(
 )
 
 data class CitySuggestion(
-    val city: CityDto,
+    val city: SuggestionCityDto,
     val exists: Boolean,
 ) {
     val key: String get() = "${city.oblast}|${city.name}"

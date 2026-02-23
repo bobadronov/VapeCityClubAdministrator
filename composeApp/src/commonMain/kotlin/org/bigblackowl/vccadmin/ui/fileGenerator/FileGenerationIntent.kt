@@ -1,6 +1,6 @@
 package org.bigblackowl.vccadmin.ui.fileGenerator
 
-import org.bigblackowl.vccadmin.data.repository.FileType
+import org.bigblackowl.vccadmin.domain.repository.FileType
 
 sealed interface FileGenerationIntent {
     object Init : FileGenerationIntent

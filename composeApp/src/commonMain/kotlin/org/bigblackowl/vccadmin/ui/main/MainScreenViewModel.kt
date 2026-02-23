@@ -13,16 +13,17 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.bigblackowl.vccadmin.data.entity.City
+import org.bigblackowl.vccadmin.data.entity.Shop
+import org.bigblackowl.vccadmin.data.entity.ShopGroup
 import org.bigblackowl.vccadmin.data.entity.ShopsFilter
 import org.bigblackowl.vccadmin.data.entity.toUiShops
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.CityRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.ShopRepository
 import org.bigblackowl.vccadmin.data.events.UIEvents
-import org.bigblackowl.vccadmin.data.utils.ShopGroup
-import org.bigblackowl.vccadmin.data.utils.getGroupedShops
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.ShopRepository
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res
@@ -145,5 +146,30 @@ class MainScreenViewModel(
             }
             .filter { it.shops.isNotEmpty() }
             .toList()
+    }
+
+
+    /**
+     * Групує магазини по містах та сортує:
+     * 1. Міста — за назвою (алфавітно)
+     * 2. Магазини в кожному місті — за кодом (алфавітно)
+     */
+    private fun getGroupedShops(
+        shops: List<Shop>,
+        cities: List<City>
+    ): List<ShopGroup> {
+        // Створюємо map: cityId -> City
+        val cityMap = cities.associateBy { it.id }
+
+        return shops
+            .groupBy { it.cityId }
+            .mapNotNull { (cityId, shopsInCity) ->
+                val city = cityMap[cityId] ?: return@mapNotNull null // якщо місто не знайдено — пропускаємо
+                ShopGroup(
+                    city = city,
+                    shops = shopsInCity.sortedBy { it.street }
+                )
+            }
+            .sortedBy { it.city.name } // сортування міст за назвою
     }
 }

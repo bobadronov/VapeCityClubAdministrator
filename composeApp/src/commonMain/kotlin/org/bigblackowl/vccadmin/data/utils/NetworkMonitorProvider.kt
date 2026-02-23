@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.data.repository
+package org.bigblackowl.vccadmin.data.utils
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

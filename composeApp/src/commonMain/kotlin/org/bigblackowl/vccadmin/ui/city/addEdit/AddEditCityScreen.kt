@@ -6,10 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -49,8 +48,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
@@ -243,6 +242,7 @@ private fun CityAutocompleteField(
 
     LaunchedEffect(suggestions.size, highlightedIndex) {
         if (suggestions.isEmpty()) return@LaunchedEffect
+        if (highlightedIndex !in suggestions.indices) return@LaunchedEffect
         scrollState.animateScrollToItem(highlightedIndex)
     }
 
@@ -324,17 +324,19 @@ private fun CityAutocompleteField(
                                     val bg = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
                                     val fg = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
 
-                                    // Робимо клікабельність + фон самі, без DropdownMenuItem (він заточений під меню/попап)
-                                    Box(
+                                    Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .background(bg)
-                                            .padding(horizontal = 12.dp, vertical = 10.dp)
-                                            .run {
-                                                if (!s.exists) clickable { onSuggestionSelected(s) } else this
-                                            }
+                                            .padding(10.dp)
+                                        ,
+                                        colors =  CardDefaults.cardColors().copy(containerColor = bg),
+                                        onClick = { if (!s.exists) onSuggestionSelected(s)}
                                     ) {
-                                        Column {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(DefaultValues.Padding.cardContentPadding)
+                                        ) {
                                             Text(
                                                 text = s.city.name,
                                                 style = if (selected) MaterialTheme.typography.titleMedium

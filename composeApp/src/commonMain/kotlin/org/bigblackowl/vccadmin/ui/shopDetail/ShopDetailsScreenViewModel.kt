@@ -15,11 +15,11 @@ import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.UserRole
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.CityRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.ShopRepository
-import org.bigblackowl.vccadmin.data.repository.UserRepository
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.ShopRepository
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
 import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.bigblackowl.vccadmin.utils.PlatformFileProvider
 import org.bigblackowl.vccadmin.utils.withRetry

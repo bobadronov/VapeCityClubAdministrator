@@ -17,8 +17,8 @@ import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_EXPANDED_
 import com.kdroid.composetray.tray.api.Tray
 import com.kdroid.composetray.utils.SingleInstanceManager
 import io.github.vinceglb.filekit.FileKit
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
 import org.bigblackowl.vccadmin.di.coreModules
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinApplication

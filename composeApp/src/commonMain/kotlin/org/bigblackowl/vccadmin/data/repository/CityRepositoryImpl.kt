@@ -12,18 +12,12 @@ import kotlinx.coroutines.selects.select
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bigblackowl.vccadmin.data.entity.City
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.failed_retrieve_city
 import kotlin.time.Duration
-
-interface CityRepository {
-    suspend fun getCities(): List<City>
-    suspend fun addCity(newCityName: String, newCityLogoFile: PlatformFile?)
-    suspend fun updateCity(city: City, newCityName: String, newCityLogoFile: PlatformFile?)
-    suspend fun deleteCity(city: City)
-}
 
 class CityRepositoryImpl(private val supabase: SupabaseClient) : CityRepository {
 

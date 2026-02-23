@@ -10,7 +10,7 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import org.bigblackowl.vccadmin.data.repository.AuthRepository
+import org.bigblackowl.vccadmin.domain.repository.AuthRepository
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditIntent
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideIntent

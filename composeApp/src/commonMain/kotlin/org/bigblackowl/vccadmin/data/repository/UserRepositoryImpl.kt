@@ -14,24 +14,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.email_already_exists
 import vccadministrator.composeapp.generated.resources.user_not_found
-
-interface UserRepository {
-    suspend fun getUsers(): List<User>
-
-    suspend fun getCurrentUser(): User?
-
-    suspend fun getUserById(userId: String): User?
-
-    suspend fun getUserNameById(userId: String): String
-
-    suspend fun registerUser(email: String, phone: String?, password: String, firstName: String, lastName: String, role: UserRole): Boolean
-    suspend fun updateUser(id: String, phone: String?, firstName: String, lastName: String, role: UserRole): Boolean
-    suspend fun deleteUser(userId: String): Boolean
-}
 
 class UserRepositoryImpl(private val supabase: SupabaseClient) : UserRepository {
 

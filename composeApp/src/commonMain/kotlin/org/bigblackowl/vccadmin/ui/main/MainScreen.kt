@@ -67,12 +67,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
+import org.bigblackowl.vccadmin.data.entity.ShopGroup
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.ShopsFilter
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
-import org.bigblackowl.vccadmin.data.utils.ShopGroup
-import org.bigblackowl.vccadmin.data.utils.getGroupedShops
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
@@ -105,7 +104,7 @@ fun MainScreen(
     val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
 
     LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
                 else -> {}
@@ -395,15 +394,11 @@ private fun ShopCardItem(
 @Composable
 private fun MainScreenContentPreview1() = PreviewDarkMaterialTheme {
     val cities = FakeBackend.cities.sortedBy { it.name }
-    val grouped = getGroupedShops(
-        shops = FakeBackend.shops,
-        cities = cities
-    )
 
     MainScreenContent(
         cities = cities,
         filter = ShopsFilter(),              // без фільтрів
-        groupedShops = grouped,              // у прев’ю можемо дати повний список
+        groupedShops = FakeBackend.groupedShops,              // у прев’ю можемо дати повний список
         isInitialLoading = false,
         isRefreshing = false,
         onShopClick = {},
@@ -418,10 +413,6 @@ private fun MainScreenContentPreview1() = PreviewDarkMaterialTheme {
 @Composable
 private fun MainScreenContentPreview12() = PreviewLightMaterialTheme {
     val cities = FakeBackend.cities.sortedBy { it.name }
-    val grouped = getGroupedShops(
-        shops = FakeBackend.shops,
-        cities = cities
-    )
 
     // приклад: прев’ю з активним фільтром
     val filter = ShopsFilter(
@@ -432,7 +423,7 @@ private fun MainScreenContentPreview12() = PreviewLightMaterialTheme {
     MainScreenContent(
         cities = cities,
         filter = filter,
-        groupedShops = grouped, // у прев’ю VM нема, тому просто даємо grouped (або можеш підставити вже відфільтрований список вручну)
+        groupedShops = FakeBackend.groupedShops, // у прев’ю VM нема, тому просто даємо grouped (або можеш підставити вже відфільтрований список вручну)
         isInitialLoading = false,
         isRefreshing = false,
         onShopClick = {},

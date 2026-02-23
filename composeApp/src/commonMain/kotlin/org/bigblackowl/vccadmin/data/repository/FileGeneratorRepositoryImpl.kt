@@ -12,47 +12,10 @@ import io.ktor.http.contentType
 import io.ktor.utils.io.InternalAPI
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.bigblackowl.vccadmin.domain.repository.FileGeneratorRepository
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.error_loading_file
-
-// Інтерфейс репозиторію для генерації файлів (без змін, у стилі топових проектів: чітка структура, документація)
-interface FileGeneratorRepository {
-    /**
-     * Генерує PDF-список телефонів для вказаних магазинів.
-     */
-    suspend fun generatePhoneListPdf(shopIds: List<String>): HttpResponse
-
-    /**
-     * Генерує детальний PDF для магазину з вказаними значеннями.
-     */
-    suspend fun generateShopDetailPdf(shopId: String, value: List<List<String>>): HttpResponse
-
-    /**
-     * Генерує PDF-графік прибирання для магазину на вказаний місяць.
-     */
-    suspend fun generateCleaningSchedulePdf(shopId: String, month: String): HttpResponse
-
-    /**
-     * Генерує PDF-графік інкасації для магазину на вказаний місяць.
-     */
-    suspend fun generateCollectionSchedulePdf(shopId: String, month: String): HttpResponse
-
-    /**
-     * Отримує PDF з правилами прибирання.
-     */
-    suspend fun getCleaningsRules(): ByteArray
-
-    /**
-     * Отримує PDF для повернення товарів.
-     */
-    suspend fun getReturningOfGoods(): ByteArray
-
-    /**
-     * Отримує PDF для залишків на складі.
-     */
-    suspend fun getStoreLeftovers(): ByteArray
-}
 
 // Імплементація репозиторію з використанням Supabase (вичищено дублі, додано override, логування та обробку помилок)
 class FileGeneratorRepositoryImpl(

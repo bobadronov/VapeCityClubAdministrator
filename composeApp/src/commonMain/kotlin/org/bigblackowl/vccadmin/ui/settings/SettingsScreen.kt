@@ -57,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import kotlinx.coroutines.delay
 import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.data.events.UIEvents
@@ -72,6 +73,7 @@ import org.bigblackowl.vccadmin.theme.ThemeMode
 import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
+import org.bigblackowl.vccadmin.uiComponent.container.OutlinedCardWithLabel
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
@@ -106,6 +108,7 @@ import vccadministrator.composeapp.generated.resources.ota_state_no_update
 import vccadministrator.composeapp.generated.resources.ota_state_ready_to_install
 import vccadministrator.composeapp.generated.resources.ota_state_verifying
 import vccadministrator.composeapp.generated.resources.theme_setting
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun SettingsScreen(
@@ -114,18 +117,16 @@ fun SettingsScreen(
     viewModel: SettingsScreenViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
 
-    LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
-
                 is UIEvents.NotificationAndNavigate -> {
-                    navigationViewModel.logout()
                     snackbarHostState.showSnackbar(event.message)
+                    delay(1.seconds)
+                    navigationViewModel.logout()
                 }
-
                 else -> {}
             }
         }
@@ -394,7 +395,7 @@ private fun UpdateActionButton(
 ) {
     // Мапимо багато станів в маленький enum — менше "шуму" для анімації
     val action = when (updateState) {
-        UpdateState.Idle, UpdateState.NoUpdate -> OtaAction.Check
+        is UpdateState.Error, UpdateState.Idle, UpdateState.NoUpdate -> OtaAction.Check
         is UpdateState.Available -> OtaAction.Download
         is UpdateState.ReadyToInstall -> OtaAction.Install
         else -> OtaAction.None
@@ -410,7 +411,7 @@ private fun UpdateActionButton(
         label = "ota_action_button"
     ) { a ->
         when (a) {
-            OtaAction.None -> Spacer(Modifier.width(1.dp)) // або нічого
+            OtaAction.None -> Unit
             OtaAction.Check -> OutlinedButton(onClick = onCheck) { HelperText("Check") }
             OtaAction.Download -> OutlinedButton(onClick = onDownload) { HelperText("Download") }
             OtaAction.Install -> OutlinedButton(onClick = onInstall) { HelperText("Install") }
@@ -430,7 +431,6 @@ private fun OtaStatusIcon(state: UpdateState) {
         is UpdateState.ReadyToInstall -> DefaultIcon(Icons.Default.FileDownloadDone)
         is UpdateState.Verifying -> DefaultIcon(Icons.Default.Security)
         UpdateState.NoUpdate -> DefaultIcon(Icons.Default.DoneAll)
-
         is UpdateState.Downloading -> {
             // якщо маєш прогрес — підстав сюди
             val p = state.toUiModel().downloadProgress // якщо в state немає progress поля
@@ -443,7 +443,6 @@ private fun OtaStatusIcon(state: UpdateState) {
                 CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
             }
         }
-
         else -> DefaultIcon(Icons.Default.Info)
     }
 }
@@ -474,6 +473,7 @@ private fun AccountCard(
 @Composable
 private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
     fun demoStates(demoInfo: UpdateInfo) = listOf(
+        UpdateState.Error("Network error"),
         UpdateState.NotAvailable,
         UpdateState.Idle,
         UpdateState.Checking,
@@ -483,7 +483,6 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
         UpdateState.Verifying(demoInfo),
         UpdateState.ReadyToInstall(demoInfo),
         UpdateState.Installing(demoInfo),
-        UpdateState.Error("Network error")
     )
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         items(demoStates(FakeBackend.updateInfoWin)) { state ->

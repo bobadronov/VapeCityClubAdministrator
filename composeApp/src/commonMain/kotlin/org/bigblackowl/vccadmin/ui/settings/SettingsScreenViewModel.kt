@@ -2,6 +2,7 @@ package org.bigblackowl.vccadmin.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.events.UIEvents
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUpdateManager
 import org.bigblackowl.vccadmin.ota.UpdateState
 import org.bigblackowl.vccadmin.ui.login.LoginScreenIntent
@@ -33,19 +34,25 @@ class SettingsScreenViewModel(
 
     init {
         viewModelScope.launch {
-            otaUpdateManager.state.collect { state ->
-                val newVersion = state.extractRemoteVersionLabel()
+            launch {
+                otaUpdateManager.state.collect { state ->
+                    val newVersion = state.extractRemoteVersionLabel()
 
-                _uiState.update {
-                    it.copy(
-                        updateState = state,
-                        newAppVersionLabel = newVersion
-                    )
+                    _uiState.update {
+                        it.copy(
+                            updateState = state,
+                            newAppVersionLabel = newVersion
+                        )
+                    }
                 }
             }
+            launch {
+                otaUpdateManager.uiEvent.collect {
+                    _uiEvent.emit(it)
+                }
+            }
+            launch { refreshCacheSize() }
         }
-
-        viewModelScope.launch { refreshCacheSize() }
 
         _uiState.update {
             it.copy(
@@ -76,10 +83,9 @@ class SettingsScreenViewModel(
         else -> ""
     }
 
-    private fun setTheme(mode: Boolean) {
+    private fun setTheme(state: Boolean) {
         viewModelScope.launch {
-            // ✅ збереження ThemeMode (краще ніж Boolean)
-            localRepository.setThemeState(mode)
+            localRepository.setThemeState(state)
         }
     }
 
@@ -89,9 +95,9 @@ class SettingsScreenViewModel(
                 PlatformFunctionProvider.clearCache()
                 refreshCacheSize()
             }.onSuccess {
-                _uiEvent.tryEmit(UIEvents.ShowMessage("Кеш очищено"))
+                showMessage("Кеш очищено")
             }.onFailure {
-                _uiEvent.tryEmit(UIEvents.ShowMessage("Не вдалося очистити кеш: ${it.message.orEmpty()}"))
+                showMessage("Не вдалося очистити кеш: ${it.message.orEmpty()}")
             }
         }
     }
@@ -104,7 +110,12 @@ class SettingsScreenViewModel(
     private fun logout() {
         viewModelScope.launch {
             loginScreenViewModel.onIntent(LoginScreenIntent.LogoutClicked)
-            _uiEvent.tryEmit(UIEvents.NotificationAndNavigate("Вихід виконано"))
+            _uiEvent.emit(UIEvents.NotificationAndNavigate("Вихід виконано"))
         }
+    }
+
+    private fun showMessage(message: String) = viewModelScope.launch {
+        Napier.d(tag = "ShopAddEditScreenViewModel") { message }
+        _uiEvent.emit(UIEvents.ShowMessage(message))
     }
 }

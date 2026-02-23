@@ -35,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -54,10 +55,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import org.bigblackowl.vccadmin.data.entity.User
-import org.bigblackowl.vccadmin.data.repository.AuthRepository
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.AuthRepository
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUiComponent
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.LocalThemeMode
@@ -79,6 +80,7 @@ import vccadministrator.composeapp.generated.resources.exit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainTopAppBar(
+    snackbarHostState: SnackbarHostState,
     navigationViewModel: NavigationViewModel,
     authRepository: AuthRepository = koinInject(),
     localRepository: LocalRepository = koinInject(),
@@ -137,7 +139,7 @@ fun MainTopAppBar(
         },
         actions = {
             NetworkStatusIcon(isConnected)
-            OtaUiComponent()
+            OtaUiComponent(snackbarHostState)
             Crossfade(isLoginScreen) { isShowMenu ->
 
                 if (isShowMenu) {

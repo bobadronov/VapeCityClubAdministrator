@@ -13,20 +13,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import kotlinx.io.Buffer
+import org.bigblackowl.vccadmin.domain.repository.AiRepository
 import org.bigblackowl.vccadmin.ui.slideAiGeneration.GenerateMode
 import org.bigblackowl.vccadmin.ui.slideAiGeneration.GeneratedImage
 import org.bigblackowl.vccadmin.ui.slideAiGeneration.ImageGenSettings
 import org.bigblackowl.vccadmin.ui.slideAiGeneration.LocalImage
-
-/**
- * ==========================
- *   Repository + OpenAI-KT
- * ==========================
- */
-interface AiRepository {
-    suspend fun generate(prompt: String, mode: GenerateMode, settings: ImageGenSettings): List<GeneratedImage>
-    suspend fun getModels(): List<Model>
-}
 
 class AiRepositoryImpl(
     private val openAI: OpenAI,

@@ -62,8 +62,8 @@ import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOW
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import org.bigblackowl.vccadmin.data.entity.TransitionEffect
-import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme

@@ -62,9 +62,8 @@ import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOW
 import coil3.compose.AsyncImage
 import io.github.vinceglb.filekit.coil.securelyAccessFile
 import org.bigblackowl.vccadmin.data.entity.Shop
-import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.events.UIEvents
-import org.bigblackowl.vccadmin.data.utils.getGroupedShops
+import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
@@ -163,9 +162,6 @@ private fun AddSlideScreenContent(
     onIntent: (intent: AddEditSlideIntent) -> Unit,
 ) {
 
-    val groupedShops = remember(state.allShopList, state.cities) {
-        getGroupedShops(state.allShopList, state.cities)
-    }
 
     val listState = rememberLazyListState()
 
@@ -256,7 +252,7 @@ private fun AddSlideScreenContent(
                 }
 
                 // Якщо немає магазинів
-                if (groupedShops.isEmpty()) {
+                if (state.groupedShops.isEmpty()) {
                     item {
                         Box(
                             modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center
@@ -308,7 +304,7 @@ private fun AddSlideScreenContent(
                         }
                     }
 
-                    groupedShops.forEach { shopGroup ->
+                    state.groupedShops.forEach { shopGroup ->
                         stickyHeader(
                             key = "header_${shopGroup.city.id}" // важливо для коректного sticky
                         ) {
@@ -482,7 +478,7 @@ private fun AddSlideScreenContentPreview1() = PreviewDarkMaterialTheme {
     AddSlideScreenContent(
         state = AddSlideState(
             isLoading = false,
-            allShopList = FakeBackend.shops,
+            groupedShops = FakeBackend.groupedShops,
             slideId = "sad",
             cities = FakeBackend.cities,
             fileNameError = "akjlkasjflkjas",

@@ -3,6 +3,7 @@ package org.bigblackowl.vccadmin.ui.addEditSlideScreen
 import io.github.vinceglb.filekit.PlatformFile
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
+import org.bigblackowl.vccadmin.data.entity.ShopGroup
 
 data class AddSlideState(
     val isLoading: Boolean = false,
@@ -13,6 +14,7 @@ data class AddSlideState(
 
     val selectedShopCodes: Set<String> = emptySet(),
     val allShopList: List<Shop> = emptyList(),
+    val groupedShops: List<ShopGroup> = emptyList(),
 
     // derived selections
     val allCodes: Set<String> = emptySet(),

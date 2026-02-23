@@ -14,10 +14,10 @@ import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.TransitionEffect
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.SlideRepository
-import org.bigblackowl.vccadmin.data.repository.UserRepository
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.SlideRepository
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
 import org.bigblackowl.vccadmin.utils.AppStringProvider
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent

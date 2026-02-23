@@ -19,11 +19,11 @@ import org.bigblackowl.vccadmin.data.entity.toSlides
 import org.bigblackowl.vccadmin.data.entity.toUiShops
 import org.bigblackowl.vccadmin.data.errorManager.ErrorCode
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.CityRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.ShopRepository
-import org.bigblackowl.vccadmin.data.repository.SlideRepository
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.ShopRepository
+import org.bigblackowl.vccadmin.domain.repository.SlideRepository
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import vccadministrator.composeapp.generated.resources.Res

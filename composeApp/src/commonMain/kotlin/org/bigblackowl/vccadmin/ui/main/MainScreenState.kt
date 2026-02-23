@@ -1,8 +1,8 @@
 package org.bigblackowl.vccadmin.ui.main
 
 import org.bigblackowl.vccadmin.data.entity.City
+import org.bigblackowl.vccadmin.data.entity.ShopGroup
 import org.bigblackowl.vccadmin.data.entity.ShopsFilter
-import org.bigblackowl.vccadmin.data.utils.ShopGroup
 
 /** Стан головного екрану */
 data class MainScreenState(

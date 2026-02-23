@@ -72,7 +72,6 @@ import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.buttons.AddButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
@@ -83,6 +82,7 @@ import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.UkrainianPhoneVisualTransformation

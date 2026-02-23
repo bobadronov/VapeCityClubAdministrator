@@ -1,13 +1,16 @@
-package org.bigblackowl.vccadmin.ui.settings
+package org.bigblackowl.vccadmin.uiComponent.container
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -29,8 +32,12 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.text.BodyText
+import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.clear_cache
@@ -43,20 +50,22 @@ fun OutlinedCardWithLabel(
     modifier: Modifier = Modifier,
     textColor: Color = MaterialTheme.colorScheme.primary,
     borderColor: Color = MaterialTheme.colorScheme.primary,
-    titleFontSize: TextUnit = MaterialTheme.typography.bodyMedium.fontSize,
+    titleFontSize: TextUnit = if (isWideScreen()) MaterialTheme.typography.titleMedium.fontSize else MaterialTheme.typography.bodyMedium.fontSize,
     fontSize: TextUnit = TextUnit.Unspecified,
     verticalArrangement: Arrangement.Vertical = Arrangement.Center,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable (ColumnScope.() -> Unit),
 ) {
+
     val textMeasurer: TextMeasurer = rememberTextMeasurer()
+
     Box(
         modifier = modifier.drawWithContent {
             val canvasWidth = size.width
             val canvasHeight = size.height
             val lineThickness = 3f
             val radius = 52f
-            val paddingBetweenTextAndLine = 23f
+            val paddingBetweenTextAndLine = 20f
             val textLayoutResult = textMeasurer.measure(
                 text = label, style = TextStyle(fontSize = fontSize, color = borderColor)
             )
@@ -162,12 +171,17 @@ fun OutlinedCardWithLabel(
 @Preview
 @Composable
 fun OutlinedCardWithLabelPreview() = PreviewDarkMaterialTheme {
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp).fillMaxHeight(),
+    ) {
         item {
             OutlinedCardWithLabel(
                 label = stringResource(Res.string.clear_cache),
             ) {
-                DefaultIcon(Icons.Default.Info)
+                Row {
+                    DefaultIcon(Icons.Default.Info)
+                    BodyText(stringResource(Res.string.clear_cache))
+                }
             }
         }
     }
@@ -176,12 +190,17 @@ fun OutlinedCardWithLabelPreview() = PreviewDarkMaterialTheme {
 @Preview(device = Devices.DESKTOP)
 @Composable
 fun OutlinedCardWithLabelPreviewPC() = PreviewDarkMaterialTheme {
-    LazyColumn {
+    LazyColumn(
+        modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp).fillMaxHeight(),
+    ) {
         item {
             OutlinedCardWithLabel(
                 label = stringResource(Res.string.clear_cache),
             ) {
-
+                Row {
+                    DefaultIcon(Icons.Default.Info)
+                    BodyText(stringResource(Res.string.clear_cache))
+                }
             }
         }
     }

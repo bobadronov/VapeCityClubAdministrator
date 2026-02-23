@@ -25,26 +25,28 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.errorManager.ErrorManager
-import org.bigblackowl.vccadmin.data.repository.AiRepository
 import org.bigblackowl.vccadmin.data.repository.AiRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.AuthRepository
 import org.bigblackowl.vccadmin.data.repository.AuthRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.CityRepository
 import org.bigblackowl.vccadmin.data.repository.CityRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.CitySearchRepository
 import org.bigblackowl.vccadmin.data.repository.CitySearchRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.FileGeneratorRepository
 import org.bigblackowl.vccadmin.data.repository.FileGeneratorRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
-import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepository
-import org.bigblackowl.vccadmin.data.repository.ShopRepository
+import org.bigblackowl.vccadmin.data.repository.LocalRepositoryImpl
+import org.bigblackowl.vccadmin.data.repository.OtaUpdateRepositoryImpl
 import org.bigblackowl.vccadmin.data.repository.ShopRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.SlideRepository
 import org.bigblackowl.vccadmin.data.repository.SlideRepositoryImpl
-import org.bigblackowl.vccadmin.data.repository.UserRepository
 import org.bigblackowl.vccadmin.data.repository.UserRepositoryImpl
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.data.utils.OtaDownloader
+import org.bigblackowl.vccadmin.domain.repository.AiRepository
+import org.bigblackowl.vccadmin.domain.repository.AuthRepository
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.CitySearchRepository
+import org.bigblackowl.vccadmin.domain.repository.FileGeneratorRepository
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
+import org.bigblackowl.vccadmin.domain.repository.OtaUpdateRepository
+import org.bigblackowl.vccadmin.domain.repository.ShopRepository
+import org.bigblackowl.vccadmin.domain.repository.SlideRepository
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideViewModel
@@ -74,7 +76,7 @@ expect val platformModule: Module
 expect val ktorEngine: HttpClientEngine
 
 val networkModule = module {
-    single(createdAtStart = true) { LocalRepository() }
+    single<LocalRepository>(createdAtStart = true) { LocalRepositoryImpl() }
     single<Json> {
         Json {
             ignoreUnknownKeys = true
@@ -179,12 +181,12 @@ val repositoryModule = module {
     single<CitySearchRepository> { CitySearchRepositoryImpl(json = get()) }
 }
 val otaModule = module {
-    single(createdAtStart = true) { OtaUpdateRepository(get()) }
+    single<OtaUpdateRepository>(createdAtStart = true) { OtaUpdateRepositoryImpl(get()) }
     singleOf(::OtaDownloader)
 }
 
 val logger = module {
-   Napier.base(DebugAntilog())
+    Napier.base(DebugAntilog())
 }
 
 val coreModules = listOf(

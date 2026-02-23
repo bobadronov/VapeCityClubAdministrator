@@ -9,8 +9,8 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.bigblackowl.vccadmin.data.repository.LocalRepository
-import org.bigblackowl.vccadmin.data.repository.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalCoilApi::class)
@@ -95,7 +95,6 @@ class ErrorManager(
         }
         preferences.saveErrorsToBuffer(json.encodeToString(buffer))
     }
-
 }
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")

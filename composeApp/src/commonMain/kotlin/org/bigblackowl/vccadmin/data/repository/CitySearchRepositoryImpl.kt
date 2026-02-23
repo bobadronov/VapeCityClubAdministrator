@@ -5,22 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.bigblackowl.vccadmin.data.entity.SuggestionCityDto
+import org.bigblackowl.vccadmin.domain.repository.CitySearchRepository
 import vccadministrator.composeapp.generated.resources.Res
 import kotlin.concurrent.Volatile
-
-@Serializable
-data class CityDto(
-    @SerialName("name") val name: String,
-    @SerialName("oblast") val oblast: String,
-)
-
-interface CitySearchRepository {
-    suspend fun preload()
-    suspend fun search(query: String, limit: Int = 20): List<CityDto>
-}
 
 class CitySearchRepositoryImpl(
     private val json: Json,
@@ -29,7 +18,7 @@ class CitySearchRepositoryImpl(
     private val resourcePath: String = "files/sorted_city_list.json"
 
     private data class CityEntry(
-        val dto: CityDto,
+        val dto: SuggestionCityDto,
         val nameNorm: String,
         val oblastNorm: String,
     )
@@ -43,14 +32,14 @@ class CitySearchRepositoryImpl(
         ensureLoaded()
     }
 
-    override suspend fun search(query: String, limit: Int): List<CityDto> = withContext(dispatcher) {
+    override suspend fun search(query: String, limit: Int): List<SuggestionCityDto> = withContext(dispatcher) {
         val q = normalizeUa(query)
         val entries = ensureLoaded()
 
         if (q.isBlank()) return@withContext emptyList()
 
         // 1) prefix matches (найкращий UX)
-        val prefix = ArrayList<CityDto>(limit)
+        val prefix = ArrayList<SuggestionCityDto>(limit)
         for (e in entries) {
             if (e.nameNorm.startsWith(q)) {
                 prefix.add(e.dto)
@@ -59,7 +48,7 @@ class CitySearchRepositoryImpl(
         }
 
         // 2) contains matches (як fallback)
-        val contains = ArrayList<CityDto>(limit - prefix.size)
+        val contains = ArrayList<SuggestionCityDto>(limit - prefix.size)
         for (e in entries) {
             if (e.nameNorm.contains(q, ignoreCase = true) || e.oblastNorm.contains(q, ignoreCase = true)) {
                 // щоб не дублювати те, що вже є в prefix
@@ -83,7 +72,7 @@ class CitySearchRepositoryImpl(
             val bytes = Res.readBytes(resourcePath)
             val text = bytes.decodeToString()
 
-            val list = json.decodeFromString<List<CityDto>>(text)
+            val list = json.decodeFromString<List<SuggestionCityDto>>(text)
 
             // Важливо: кешуємо нормалізовані поля для швидкого пошуку
             val entries = list.map { dto ->

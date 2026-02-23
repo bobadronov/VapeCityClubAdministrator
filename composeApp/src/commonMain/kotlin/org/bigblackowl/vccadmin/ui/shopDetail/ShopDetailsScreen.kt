@@ -60,8 +60,8 @@ import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.UserRole
-import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.events.UIEvents
+import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.resourses.DefaultValues
@@ -121,10 +121,9 @@ fun ShopDetailsScreen(
     }
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle(initialValue = ShopDetailsUiState())
-    val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
 
-    LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
                 else -> {}

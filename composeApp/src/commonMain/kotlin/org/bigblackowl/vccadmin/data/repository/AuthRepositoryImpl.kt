@@ -18,19 +18,8 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
-
-interface AuthRepository {
-
-    val sessionStatus: StateFlow<SessionStatus>
-
-    val currentUser: StateFlow<User?>
-
-    suspend fun login(email: String, password: String): Result<Unit>
-
-    suspend fun signOut()
-
-    suspend fun getUserRole(): UserRole
-}
+import org.bigblackowl.vccadmin.domain.repository.AuthRepository
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
 
 
 class AuthRepositoryImpl(
