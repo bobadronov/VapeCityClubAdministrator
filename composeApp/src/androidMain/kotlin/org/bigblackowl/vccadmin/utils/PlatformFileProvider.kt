@@ -8,6 +8,8 @@ import android.content.Intent
 import android.os.Environment
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.absolutePath
+import io.github.vinceglb.filekit.createDirectories
 import io.github.vinceglb.filekit.delete
 import io.github.vinceglb.filekit.dialogs.openFileWithDefaultApplication
 import io.github.vinceglb.filekit.dialogs.shareFile
@@ -18,6 +20,7 @@ import io.github.vinceglb.filekit.write
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import org.jetbrains.compose.resources.getString
@@ -36,12 +39,21 @@ import java.util.zip.ZipOutputStream
 
 actual object PlatformFileProvider {
     private val context: Context by inject(Context::class.java)
-    actual val downloadFolderPath: String = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
+
+    private fun getDirLegacy(): String {
+        val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val path = PlatformFile(PlatformFile(dir), child = BuildConfig.APP_NAME)
+        path.createDirectories(mustCreate = false) // не падає, якщо вже існує
+        return path.absolutePath()
+    }
+
+    actual val downloadFolderPath: String = getDirLegacy()
 
     actual fun openFile(fileName: String) {
-        val file = PlatformFile("$downloadFolderPath/$fileName")
+        val file = PlatformFile("$downloadFolderPath${File.separator}$fileName")
         FileKit.openFileWithDefaultApplication(file)
     }
+
     actual fun openDownloadFolder() {
         val intent = Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -54,6 +66,7 @@ actual object PlatformFileProvider {
             file.write(content)
         }
     }
+
     actual fun isFileExist(fileName: String): Boolean? = PlatformFile("$downloadFolderPath${File.separator}$fileName").exists()
     actual suspend fun shareWithTelegram(data: String) {
         val telegramPkg = "org.telegram.messenger"
@@ -80,6 +93,7 @@ actual object PlatformFileProvider {
             context.startActivity(chooser)
         }
     }
+
     actual suspend fun shareFilesAsZip(files: List<GeneratedFile>): ShareResult {
         val okFiles = files.asSequence().filter { it.error == null && it.content != null }.toList()
         if (okFiles.isEmpty()) {
@@ -122,6 +136,7 @@ actual object PlatformFileProvider {
             )
         }
     }
+
     actual suspend fun deleteFile(fileName: String): Boolean {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = fileName)
         return runCatching {
@@ -130,6 +145,7 @@ actual object PlatformFileProvider {
             !file.exists()
         }.getOrDefault(false)
     }
+
     suspend fun sha256OfSavedFile(name: String): String {
         val file = PlatformFile(PlatformFile(downloadFolderPath), child = name)
         return file.withScopedAccess { f ->
@@ -139,6 +155,7 @@ actual object PlatformFileProvider {
             digest.joinToString("") { "%02x".format(it) }
         }
     }
+
     private fun String.ensureZipExt(): String = if (lowercase().endsWith(".zip")) this else "$this.zip"
-    private fun String.safeZipEntryName(): String = replace("\\", "/").substringAfterLast("/").ifBlank { "file.pdf" }
+    private fun String.safeZipEntryName(): String = replace("\\", "${File.separator}").substringAfterLast("${File.separator}").ifBlank { "file.pdf" }
 }
