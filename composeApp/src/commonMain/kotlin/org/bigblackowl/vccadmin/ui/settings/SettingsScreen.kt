@@ -1,5 +1,14 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package org.bigblackowl.vccadmin.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,20 +47,21 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import org.bigblackowl.vccadmin.BuildConfig
+import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
-import org.bigblackowl.vccadmin.ota.OtaUiModel
-import org.bigblackowl.vccadmin.ota.UpdateInfo
 import org.bigblackowl.vccadmin.ota.UpdateState
 import org.bigblackowl.vccadmin.ota.toUiModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
@@ -94,7 +104,6 @@ import vccadministrator.composeapp.generated.resources.ota_state_installing
 import vccadministrator.composeapp.generated.resources.ota_state_no_update
 import vccadministrator.composeapp.generated.resources.ota_state_ready_to_install
 import vccadministrator.composeapp.generated.resources.ota_state_verifying
-import vccadministrator.composeapp.generated.resources.select_theme
 import vccadministrator.composeapp.generated.resources.theme_setting
 
 @Composable
@@ -128,6 +137,7 @@ fun SettingsScreen(
     )
 }
 
+@Suppress("VariableNeverRead")
 @Composable
 private fun SettingsContent(
     uiState: SettingsUiState,
@@ -156,63 +166,29 @@ private fun SettingsContent(
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                item {
-                    OutlinedCardWithLabel(label = stringResource(Res.string.theme_setting), modifier = Modifier.fillMaxWidth()) {
-                        BodyText(text = stringResource(Res.string.select_theme), modifier = Modifier.align(Alignment.CenterHorizontally))
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        ) {
-                            ThemeMode.entries.forEachIndexed { index, item ->
-                                SegmentedButton(
-                                    selected = themeMode == item,
-                                    onClick = {
-                                        themeMode = item
-                                        onIntent(
-                                            SettingsIntent.SetTheme(
-                                                when (themeMode) {
-                                                    ThemeMode.AUTO -> systemDark
-                                                    ThemeMode.DARK -> true
-                                                    ThemeMode.LIGHT -> false
-                                                }
-                                            )
-                                        )
-                                    },
-                                    icon = { SegmentedButtonDefaults.Icon(themeMode == item, { DefaultIcon(item.icon) }) },
-                                    shape = SegmentedButtonDefaults.itemShape(index, ThemeMode.entries.size)
-                                ) {
-                                    BodyText(stringResource(item.label))
-                                }
+                item(key = "theme") {
+                    ThemeCard(
+                        onSetTheme = { theme ->
+                            val isDark = when (theme) {
+                                ThemeMode.AUTO -> systemDark
+                                ThemeMode.DARK -> true
+                                ThemeMode.LIGHT -> false
                             }
+                            themeMode = theme
+                            onIntent(SettingsIntent.SetTheme(isDark))
                         }
-                    }
+                    )
                 }
 
-                item {
-                    OutlinedCardWithLabel(
-                        label = stringResource(Res.string.clear_cache),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            DefaultIcon(Icons.Default.DiscFull)
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                text = "${stringResource(Res.string.cache_size)} ${AppStringProvider.formatBytesToString(uiState.cacheSizeBytes)}",
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            OutlinedButton(
-                                onClick = { onIntent(SettingsIntent.SetClearCacheDialog(true)) },
-                            ) {
-                                Text(stringResource(Res.string.clear_cache))
-                            }
-                        }
-                    }
+                item(key = "cache") {
+                    CacheCard(
+                        cacheSizeBytes = uiState.cacheSizeBytes,
+                        onClearClick = { onIntent(SettingsIntent.SetClearCacheDialog(true)) }
+                    )
                 }
 
-                item {
-                    UpdatesSettingCard(
+                item(key = "updates") {
+                    UpdatesCard(
                         updateState = uiState.updateState,
                         currentBuildLabel = uiState.currentAppVersionLabel,
                         onCheck = { onIntent(SettingsIntent.CheckUpdates) },
@@ -221,20 +197,10 @@ private fun SettingsContent(
                     )
                 }
 
-                item {
-                    OutlinedCardWithLabel(
-                        label = stringResource(Res.string.account_label),
-                        modifier = Modifier.fillMaxWidth(),
-                        onTap = { onIntent(SettingsIntent.SetLogoutDialog(true)) }
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            DefaultIcon(Icons.AutoMirrored.Filled.Logout)
-                            Spacer(Modifier.width(12.dp))
-                            Text(stringResource(Res.string.exit), style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
+                item(key = "account") {
+                    AccountCard(
+                        onLogoutClick = { onIntent(SettingsIntent.SetLogoutDialog(true)) }
+                    )
                 }
             }
 
@@ -257,7 +223,7 @@ private fun SettingsContent(
                 TextButton(onClick = {
                     onIntent(SettingsIntent.Logout)
                     onIntent(SettingsIntent.SetLogoutDialog(false))
-                }) { BodyText(stringResource(Res.string.confirm)) }
+                }) { BodyText(stringResource(Res.string.confirm), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
                 TextButton(onClick = { onIntent(SettingsIntent.SetLogoutDialog(false)) }) {
@@ -276,7 +242,7 @@ private fun SettingsContent(
                 TextButton(onClick = {
                     onIntent(SettingsIntent.ClearCache)
                     onIntent(SettingsIntent.SetClearCacheDialog(false))
-                }) { BodyText(stringResource(Res.string.clear)) }
+                }) { BodyText(stringResource(Res.string.clear), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
                 TextButton(onClick = { onIntent(SettingsIntent.SetClearCacheDialog(false)) }) {
@@ -287,86 +253,221 @@ private fun SettingsContent(
     }
 }
 
-
 @Composable
-private fun UpdatesSettingCard(
-    updateState: UpdateState,
-    currentBuildLabel: String,
-    onCheck: () -> Unit,
-    onDownload: () -> Unit,
-    onInstall: () -> Unit,
+private fun ThemeCard(
+    onSetTheme: (ThemeMode) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val progressText = when (updateState) {
-        UpdateState.NotAvailable -> "" // або окремий string
-        UpdateState.Idle -> stringResource(Res.string.ota_state_idle)
-        UpdateState.Checking -> stringResource(Res.string.ota_state_checking)
-        UpdateState.NoUpdate -> stringResource(Res.string.ota_state_no_update)
-        is UpdateState.Available -> stringResource(Res.string.ota_state_available_template, updateState.info.manifest.version ?: "—")
-        is UpdateState.Downloading -> stringResource(Res.string.ota_state_downloading)
-        is UpdateState.Verifying -> stringResource(Res.string.ota_state_verifying)
-        is UpdateState.ReadyToInstall -> stringResource(Res.string.ota_state_ready_to_install)
-        is UpdateState.Installing -> stringResource(Res.string.ota_state_installing)
-        is UpdateState.Error -> stringResource(Res.string.ota_state_error_template, updateState.message)
-    }
+    var themeMode by LocalThemeMode.current
 
-    OutlinedCardWithLabel(label = stringResource(Res.string.about_app), modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.rowItemPadding)) {
-            // ✅ твоя функція іконок (як у фрагменті)
-            OtaStatusIcon(updateState.toUiModel())
-
-            SelectionContainer(
-                modifier = Modifier.weight(1f),
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
+    OutlinedCardWithLabel(
+        label = stringResource(Res.string.theme_setting),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            ThemeMode.entries.forEachIndexed { index, item ->
+                SegmentedButton(
+                    selected = themeMode == item,
+                    onClick = {
+                        themeMode = item
+                        onSetTheme(themeMode)
+                    },
+                    icon = {
+                        SegmentedButtonDefaults.Icon(
+                            active = themeMode == item,
+                            activeContent = { DefaultIcon(item.icon) }
+                        )
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index, ThemeMode.entries.size)
                 ) {
-                    BodyText(text = "${stringResource(Res.string.current_app_version)} $currentBuildLabel")
-                    HelperText(progressText)
+                    BodyText(stringResource(item.label))
                 }
-            }
-
-            when (updateState) {
-
-                is UpdateState.Idle, is UpdateState.NoUpdate -> {
-                    OutlinedButton(onClick = onCheck) {
-                        Text("Check")
-                    }
-                }
-
-                is UpdateState.Available -> {
-                    OutlinedButton(onClick = onDownload) {
-                        Text("Download")
-                    }
-                }
-
-                is UpdateState.ReadyToInstall -> {
-                    OutlinedButton(onClick = onInstall) {
-                        Text("Install")
-                    }
-                }
-
-                else -> Unit
             }
         }
     }
 }
 
+@Composable
+private fun CacheCard(
+    cacheSizeBytes: Long,
+    onClearClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val cacheSizeText = remember(cacheSizeBytes) {
+        AppStringProvider.formatBytesToString(cacheSizeBytes)
+    }
+
+    OutlinedCardWithLabel(
+        label = stringResource(Res.string.clear_cache),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            DefaultIcon(Icons.Default.DiscFull)
+            Spacer(Modifier.width(12.dp))
+
+            Text(
+                text = "${stringResource(Res.string.cache_size)} $cacheSizeText",
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            AnimatedVisibility(
+                visible = cacheSizeBytes > 0,
+                enter = slideInHorizontally { it } + fadeIn(),
+                exit = slideOutHorizontally { it } + fadeOut()
+            ) {
+                OutlinedButton(onClick = onClearClick) {
+                    HelperText(stringResource(Res.string.clear_cache))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpdatesCard(
+    updateState: UpdateState,
+    currentBuildLabel: String,
+    onCheck: () -> Unit,
+    onDownload: () -> Unit,
+    onInstall: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val availableVersion = (updateState as? UpdateState.Available)?.info?.manifest?.version ?: "—"
+    val errorMsg = (updateState as? UpdateState.Error)?.message.orEmpty()
+
+    val progressText = when (updateState) {
+        UpdateState.NotAvailable -> ""
+        UpdateState.Idle -> stringResource(Res.string.ota_state_idle)
+        UpdateState.Checking -> stringResource(Res.string.ota_state_checking)
+        UpdateState.NoUpdate -> stringResource(Res.string.ota_state_no_update)
+        is UpdateState.Available -> stringResource(Res.string.ota_state_available_template, availableVersion)
+        is UpdateState.Downloading -> stringResource(Res.string.ota_state_downloading)
+        is UpdateState.Verifying -> stringResource(Res.string.ota_state_verifying)
+        is UpdateState.ReadyToInstall -> stringResource(Res.string.ota_state_ready_to_install)
+        is UpdateState.Installing -> stringResource(Res.string.ota_state_installing)
+        is UpdateState.Error -> stringResource(Res.string.ota_state_error_template, errorMsg)
+    }
+
+    OutlinedCardWithLabel(
+        label = stringResource(Res.string.about_app),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.rowItemPadding)
+        ) {
+            OtaStatusIcon(updateState)
+
+            SelectionContainer(Modifier.weight(1f)) {
+                Column {
+                    BodyText("${stringResource(Res.string.current_app_version)} $currentBuildLabel")
+                    HelperText(progressText)
+                }
+            }
+
+            // ✅ одна точка анімації для кнопки
+            UpdateActionButton(
+                updateState = updateState,
+                onCheck = onCheck,
+                onDownload = onDownload,
+                onInstall = onInstall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun UpdateActionButton(
+    updateState: UpdateState,
+    onCheck: () -> Unit,
+    onDownload: () -> Unit,
+    onInstall: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Мапимо багато станів в маленький enum — менше "шуму" для анімації
+    val action = when (updateState) {
+        UpdateState.Idle, UpdateState.NoUpdate -> OtaAction.Check
+        is UpdateState.Available -> OtaAction.Download
+        is UpdateState.ReadyToInstall -> OtaAction.Install
+        else -> OtaAction.None
+    }
+
+    AnimatedContent(
+        targetState = action,
+        modifier = modifier,
+        transitionSpec = {
+            (slideInHorizontally { it } + fadeIn())
+                .togetherWith(slideOutHorizontally { it } + fadeOut())
+        },
+        label = "ota_action_button"
+    ) { a ->
+        when (a) {
+            OtaAction.None -> Spacer(Modifier.width(1.dp)) // або нічого
+            OtaAction.Check -> OutlinedButton(onClick = onCheck) { HelperText("Check") }
+            OtaAction.Download -> OutlinedButton(onClick = onDownload) { HelperText("Download") }
+            OtaAction.Install -> OutlinedButton(onClick = onInstall) { HelperText("Install") }
+        }
+    }
+}
+
+private enum class OtaAction { None, Check, Download, Install }
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun OtaStatusIcon(ui: OtaUiModel) {
-    when {
-        ui.isChecking -> DefaultIcon(Icons.Default.Search)
-        ui.isError -> DefaultIcon(Icons.Default.Error)
-        ui.isInstalling -> DefaultIcon(Icons.Default.InstallDesktop)
-        ui.isReadyToInstall -> DefaultIcon(Icons.Default.FileDownloadDone)
-        ui.isVerifying -> DefaultIcon(Icons.Default.Security)
-        ui.isNoUpdate -> DefaultIcon(Icons.Default.DoneAll)
-        ui.downloadProgress != null -> CircularWavyProgressIndicator(progress = { ui.downloadProgress }, modifier = Modifier.size(24.dp))
-        ui.isDownloading -> CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
+private fun OtaStatusIcon(state: UpdateState) {
+    when (state) {
+        UpdateState.Checking -> DefaultIcon(Icons.Default.Search)
+        is UpdateState.Error -> DefaultIcon(Icons.Default.Error)
+        is UpdateState.Installing -> DefaultIcon(Icons.Default.InstallDesktop)
+        is UpdateState.ReadyToInstall -> DefaultIcon(Icons.Default.FileDownloadDone)
+        is UpdateState.Verifying -> DefaultIcon(Icons.Default.Security)
+        UpdateState.NoUpdate -> DefaultIcon(Icons.Default.DoneAll)
+
+        is UpdateState.Downloading -> {
+            // якщо маєш прогрес — підстав сюди
+            val p = state.toUiModel().downloadProgress // якщо в state немає progress поля
+            if (p != null) {
+                CircularWavyProgressIndicator(
+                    progress = { p },
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
+            }
+        }
+
         else -> DefaultIcon(Icons.Default.Info)
     }
 }
 
+@Composable
+private fun AccountCard(
+    onLogoutClick: (Offset) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedCardWithLabel(
+        label = stringResource(Res.string.account_label),
+        modifier = modifier.fillMaxWidth(),
+        onTap = onLogoutClick
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            DefaultIcon(Icons.AutoMirrored.Filled.Logout)
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = stringResource(Res.string.exit),
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+    }
+}
 
 @Preview
 @Composable
@@ -395,7 +496,7 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
                 else -> BuildConfig.APP_VERSION // або ""
             }
 
-            UpdatesSettingCard(updateState = state, currentBuildLabel = buildLabel, onCheck = {}, onDownload = {}, onInstall = {})
+            UpdatesCard(updateState = state, currentBuildLabel = buildLabel, onCheck = {}, onDownload = {}, onInstall = {})
         }
     }
 }
@@ -410,7 +511,7 @@ private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialThem
             cacheSizeBytes = 42L * 1024 * 1024,
             newAppVersionLabel = "1.2.3",
             appBuildLabel = "123",
-            updateState = UpdateState.Downloading(),
+            updateState = UpdateState.Downloading(progress = .2f),
         ), onIntent = {}, goBack = {})
 }
 
@@ -449,7 +550,7 @@ private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialThem
     SettingsContent(
         uiState = SettingsUiState(
             isInitialLoading = false, isDarkEffective = false, cacheSizeBytes = -1L, // як у wasm
-            newAppVersionLabel = "1.2.3", appBuildLabel = "123", updateState = UpdateState.Idle
+            clearCacheDialogVisible = true,
         ), onIntent = {}, goBack = {})
 }
 
@@ -457,4 +558,17 @@ private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialThem
 @Composable
 private fun Preview_SettingsContent_Loading() = PreviewDarkMaterialTheme {
     SettingsContent(uiState = SettingsUiState(isInitialLoading = true), onIntent = {}, goBack = {})
+}
+
+@Preview
+@Composable
+private fun CacheCardPreview() = PreviewDarkMaterialTheme {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item {
+            CacheCard(0L, {})
+        }
+        item {
+            CacheCard(2650L, {})
+        }
+    }
 }

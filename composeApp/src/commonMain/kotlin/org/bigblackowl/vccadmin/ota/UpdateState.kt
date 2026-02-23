@@ -1,5 +1,7 @@
 package org.bigblackowl.vccadmin.ota
 
+import org.bigblackowl.vccadmin.data.entity.UpdateInfo
+
 sealed interface UpdateState {
     data object NotAvailable : UpdateState
     data object Idle : UpdateState

@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.ota
+package org.bigblackowl.vccadmin.data.entity
 
 import androidx.compose.runtime.Immutable
 import kotlinx.serialization.SerialName
@@ -32,7 +32,7 @@ data class AdminAppUpdate(
     val android: AssetInfo? = null,
 
     @SerialName("created_at")
-    val createdAt: String? = null, // timestamptz; зазвичай читаємо як String ISO (або Instant, якщо треба)
+    val createdAt: String? = null, // timestamp
 )
 
 @Serializable

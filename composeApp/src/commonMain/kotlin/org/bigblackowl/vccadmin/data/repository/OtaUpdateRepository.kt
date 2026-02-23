@@ -3,7 +3,7 @@ package org.bigblackowl.vccadmin.data.repository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
-import org.bigblackowl.vccadmin.ota.AdminAppUpdate
+import org.bigblackowl.vccadmin.data.entity.AdminAppUpdate
 
 class OtaUpdateRepository (
     private val supabase: SupabaseClient,

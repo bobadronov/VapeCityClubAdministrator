@@ -7,9 +7,9 @@ import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.Slide
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.entity.UserRole
-import org.bigblackowl.vccadmin.ota.AdminAppUpdate
-import org.bigblackowl.vccadmin.ota.AssetInfo
-import org.bigblackowl.vccadmin.ota.UpdateInfo
+import org.bigblackowl.vccadmin.data.entity.AdminAppUpdate
+import org.bigblackowl.vccadmin.data.entity.AssetInfo
+import org.bigblackowl.vccadmin.data.entity.UpdateInfo
 import org.bigblackowl.vccadmin.ui.city.addEdit.CitySuggestion
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import kotlin.math.absoluteValue
