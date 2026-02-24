@@ -7,7 +7,7 @@ isDebugBuild    = "false"
 #isDebugBuild    = "true"
 
 #noinspection UnusedVersionCatalogEntry
-subpath         = "18"
+subpath         = "19"
 #noinspection UnusedVersionCatalogEntry
 patch           = "8"
 #noinspection UnusedVersionCatalogEntry
