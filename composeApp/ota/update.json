@@ -1,29 +1,29 @@
 {
-  "version": "1.0.817",
-  "published_at": 1771870263000,
-  "release_notes": "- v1.0.817 (830c686)\n- add multilanguage support / language switch (918cb4c)\n- UX optimization (7ab8ea2)\n- change project structure (59eb71a)\n- release script optimization (a7b4d95)\n- Merge remote-tracking branch 'origin/master' (8127247)\n- release script optimization (73788f1)\n- release script optimization (df778e3)\n- ui optimization (52ab100)\n- Merge remote-tracking branch 'origin/master' (6af3637)\n- ui changes, fix in dialog (1af6cab)\n- chore(ota): update manifest for v1.0.816 (f6a83ca)",
+  "version": "1.0.818",
+  "published_at": 1771888303000,
+  "release_notes": "- v1.0.818 (8da8940)\n- small ui changes (d9ae1d9)\n- Merge remote-tracking branch 'origin/master' (3e04caa)\n- fix bug`s with cache get/clear (3b3d1be)\n- chore(ota): update manifest for v1.0.817 (6134e32)",
   "windows": {
-    "name": "VCC.Administrator-1.0.817.msi",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.817/VCC.Administrator-1.0.817.msi",
-    "size": 126763461,
-    "sha256": "d1fa642c47c357b61858e995ab62a9a32ec4e5382a9ec23533f3cc5020afa184"
+    "name": "VCC.Administrator-1.0.818.msi",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.818/VCC.Administrator-1.0.818.msi",
+    "size": 126755274,
+    "sha256": "faa46896274222aa66a00a2762b38d697cfaa9a1fe662f9700b84898b8d6d8dc"
   },
   "macos": {
-    "name": "VCC.Administrator-1.0.817.dmg",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.817/VCC.Administrator-1.0.817.dmg",
-    "size": 138138951,
-    "sha256": "3076013e2de46e08f648d625f00a0ca9ebaf61617f979a1460bebfde37e0aa06"
+    "name": "VCC.Administrator-1.0.818.dmg",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.818/VCC.Administrator-1.0.818.dmg",
+    "size": 138143677,
+    "sha256": "afb7572d34745763e56f595d555d3fbe9f9218244fa35eba7d5984f9d5ac415e"
   },
   "linux": {
-    "name": "vcc-administrator_1.0.817_amd64.deb",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.817/vcc-administrator_1.0.817_amd64.deb",
-    "size": 115303416,
-    "sha256": "ae497198ef2fd6da3315379c73b6b4dac6ced4275a83704d621c72afcbdcbaee"
+    "name": "vcc-administrator_1.0.818_amd64.deb",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.818/vcc-administrator_1.0.818_amd64.deb",
+    "size": 115297322,
+    "sha256": "f4d24d9e91d163e528ca2034faf57d4b9847054fa47451a15ad50c0b9f2a94ea"
   },
   "android": {
-    "name": "VCC.Administrator-1.0.817.apk",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.817/VCC.Administrator-1.0.817.apk",
-    "size": 7398896,
-    "sha256": "1cbeb6ba92fb1311b270c4a0d12bbeb2f9c85cd9c3a05da5a2c977d104f4d1ca"
+    "name": "VCC.Administrator-1.0.818.apk",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.818/VCC.Administrator-1.0.818.apk",
+    "size": 7382484,
+    "sha256": "371ee4e61e571a5e3421b5cea0979173820d71a2a8132d8923db7b9bfdd1c61f"
   }
 }
