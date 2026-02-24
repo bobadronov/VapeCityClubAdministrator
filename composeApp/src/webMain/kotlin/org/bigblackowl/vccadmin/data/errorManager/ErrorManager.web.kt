@@ -8,9 +8,8 @@ actual object SystemInfoProvider {
     actual fun systemInfo(): SystemInfo {
         val ua = window.navigator.userAgent
         val screen = "${window.screen.width}x${window.screen.height}"
-
         return SystemInfo(
-            device = "Browser",
+            device =   window.navigator.product,
             model = ua.takeIf { it.isNotBlank() },
             product = window.navigator.platform.takeIf { it.isNotBlank() },
             osVersion = null,

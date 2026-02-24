@@ -3,6 +3,7 @@ package org.bigblackowl.vccadmin.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AddBusiness
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.FilePresent
 import androidx.compose.material.icons.filled.GeneratingTokens
 import androidx.compose.material.icons.filled.Image
@@ -19,6 +20,7 @@ import vccadministrator.composeapp.generated.resources.cities
 import vccadministrator.composeapp.generated.resources.exit
 import vccadministrator.composeapp.generated.resources.file_generation
 import vccadministrator.composeapp.generated.resources.new_shop
+import vccadministrator.composeapp.generated.resources.schedule
 import vccadministrator.composeapp.generated.resources.settings
 import vccadministrator.composeapp.generated.resources.slides
 import vccadministrator.composeapp.generated.resources.slides_ai_generation
@@ -58,7 +60,14 @@ fun buildMenuItems(
                 onClick = { applyThemeMode(nextThemeMode(themeMode)) }
             )
         )
-
+        add(
+            MenuItem(
+                text = Res.string.schedule,
+                icon = Icons.Default.CalendarMonth,
+                isSelected = { it == Route.WorkSchedule },
+                onClick = { navigate(Route.WorkSchedule) }
+            )
+        )
         if (!isLoginScreen) {
             add(
                 MenuItem(

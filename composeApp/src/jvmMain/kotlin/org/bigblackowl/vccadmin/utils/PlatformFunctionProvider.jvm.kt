@@ -2,6 +2,9 @@
 package org.bigblackowl.vccadmin.utils
 
 import coil3.ImageLoader
+import coil3.disk.DiskCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -11,11 +14,10 @@ import java.util.Locale
 
 
 actual object PlatformFunctionProvider : KoinComponent {
-    private val cacheDir: File
-        get() = get(named("imageCacheDir"))
+    private val cacheDir: File get() = get(named("coil3_disk_cache"))
+    private val imageLoader: ImageLoader get() = get()
+    private val diskCache: DiskCache get() = get()   // <- додай
 
-    private val imageLoader: ImageLoader
-        get() = get()
     actual fun openNetwork() {
         val os = System.getProperty("os.name").orEmpty().lowercase(Locale.getDefault())
         when {
@@ -25,19 +27,21 @@ actual object PlatformFunctionProvider : KoinComponent {
         }
     }
 
-
-
-    actual suspend fun getCacheSize(): Long {
-        return cacheDir.directorySizeBytes()
+    actual suspend fun getCacheSize(): Long = withContext(Dispatchers.IO) {
+        val mem = imageLoader.memoryCache?.size ?: 0L
+        val netMem = imageLoader.diskCache?.size ?: 0L
+        val disk = cacheDir.directorySizeBytes()
+        mem + disk + netMem
     }
 
     actual fun clearCache() {
-        // 1) memory cache
         imageLoader.memoryCache?.clear()
-
-        // 2) disk cache
-        cacheDir.deleteRecursively()
-        cacheDir.mkdirs()
+        runCatching { diskCache.clear() }
+            .onFailure {
+                // fallback лише якщо clear() не зміг
+                cacheDir.deleteRecursively()
+                cacheDir.mkdirs()
+            }
     }
 
     private fun openWindowsNetworkSettings() {

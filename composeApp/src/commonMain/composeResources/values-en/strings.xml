@@ -368,4 +368,8 @@
     <string name="ota_title">App update</string>
     <string name="ota_updates">Updates</string>
 
+    <!-- ========================================================= -->
+    <!-- Schedule -->
+    <!-- ========================================================= -->
+    <string name="schedule">Work schedule</string>
 </resources>

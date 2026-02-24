@@ -2,10 +2,12 @@
 
 package org.bigblackowl.vccadmin.utils
 
+import io.github.aakira.napier.Napier
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
+import org.w3c.dom.events.KeyboardEvent
 import kotlin.js.Promise
 
 @OptIn(ExperimentalWasmJsInterop::class)
@@ -58,5 +60,16 @@ actual object PlatformFunctionProvider {
                 cachesDelete(cachesObj, key).await<JsAny?>()
             }
         }
+    }
+    fun installReloadBlocker() {
+        window.addEventListener("keydown", { e ->
+            val ke = e as KeyboardEvent
+            Napier.d { ke.key }
+            val isF5 = ke.key == "F5" || ke.keyCode == 116
+            if (isF5) {
+                ke.preventDefault()
+                ke.stopPropagation()
+            }
+        }, true) // capture=true — краще перехоплює раніше
     }
 }

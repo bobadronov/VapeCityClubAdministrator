@@ -16,14 +16,14 @@ import java.io.File
 
 actual val platformModule = module {
     // 1) Де зберігати disk-cache (підбери базову папку під свій застосунок)
-    single<File>(qualifier = org.koin.core.qualifier.named("imageCacheDir")) {
+    single<File>(qualifier = org.koin.core.qualifier.named("coil3_disk_cache")) {
         val base = File(System.getProperty("user.home"), ".vccadmin") // приклад
-        File(base, "image_cache").apply { mkdirs() }
+        File(base, "coil3_disk_cache").apply { mkdirs() }
     }
 
     // 2) DiskCache (якщо ти на Coil3)
     single<DiskCache> {
-        val dir = get<File>(org.koin.core.qualifier.named("imageCacheDir"))
+        val dir = get<File>(org.koin.core.qualifier.named("coil3_disk_cache"))
         DiskCache.Builder()
             .directory(dir.toOkioPath())
             .maxSizeBytes(250L * 1024 * 1024) // 250MB приклад
@@ -37,7 +37,7 @@ actual val platformModule = module {
             .components { addPlatformFileSupport() }
             .memoryCache {
                 MemoryCache.Builder()
-                    .maxSizePercent(get<PlatformContext>(), 0.25) // 25% від доступної пам’яті
+                    .maxSizePercent(PlatformContext.INSTANCE, 0.25) // 25% від доступної пам’яті
                     .build()
             }
             .components {

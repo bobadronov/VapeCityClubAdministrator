@@ -76,17 +76,6 @@ class SlideRepositoryImpl(private val supabase: SupabaseClient) : SlideRepositor
                 filter { eq(COLUMN_ID, slide.id) }
             }
         }
-
-        // require(ids.size == newPositions.size) { "IDs and positions must have same size" }
-        //
-        //        @kotlinx.serialization.Serializable
-        //        data class ReorderSlidesRequest(
-        //            val p_ids: List<String>,  // List of UUIDs as String
-        //            val p_positions: List<Int>,
-        //        )
-        //
-        //        val payload = ReorderSlidesRequest(ids, newPositions)
-        //        client.postgrest.rpc("reorder_slides", payload) // Supabase RPC автоматично конвертує uuid[]
     }
 
     override suspend fun downloadSlideIcon(slidesName: String): ByteArray {

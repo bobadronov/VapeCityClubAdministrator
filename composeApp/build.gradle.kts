@@ -84,6 +84,9 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.kotlinx.datetime)
             implementation(libs.openai.client)
+
+
+
 //            implementation("com.dshatz.pdfmp:pdfmp-compose:1.0.9") # https://github.com/dshatz/pdfmp/
         }
 
