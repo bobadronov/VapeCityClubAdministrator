@@ -11,8 +11,8 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.bigblackowl.vccadmin.data.entity.ThemeMode
 import org.bigblackowl.vccadmin.data.entity.UserRole
-import org.bigblackowl.vccadmin.theme.ThemeMode
 import org.jetbrains.compose.resources.StringResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.cities

@@ -68,6 +68,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,7 +77,11 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.events.UIEvents
@@ -91,9 +96,9 @@ import org.bigblackowl.vccadmin.uiComponent.buttons.ShareAllFilesButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
@@ -127,10 +132,13 @@ fun FileGenerationScreen(
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { FileGenerationStage.entries.size })
 
-    // effects -> snackbars
+    // Init один раз
     LaunchedEffect(Unit) {
-//        pagerState.scrollToPage(0)
         viewModel.onIntent(FileGenerationIntent.Init)
+    }
+
+    // Effects один collector
+    LaunchedEffect(Unit) {
         viewModel.effects.collect { eff ->
             when (eff) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(eff.message)
@@ -145,11 +153,20 @@ fun FileGenerationScreen(
     }
 
     // stage -> pager
-    LaunchedEffect(uiState.stage) {
-        val target = uiState.stage.ordinal
-        if (pagerState.currentPage != target) {
-            pagerState.animateScrollToPage(target)
-        }
+    // stage slice
+    val stage by viewModel.uiState
+        .map { it.stage }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = FileGenerationStage.SELECT_FILES)
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { stage.ordinal }
+            .distinctUntilChanged()
+            .collectLatest { target ->
+                if (pagerState.currentPage != target) {
+                    pagerState.animateScrollToPage(target)
+                }
+            }
     }
 
     FileGenerationScreenContent(
@@ -888,7 +905,6 @@ private fun MonthPicker(
         }
     }
 }
-
 
 
 @Preview(name = "FileGeneration • Dark")

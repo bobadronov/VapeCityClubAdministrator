@@ -6,7 +6,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bigblackowl.vccadmin.theme.userRoleColors
+import org.bigblackowl.vccadmin.theme.locals.userRoleColors
 import org.jetbrains.compose.resources.StringResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.admin
@@ -23,7 +23,10 @@ data class User(
     @SerialName("created_at") val createdAt: Long,
     @SerialName("last_modified") val lastModified: Long,
     @SerialName("last_modified_user_id") val lastModifiedUserId: String,
-)
+){
+    val fullName: String
+        get() = "$firstName $lastName"
+}
 
 @Serializable
 enum class UserRole {

@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bigblackowl.vccadmin.theme.shopStatusColors
+import org.bigblackowl.vccadmin.theme.locals.shopStatusColors
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import vccadministrator.composeapp.generated.resources.Res

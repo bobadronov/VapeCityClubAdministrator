@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.theme
+package org.bigblackowl.vccadmin.data.entity
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.bigblackowl.vccadmin.theme.locals.LocalThemeMode
 import org.jetbrains.compose.resources.StringResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.theme_auto

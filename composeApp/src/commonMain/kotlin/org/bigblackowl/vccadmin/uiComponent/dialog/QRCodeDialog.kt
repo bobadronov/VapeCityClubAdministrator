@@ -39,7 +39,7 @@ import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.jetbrains.compose.resources.painterResource

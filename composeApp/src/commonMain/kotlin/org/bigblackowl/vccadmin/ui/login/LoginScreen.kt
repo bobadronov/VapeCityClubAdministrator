@@ -59,11 +59,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.bigblackowl.vccadmin.BuildConfig
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.resourses.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
@@ -90,14 +92,60 @@ fun LoginScreen(
     snackbarHostState: SnackbarHostState,
     viewModel: LoginScreenViewModel = koinInject(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val email by viewModel.uiState.map { it.email }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = "")
 
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let { snackbarHostState.showSnackbar(it) }
+    val password by viewModel.uiState.map { it.password }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = "")
+
+    val isEmailError by viewModel.uiState.map { it.isEmailError }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val isPasswordError by viewModel.uiState.map { it.isPasswordError }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val isPasswordVisible by viewModel.uiState.map { it.isPasswordVisible }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val canLogin by viewModel.uiState.map { it.canLogin }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val isLoading by viewModel.uiState.map { it.isLoading }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val autoLoginState by viewModel.uiState.map { it.autoLoginState }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val networkState by viewModel.uiState.map { it.networkState }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = true)
+
+    val errorMessage by viewModel.uiState.map { it.errorMessage }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = null)
+
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
 
     LoginScreenContent(
-        uiState = uiState,
+        networkState = networkState,
+        email = email,
+        password = password,
+        isEmailError = isEmailError,
+        isPasswordError = isPasswordError,
+        isPasswordVisible = isPasswordVisible,
+        autoLoginState = autoLoginState,
+        canLogin = canLogin,
+        isLoading = isLoading,
         onEmailChanged = { viewModel.onIntent(LoginScreenIntent.EmailChanged(it)) },
         onPasswordChanged = { viewModel.onIntent(LoginScreenIntent.PasswordChanged(it)) },
         onTogglePasswordVisibility = { viewModel.onIntent(LoginScreenIntent.TogglePasswordVisibility) },
@@ -109,7 +157,15 @@ fun LoginScreen(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LoginScreenContent(
-    uiState: LoginUiState,
+    networkState: Boolean,
+    email: String,
+    password: String,
+    isEmailError: Boolean,
+    isPasswordError: Boolean,
+    isPasswordVisible: Boolean,
+    autoLoginState: Boolean,
+    canLogin: Boolean,
+    isLoading: Boolean,
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onTogglePasswordVisibility: () -> Unit,
@@ -117,7 +173,7 @@ private fun LoginScreenContent(
     onLogin: () -> Unit,
 ) {
     val loginButtonWidth by animateDpAsState(
-        targetValue = if (uiState.isLoading) 80.dp else 200.dp,
+        targetValue = if (isLoading) 80.dp else 200.dp,
         animationSpec = tween(
             durationMillis = 400,
             easing = FastOutSlowInEasing
@@ -145,7 +201,7 @@ private fun LoginScreenContent(
         )
     }
 
-    Crossfade(uiState.networkState) { state ->
+    Crossfade(networkState) { state ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -167,36 +223,36 @@ private fun LoginScreenContent(
                 Spacer(Modifier.height(48.dp))
 
                 EmailField(
-                    value = uiState.email,
+                    value = email,
                     onValueChange = onEmailChanged,
-                    isError = uiState.isEmailError,
-                    enabled = !uiState.isLoading,
+                    isError = isEmailError,
+                    enabled = !isLoading,
                     modifier = Modifier.width(270.dp)
                 )
 
                 Spacer(Modifier.height(20.dp))
 
                 PasswordField(
-                    value = uiState.password,
+                    value = password,
                     onValueChange = onPasswordChanged,
-                    isError = uiState.isPasswordError,
-                    isVisible = uiState.isPasswordVisible,
+                    isError = isPasswordError,
+                    isVisible = isPasswordVisible,
                     onVisibilityToggle = onTogglePasswordVisibility,
-                    enabled = !uiState.isLoading,
-                    onDone = { if (!uiState.isLoading && uiState.canLogin) onLogin() },
+                    enabled = !isLoading,
+                    onDone = { if (!isLoading && canLogin) onLogin() },
                     modifier = Modifier.width(270.dp)
                 )
 
                 Spacer(Modifier.height(15.dp))
 
-                AnimatedVisibility(visible = uiState.canLogin) {
+                AnimatedVisibility(visible = canLogin) {
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
 
                         Checkbox(
-                            checked = uiState.autoLoginState,
+                            checked = autoLoginState,
                             onCheckedChange = onAutoLoginChanged,
-                            enabled = !uiState.isLoading,
+                            enabled = !isLoading,
                         )
 
                         BodyText(stringResource(Res.string.enable_auto_login))
@@ -209,12 +265,12 @@ private fun LoginScreenContent(
                 OutlinedButton(
                     onClick = onLogin,
                     modifier = Modifier.size(height = 50.dp, width = loginButtonWidth),
-                    enabled = !uiState.isLoading && uiState.canLogin,
+                    enabled = !isLoading && canLogin,
                     colors = ButtonDefaults.outlinedButtonColors(),
                     border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.onSurface)
                 ) {
                     Crossfade(
-                        targetState = uiState.isLoading,
+                        targetState = isLoading,
                         animationSpec = tween(300),
                         label = "login_button_content"
                     ) { loading ->
@@ -312,38 +368,22 @@ private fun PasswordField(
 }
 
 
-@Preview
-@Composable
-fun LoginScreenPreview1() = PreviewDarkMaterialTheme {
-    LoginScreenContent(
-        uiState = LoginUiState(
-            email = "admin@example.com",
-            password = "12345678",
-            isPasswordVisible = true,
-            autoLoginState = true,
-            networkState = true,
-//                    isLoading = true,
-        ),
-        onEmailChanged = {},
-        onPasswordChanged = {},
-        onTogglePasswordVisibility = {},
-        onAutoLoginChanged = {},
-        onLogin = {},
-    )
-}
+
+
 
 @Preview
 @Composable
-fun LoginScreenPreview2() = PreviewLightMaterialTheme {
+private fun LoginScreenPreview1() = PreviewDarkMaterialTheme {
     LoginScreenContent(
-        uiState = LoginUiState(
-            email = "admin@example.com",
-            password = "12345678",
-            isPasswordVisible = true,
-            autoLoginState = true,
-            networkState = false,
-//                    isLoading = true,
-        ),
+        networkState = true,
+        email = "admin@example.com",
+        password = "12345678",
+        isEmailError = false,
+        isPasswordError = false,
+        isPasswordVisible = true,
+        autoLoginState = true,
+        canLogin = true,
+        isLoading = false,
         onEmailChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},
@@ -352,20 +392,19 @@ fun LoginScreenPreview2() = PreviewLightMaterialTheme {
     )
 }
 
-@Preview(
-    device = Devices.DESKTOP
-)
+@Preview
 @Composable
-fun LoginScreenPreview11() = PreviewDarkMaterialTheme {
+private fun LoginScreenPreview2() = PreviewLightMaterialTheme {
     LoginScreenContent(
-        uiState = LoginUiState(
-            email = "admin@example.com",
-            password = "12345678",
-            isPasswordVisible = true,
-            autoLoginState = true,
-            networkState = true,
-            isLoading = true,
-        ),
+        networkState = false,
+        email = "admin@example.com",
+        password = "12345678",
+        isEmailError = false,
+        isPasswordError = false,
+        isPasswordVisible = true,
+        autoLoginState = true,
+        canLogin = true,
+        isLoading = false,
         onEmailChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},
@@ -374,20 +413,40 @@ fun LoginScreenPreview11() = PreviewDarkMaterialTheme {
     )
 }
 
-@Preview(
-    device = Devices.DESKTOP
-)
+@Preview(device = Devices.DESKTOP)
 @Composable
-fun LoginScreenPreview21() = PreviewLightMaterialTheme {
+private fun LoginScreenPreview11() = PreviewDarkMaterialTheme {
     LoginScreenContent(
-        uiState = LoginUiState(
-            email = "admin@example.com",
-            password = "12345678",
-            isPasswordVisible = false,
-            autoLoginState = false,
-            networkState = true,
-//                    isLoading = true,
-        ),
+        networkState = true,
+        email = "admin@example.com",
+        password = "12345678",
+        isEmailError = false,
+        isPasswordError = false,
+        isPasswordVisible = true,
+        autoLoginState = true,
+        canLogin = true,
+        isLoading = true,
+        onEmailChanged = {},
+        onPasswordChanged = {},
+        onTogglePasswordVisibility = {},
+        onAutoLoginChanged = {},
+        onLogin = {},
+    )
+}
+
+@Preview(device = Devices.DESKTOP)
+@Composable
+private fun LoginScreenPreview21() = PreviewLightMaterialTheme {
+    LoginScreenContent(
+        networkState = true,
+        email = "admin@example.com",
+        password = "12345678",
+        isEmailError = false,
+        isPasswordError = false,
+        isPasswordVisible = false,
+        autoLoginState = false,
+        canLogin = true,
+        isLoading = false,
         onEmailChanged = {},
         onPasswordChanged = {},
         onTogglePasswordVisibility = {},

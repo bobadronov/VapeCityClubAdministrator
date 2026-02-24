@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.theme
+package org.bigblackowl.vccadmin.theme.locals
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidedValue

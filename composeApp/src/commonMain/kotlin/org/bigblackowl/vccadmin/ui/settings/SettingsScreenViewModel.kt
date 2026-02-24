@@ -16,8 +16,8 @@ import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUpdateManager
 import org.bigblackowl.vccadmin.ota.UpdateState
-import org.bigblackowl.vccadmin.theme.LocalAppLocale
-import org.bigblackowl.vccadmin.theme.customAppLocale
+import org.bigblackowl.vccadmin.theme.locals.LocalAppLocale
+import org.bigblackowl.vccadmin.theme.locals.customAppLocale
 import org.bigblackowl.vccadmin.ui.login.LoginScreenIntent
 import org.bigblackowl.vccadmin.ui.login.LoginScreenViewModel
 import org.bigblackowl.vccadmin.utils.PlatformFunctionProvider

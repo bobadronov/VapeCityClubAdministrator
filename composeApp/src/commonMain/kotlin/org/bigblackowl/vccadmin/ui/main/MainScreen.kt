@@ -10,6 +10,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -54,6 +56,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,12 +67,14 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopGroup
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
-import org.bigblackowl.vccadmin.data.entity.ShopsFilter
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
@@ -81,7 +86,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -96,42 +101,58 @@ fun MainScreen(
     navigationViewModel: NavigationViewModel,
     viewModel: MainScreenViewModel = koinInject(),
 ) {
+    LaunchedEffect(Unit) { viewModel.onIntent(MainScreenIntent.Refresh) }
+
     LaunchedEffect(Unit) {
-        viewModel.onIntent(MainScreenIntent.Refresh)
-    }
-
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
-
-    LaunchedEffect(uiEvent) {
         viewModel.uiEvent.collect { event ->
-            when (event) {
-                is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
-                else -> {}
-            }
+            if (event is UIEvents.ShowMessage) snackbarHostState.showSnackbar(event.message)
         }
     }
 
+    val cities by viewModel.uiState.map { it.cities }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val selectedCityIds by viewModel.uiState.map { it.filter.selectedCityIds }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = emptySet())
+
+    val selectedStatuses by viewModel.uiState.map { it.filter.selectedStatuses }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = emptySet())
+
+    val groupedShops by viewModel.uiState.map { it.filteredGroupedShops }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val isInitialLoading by viewModel.uiState.map { it.isInitialLoading }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = true)
+
+    val isRefreshing by viewModel.uiState.map { it.isRefreshing }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
     MainScreenContent(
-        cities = uiState.cities,
-        filter = uiState.filter,
-        groupedShops = uiState.filteredGroupedShops, // ✅ вже відфільтровано у VM
-        isInitialLoading = uiState.isInitialLoading,
-        isRefreshing = uiState.isRefreshing,
+        cities = cities,
+        selectedCityIds = selectedCityIds,
+        selectedStatuses = selectedStatuses,
+        groupedShops = groupedShops,
+        isInitialLoading = isInitialLoading,
+        isRefreshing = isRefreshing,
         onShopClick = { shopId -> navigationViewModel.navigateTo(Route.ShopDetails(shopId)) },
         onRefresh = { viewModel.onIntent(MainScreenIntent.Refresh) },
-
         onToggleCity = { viewModel.onIntent(MainScreenIntent.ToggleCity(it)) },
         onToggleStatus = { viewModel.onIntent(MainScreenIntent.ToggleStatus(it)) },
         onClearFilters = { viewModel.onIntent(MainScreenIntent.ClearFilters) },
     )
 }
-
 @Composable
 private fun MainScreenContent(
     cities: List<City>,
-    filter: ShopsFilter,
-    groupedShops: List<ShopGroup>, // вже filtered
+    selectedCityIds: Set<Int>,
+    selectedStatuses: Set<ShopStatus>,
+    groupedShops: List<ShopGroup>,
     isInitialLoading: Boolean,
     isRefreshing: Boolean,
     onShopClick: (String) -> Unit,
@@ -172,7 +193,8 @@ private fun MainScreenContent(
 
                 ShopsFiltersBar(
                     cities = cities,
-                    filter = filter,
+                    selectedCityIds = selectedCityIds,      // краще якщо це Set<Int>
+                    selectedStatuses = selectedStatuses,    // краще якщо це Set<ShopStatus>
                     onToggleCity = onToggleCity,
                     onToggleStatus = onToggleStatus,
                     onClear = onClearFilters,
@@ -226,97 +248,162 @@ private fun MainScreenContent(
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShopsFiltersBar(
     cities: List<City>,
-    filter: ShopsFilter,
+    selectedCityIds: Set<Int>,
+    selectedStatuses: Set<ShopStatus>,
     onToggleCity: (Int) -> Unit,
     onToggleStatus: (ShopStatus) -> Unit,
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val statuses = ShopStatus.entries
-    var expanded by remember { mutableStateOf(false) }
-    val height by animateDpAsState(if (expanded) 110.dp else 35.dp)
-    val scope = rememberCoroutineScope()
+    val statuses = remember { ShopStatus.entries } // стабільно
+    var expanded by rememberSaveable { mutableStateOf(false) } // щоб не скидалося при конфіг-змінах
+    val height by animateDpAsState(if (expanded) 110.dp else 35.dp, label = "filters_height")
+
     val gridState = rememberLazyStaggeredGridState()
-    val wheelSpeed = 130f
+    val scope = rememberCoroutineScope()
+
 
     Box(modifier = modifier.fillMaxWidth().height(height)) {
-        LazyHorizontalStaggeredGrid(
-            rows = StaggeredGridCells.Fixed(if (expanded) 3 else 1),
-            modifier = Modifier.fillMaxSize()
-                .pointerInput(gridState) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent()
 
-                            if (event.type == PointerEventType.Scroll) {
-                                val dy = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
-                                if (dy != 0f) {
-                                    // wheel вниз -> вправо (можеш поміняти знак якщо хочеш навпаки)
-                                    scope.launch {
-                                        gridState.animateScrollBy(
-                                            value = dy * wheelSpeed,
-                                            animationSpec = spring(stiffness = StiffnessHigh)
-                                        )
-                                    }
+        FiltersGrid(
+            expanded = expanded,
+            gridState = gridState,
+            scope = scope,
+            cities = cities,
+            statuses = statuses,
+            selectedCityIds = selectedCityIds,
+            selectedStatuses = selectedStatuses,
+            onToggleCity = onToggleCity,
+            onToggleStatus = onToggleStatus,
+            onClear = onClear,
+        )
 
-                                    // щоб не прокручувався батьківський контейнер
-                                    event.changes.forEach { it.consume() }
+        ExpandButton(
+            expanded = expanded,
+            onToggle = { expanded = !expanded },
+            modifier = Modifier.align(Alignment.CenterEnd)
+        )
+    }
+}
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun FiltersGrid(
+    expanded: Boolean,
+    gridState: LazyStaggeredGridState,
+    wheelSpeed: Float = 130f,
+    scope: CoroutineScope,
+    cities: List<City>,
+    statuses: List<ShopStatus>,
+    selectedCityIds: Set<Int>,
+    selectedStatuses: Set<ShopStatus>,
+    onToggleCity: (Int) -> Unit,
+    onToggleStatus: (ShopStatus) -> Unit,
+    onClear: () -> Unit,
+) {
+    val canClear = selectedCityIds.isNotEmpty() || selectedStatuses.isNotEmpty()
+
+    LazyHorizontalStaggeredGrid(
+        rows = StaggeredGridCells.Fixed(if (expanded) 3 else 1),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(gridState) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type == PointerEventType.Scroll) {
+                            val dy = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                            if (dy != 0f) {
+                                scope.launch {
+                                    gridState.animateScrollBy(
+                                        value = dy * wheelSpeed,
+                                        animationSpec = spring(stiffness = StiffnessHigh)
+                                    )
                                 }
+                                event.changes.forEach { it.consume() }
                             }
                         }
                     }
-                },
-            state = gridState,
-            verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.flowRowPadding),
-            horizontalItemSpacing = DefaultValues.Padding.flowRowPadding,
-        ) {
-            item(span = StaggeredGridItemSpan.FullLine) {
-                AssistChip(
-                    onClick = onClear,
-                    label = { HelperText("Скинути") },
-                    enabled = filter.selectedCityIds.isNotEmpty() || filter.selectedStatuses.isNotEmpty(),
-                    shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
-                )
-            }
-
-            // --- Status chips (multi-select)
-            items(statuses, key = { it.name }, span = { StaggeredGridItemSpan.SingleLane }) { st ->
-                FilterChip(
-                    selected = st in filter.selectedStatuses,
-                    onClick = { onToggleStatus(st) },
-                    label = { HelperText(stringResource(st.title)) },
-                    leadingIcon = { Icon(st.icon, contentDescription = null) },
-                    shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
-                )
-            }
-
-            // --- City chips (multi-select)
-            items(cities, key = { it.id }, span = { StaggeredGridItemSpan.SingleLane }) { city ->
-                FilterChip(
-                    selected = city.id in filter.selectedCityIds,
-                    onClick = { onToggleCity(city.id) },
-                    label = { HelperText(city.name) },
-                    shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
-                )
-            }
+                }
+            },
+        state = gridState,
+        verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.flowRowPadding),
+        horizontalItemSpacing = DefaultValues.Padding.flowRowPadding,
+    ) {
+        item(span = StaggeredGridItemSpan.FullLine) {
+            AssistChip(
+                onClick = onClear,
+                label = { HelperText("Скинути") },
+                enabled = canClear,
+                shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+            )
         }
 
-        IconButton(
-            onClick = { expanded = !expanded },
-            modifier = Modifier.align(Alignment.CenterEnd),
-            colors = IconButtonDefaults.iconButtonColors()
-                .copy(containerColor = MaterialTheme.colorScheme.primary),
-        ) {
-            ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+        items(statuses, key = { it.name }, span = { StaggeredGridItemSpan.SingleLane }) { st ->
+            StatusChip(
+                status = st,
+                selected = st in selectedStatuses,
+                onClick = { onToggleStatus(st) },
+            )
+        }
+
+        items(cities, key = { it.id }, span = { StaggeredGridItemSpan.SingleLane }) { city ->
+            CityChip(
+                city = city,
+                selected = city.id in selectedCityIds,
+                onClick = { onToggleCity(city.id) },
+            )
         }
     }
 }
-
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StatusChip(
+    status: ShopStatus,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { HelperText(stringResource(status.title)) },
+        leadingIcon = { Icon(status.icon, contentDescription = null) },
+        shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+    )
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CityChip(
+    city: City,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { HelperText(city.name) },
+        shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
+    )
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExpandButton(
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(
+        onClick = onToggle,
+        modifier = modifier,
+        colors = IconButtonDefaults.iconButtonColors()
+            .copy(containerColor = MaterialTheme.colorScheme.primary),
+    ) {
+        ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+    }
+}
 @Composable
 private fun ShopCardItem(
     shop: Shop,
@@ -390,6 +477,9 @@ private fun ShopCardItem(
 }
 
 
+
+
+
 @Preview(device = Devices.PHONE)
 @Composable
 private fun MainScreenContentPreview1() = PreviewDarkMaterialTheme {
@@ -397,8 +487,9 @@ private fun MainScreenContentPreview1() = PreviewDarkMaterialTheme {
 
     MainScreenContent(
         cities = cities,
-        filter = ShopsFilter(),              // без фільтрів
-        groupedShops = FakeBackend.groupedShops,              // у прев’ю можемо дати повний список
+        selectedCityIds = emptySet(),                 // без фільтрів
+        selectedStatuses = emptySet(),                // без фільтрів
+        groupedShops = FakeBackend.groupedShops,      // повний список
         isInitialLoading = false,
         isRefreshing = false,
         onShopClick = {},
@@ -414,16 +505,15 @@ private fun MainScreenContentPreview1() = PreviewDarkMaterialTheme {
 private fun MainScreenContentPreview12() = PreviewLightMaterialTheme {
     val cities = FakeBackend.cities.sortedBy { it.name }
 
-    // приклад: прев’ю з активним фільтром
-    val filter = ShopsFilter(
-        selectedCityIds = cities.take(2).map { it.id }.toSet(),
-        selectedStatuses = setOf(ShopStatus.ACTIVE)
-    )
+    // приклад: прев’ю з активними фільтрами
+    val selectedCityIds = cities.take(2).map { it.id }.toSet()
+    val selectedStatuses = setOf(ShopStatus.ACTIVE)
 
     MainScreenContent(
         cities = cities,
-        filter = filter,
-        groupedShops = FakeBackend.groupedShops, // у прев’ю VM нема, тому просто даємо grouped (або можеш підставити вже відфільтрований список вручну)
+        selectedCityIds = selectedCityIds,
+        selectedStatuses = selectedStatuses,
+        groupedShops = FakeBackend.groupedShops, // або підстав "вручну" відфільтрований список для прев’ю
         isInitialLoading = false,
         isRefreshing = false,
         onShopClick = {},
@@ -433,4 +523,3 @@ private fun MainScreenContentPreview12() = PreviewLightMaterialTheme {
         onClearFilters = {},
     )
 }
-

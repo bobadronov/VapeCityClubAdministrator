@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +35,8 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.bigblackowl.vccadmin.data.entity.Slide
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
@@ -49,8 +52,8 @@ import org.bigblackowl.vccadmin.uiComponent.buttons.SettingsButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
@@ -73,24 +76,41 @@ fun SlidesListScreen(
     navigationViewModel: NavigationViewModel,
     viewModel: SlidesListScreenViewModel = koinInject(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
-
+    // ✅ Load один раз
     LaunchedEffect(Unit) {
         viewModel.onIntent(SlidesListScreenIntent.Load)
     }
 
-    LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+    // ✅ UI events: один collector, без collectAsState
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
-                else -> {}
+                else -> Unit
             }
         }
     }
 
+    // ✅ State slices
+    val isRefreshing by viewModel.uiState
+        .map { it.isRefreshing }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val isInitialLoading by viewModel.uiState
+        .map { it.isInitialLoading }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = true)
+
+    val slides by viewModel.uiState
+        .map { it.slides }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
     SlidesListScreenContent(
-        uiState = uiState,
+        isRefreshing = isRefreshing,
+        isInitialLoading = isInitialLoading,
+        slides = slides,
         onIntent = viewModel::onIntent,
         onBack = { navigationViewModel.requestBack() },
         onOpenSettings = { navigationViewModel.navigateTo(Route.EditSlidesSettings) },
@@ -101,30 +121,34 @@ fun SlidesListScreen(
 
 @Composable
 private fun SlidesListScreenContent(
-    uiState: SlidesListUiState,
+    isRefreshing: Boolean,
+    isInitialLoading: Boolean,
+    slides: List<Slide>,
     onIntent: (SlidesListScreenIntent) -> Unit,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
     onEditSlide: (String) -> Unit,
     onAddSlide: () -> Unit,
 ) {
+    val listState = rememberLazyGridState()
+    val toggle: (String) -> Unit = remember(onIntent) {
+        { id -> onIntent(SlidesListScreenIntent.ToggleSlideVisibility(id)) }
+    }
     PlatformPullToRefreshBox(
-        isRefreshing = uiState.isRefreshing,
+        isRefreshing = isRefreshing,
         onRefresh = { onIntent(SlidesListScreenIntent.Refresh) },
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        if (uiState.isInitialLoading) {
+        if (isInitialLoading) {
             LoadingComponent()
             return@PlatformPullToRefreshBox
         }
 
-        if (uiState.slides.isEmpty()) {
+        if (slides.isEmpty()) {
             Text(stringResource(Res.string.no_slides), modifier = Modifier.align(Alignment.Center))
             return@PlatformPullToRefreshBox
         }
-
-        val listState = rememberLazyGridState()
 
         Column(modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding)) {
             Row(Modifier.weight(1f)) {
@@ -135,12 +159,12 @@ private fun SlidesListScreenContent(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(items = uiState.slides, key = { it.id }) { slide ->
+                    items(items = slides, key = { it.id }) { slide ->
                         SlideGridItem(
                             slide = slide,
                             onClick = { onEditSlide(slide.id) },
                             onToggleActive = {
-                                onIntent(SlidesListScreenIntent.ToggleSlideVisibility(slide.id))
+                                toggle(slide.id)
                             },
                         )
                     }
@@ -172,7 +196,6 @@ private fun SlidesListScreenContent(
         }
     }
 }
-
 
 @Composable
 private fun SlideGridItem(
@@ -258,14 +281,13 @@ private fun SlideGridItemPreview2() = PreviewLightMaterialTheme {
     SlideGridItem(FakeBackend.singleSlide, onClick = {}) {}
 }
 
-@Preview(
-    showSystemUi = true,
-    device = Devices.DESKTOP,
-)
+@Preview(device = Devices.DESKTOP)
 @Composable
 private fun SlidesListScreenContentPreview1() = PreviewDarkMaterialTheme {
     SlidesListScreenContent(
-        uiState = SlidesListUiState(slides = FakeBackend.slides),
+        isRefreshing = false,
+        isInitialLoading = false,
+        slides = FakeBackend.slides,
         onIntent = { },
         onBack = {},
         onOpenSettings = {},
@@ -274,14 +296,13 @@ private fun SlidesListScreenContentPreview1() = PreviewDarkMaterialTheme {
     )
 }
 
-@Preview(
-    showSystemUi = true,
-    device = Devices.DESKTOP,
-)
+@Preview(device = Devices.DESKTOP)
 @Composable
 private fun SlidesListScreenContentPreview2() = PreviewLightMaterialTheme {
     SlidesListScreenContent(
-        uiState = SlidesListUiState(slides = FakeBackend.slides),
+        isRefreshing = false,
+        isInitialLoading = false,
+        slides = FakeBackend.slides,
         onIntent = { },
         onBack = {},
         onOpenSettings = {},

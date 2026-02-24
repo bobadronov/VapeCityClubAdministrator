@@ -1,6 +1,6 @@
 @file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 
-package org.bigblackowl.vccadmin.theme
+package org.bigblackowl.vccadmin.theme.locals
 
 import android.content.Context
 import android.os.LocaleList

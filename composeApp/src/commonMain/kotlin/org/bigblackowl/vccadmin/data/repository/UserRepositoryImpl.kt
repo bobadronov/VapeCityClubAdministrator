@@ -62,7 +62,7 @@ class UserRepositoryImpl(private val supabase: SupabaseClient) : UserRepository 
         val users = getUsers()
         val user = users.find { it.id == userId }
         if (user == null) return getString(Res.string.user_not_found)
-        return "${user.firstName} ${user.lastName}"
+        return user.fullName
     }
 
     @OptIn(InternalAPI::class)

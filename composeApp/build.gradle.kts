@@ -45,8 +45,8 @@ kotlin {
     androidTarget()
 
 //    iosX64()
-    iosArm64()
 //    iosSimulatorArm64()
+    iosArm64()
 
     jvm()
 
@@ -128,6 +128,7 @@ kotlin {
 extensions.configure<ApplicationExtension> {
 
     namespace = "org.bigblackowl.vccadmin"
+
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -144,6 +145,7 @@ extensions.configure<ApplicationExtension> {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
     signingConfigs {
         create("release") {
             val ksPath = System.getenv("ANDROID_KEYSTORE_PATH") // D:\Мій диск\Работа\SlideShow\key\slide_show_key.jks

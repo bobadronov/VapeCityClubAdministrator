@@ -1,5 +1,6 @@
-package org.bigblackowl.vccadmin.uiComponent.loading
+package org.bigblackowl.vccadmin.uiComponent.indicators
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -7,6 +8,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Devices
@@ -23,19 +25,20 @@ fun LoadingComponent(
 ) {
     val isWide = isWideScreen()
 
+    val iconSize by animateDpAsState(
+        targetValue = if (isWide) 160.dp else 100.dp,
+        label = "loading_icon_size"
+    )
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center,
     ) {
-
         LoadingIndicator(
-            modifier = Modifier
-                .size(if (isWide) 160.dp else 100.dp),
+            modifier = Modifier.size(iconSize),
             color = MaterialTheme.colorScheme.primary
         )
-
     }
-
 }
 
 

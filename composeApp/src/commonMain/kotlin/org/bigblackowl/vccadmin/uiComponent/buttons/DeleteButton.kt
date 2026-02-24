@@ -74,7 +74,8 @@ fun DeleteButton(
                 colors = CardDefaults.outlinedCardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceBright,
                 ),
-                shape = MaterialTheme.shapes.medium
+                shape = MaterialTheme.shapes.medium,
+
             ) {
                 Column(
                     modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding),

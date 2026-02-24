@@ -67,27 +67,30 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.bigblackowl.vccadmin.BuildConfig
+import org.bigblackowl.vccadmin.data.entity.ThemeMode
 import org.bigblackowl.vccadmin.data.entity.UpdateInfo
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.ota.UpdateState
 import org.bigblackowl.vccadmin.ota.toUiModel
 import org.bigblackowl.vccadmin.resourses.DefaultValues
-import org.bigblackowl.vccadmin.theme.LocalAppLocale
-import org.bigblackowl.vccadmin.theme.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.theme.ThemeMode
-import org.bigblackowl.vccadmin.theme.customAppLocale
-import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
+import org.bigblackowl.vccadmin.theme.locals.AppLocalLanguages
+import org.bigblackowl.vccadmin.theme.locals.LocalAppLocale
+import org.bigblackowl.vccadmin.theme.locals.LocalThemeMode
+import org.bigblackowl.vccadmin.theme.locals.customAppLocale
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.OutlinedCardWithLabel
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
@@ -108,8 +111,11 @@ import vccadministrator.composeapp.generated.resources.confirm_clear_cache_title
 import vccadministrator.composeapp.generated.resources.confirm_logout_message
 import vccadministrator.composeapp.generated.resources.confirm_logout_title
 import vccadministrator.composeapp.generated.resources.current_app_version
+import vccadministrator.composeapp.generated.resources.download
 import vccadministrator.composeapp.generated.resources.exit_from_account
 import vccadministrator.composeapp.generated.resources.language
+import vccadministrator.composeapp.generated.resources.ota_action_check
+import vccadministrator.composeapp.generated.resources.ota_action_install
 import vccadministrator.composeapp.generated.resources.ota_state_available_template
 import vccadministrator.composeapp.generated.resources.ota_state_checking
 import vccadministrator.composeapp.generated.resources.ota_state_downloading
@@ -128,35 +134,80 @@ fun SettingsScreen(
     navigationViewModel: NavigationViewModel,
     viewModel: SettingsScreenViewModel = koinInject(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    // ✅ init один раз
     LaunchedEffect(Unit) {
         viewModel.onIntent(SettingsIntent.Init)
+    }
+
+    // ✅ один collector подій
+    LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
+                is UIEvents.ShowMessage ->
+                    snackbarHostState.showSnackbar(event.message)
+
                 is UIEvents.NotificationAndNavigate -> {
                     snackbarHostState.showSnackbar(event.message)
                     delay(1.seconds)
                     navigationViewModel.logout()
                 }
 
-                else -> {}
+                else -> Unit
             }
         }
     }
 
+    // ✅ state slices
+    val isInitialLoading by viewModel.uiState
+        .map { it.isInitialLoading }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = true)
+
+    val cacheSizeBytes by viewModel.uiState
+        .map { it.cacheSizeBytes }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = 0L)
+
+    val updateState by viewModel.uiState
+        .map { it.updateState }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = UpdateState.Idle) // підстав дефолт
+
+    val currentAppVersionLabel by viewModel.uiState
+        .map { it.currentAppVersionLabel }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = "")
+
+    val logoutDialogVisible by viewModel.uiState
+        .map { it.logoutDialogVisible }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
+    val clearCacheDialogVisible by viewModel.uiState
+        .map { it.clearCacheDialogVisible }
+        .distinctUntilChanged()
+        .collectAsStateWithLifecycle(initialValue = false)
+
     SettingsContent(
-        uiState = uiState,
+        isInitialLoading = isInitialLoading,
+        cacheSizeBytes = cacheSizeBytes,
+        updateState = updateState,
+        currentAppVersionLabel = currentAppVersionLabel,
+        logoutDialogVisible = logoutDialogVisible,
+        clearCacheDialogVisible = clearCacheDialogVisible,
         onIntent = viewModel::onIntent,
         goBack = { navigationViewModel.popBackStack() }
     )
 }
-
 @Suppress("VariableNeverRead")
 @Composable
 private fun SettingsContent(
-    uiState: SettingsUiState,
+    isInitialLoading: Boolean,
+    cacheSizeBytes: Long,
+    updateState: UpdateState,
+    currentAppVersionLabel: String,
+    logoutDialogVisible: Boolean,
+    clearCacheDialogVisible: Boolean,
     onIntent: (SettingsIntent) -> Unit,
     goBack: () -> Unit,
 ) {
@@ -164,18 +215,23 @@ private fun SettingsContent(
     val systemDark = rememberIsDarkTheme()
     val listState = rememberLazyListState()
 
-    if (uiState.isInitialLoading) {
+    if (isInitialLoading) {
         LoadingComponent()
         return
     }
 
     Column(
-        modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).fillMaxSize(),
+        modifier = Modifier
+            .padding(DefaultValues.Padding.mainBoxPadding)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
-            Modifier.weight(1f).fillMaxHeight().sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp)
+            Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .sizeIn(maxWidth = WIDTH_DP_MEDIUM_LOWER_BOUND.dp)
         ) {
             LazyColumn(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -195,22 +251,24 @@ private fun SettingsContent(
                         }
                     )
                 }
-                item {
-                    LanguageCard(onChange = { iso ->
+
+                item(key = "lang") {
+                    LanguageCard { iso ->
                         onIntent(SettingsIntent.SetLanguage(iso))
-                    })
+                    }
                 }
+
                 item(key = "cache") {
                     CacheCard(
-                        cacheSizeBytes = uiState.cacheSizeBytes,
+                        cacheSizeBytes = cacheSizeBytes,
                         onClearClick = { onIntent(SettingsIntent.SetClearCacheDialog(true)) }
                     )
                 }
 
                 item(key = "updates") {
                     UpdatesCard(
-                        updateState = uiState.updateState,
-                        currentBuildLabel = uiState.currentAppVersionLabel,
+                        updateState = updateState,
+                        currentBuildLabel = currentAppVersionLabel,
                         onCheck = { onIntent(SettingsIntent.CheckUpdates) },
                         onDownload = { onIntent(SettingsIntent.DownloadUpdate) },
                         onInstall = { onIntent(SettingsIntent.InstallUpdate) },
@@ -234,7 +292,7 @@ private fun SettingsContent(
         }
     }
 
-    if (uiState.logoutDialogVisible) {
+    if (logoutDialogVisible) {
         AlertDialog(
             onDismissRequest = { onIntent(SettingsIntent.SetLogoutDialog(false)) },
             title = { TitleText(stringResource(Res.string.confirm_logout_title)) },
@@ -243,7 +301,12 @@ private fun SettingsContent(
                 TextButton(onClick = {
                     onIntent(SettingsIntent.Logout)
                     onIntent(SettingsIntent.SetLogoutDialog(false))
-                }) { BodyText(stringResource(Res.string.confirm), color = MaterialTheme.colorScheme.error) }
+                }) {
+                    BodyText(
+                        stringResource(Res.string.confirm),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = { onIntent(SettingsIntent.SetLogoutDialog(false)) }) {
@@ -253,7 +316,7 @@ private fun SettingsContent(
         )
     }
 
-    if (uiState.clearCacheDialogVisible) {
+    if (clearCacheDialogVisible) {
         AlertDialog(
             onDismissRequest = { onIntent(SettingsIntent.SetClearCacheDialog(false)) },
             title = { TitleText(stringResource(Res.string.confirm_clear_cache_title)) },
@@ -262,7 +325,12 @@ private fun SettingsContent(
                 TextButton(onClick = {
                     onIntent(SettingsIntent.ClearCache)
                     onIntent(SettingsIntent.SetClearCacheDialog(false))
-                }) { BodyText(stringResource(Res.string.clear), color = MaterialTheme.colorScheme.error) }
+                }) {
+                    BodyText(
+                        stringResource(Res.string.clear),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = { onIntent(SettingsIntent.SetClearCacheDialog(false)) }) {
@@ -272,26 +340,12 @@ private fun SettingsContent(
         )
     }
 }
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LanguageCard(
-    onChange: (String) -> Unit,
+private fun LanguageCard(
     modifier: Modifier = Modifier,
+    onChange: (iso: String) -> Unit,
 ) {
-    data class LanguageOption(
-        val tag: String,   // "uk", "en", "ru"
-        val label: String, // "Українська", "English", "Русский"
-    )
-
-    val options = remember {
-        listOf(
-            LanguageOption("uk", "Українська"),
-            LanguageOption("en", "English"),
-            LanguageOption("ru", "Русский"),
-        )
-    }
 
     fun normalize(tag: String): String =
         tag.replace('_', '-').lowercase().substringBefore("-") // "uk-UA"/"uk_UA" -> "uk"
@@ -299,7 +353,7 @@ fun LanguageCard(
     val currentBaseTag = normalize(customAppLocale ?: LocalAppLocale.current)
 
     val selected = remember(currentBaseTag) {
-        options.firstOrNull { it.tag == currentBaseTag } ?: options[0]
+        AppLocalLanguages.firstOrNull { it.tag == currentBaseTag } ?: AppLocalLanguages[0]
     }
 
     var expanded by remember { mutableStateOf(false) }
@@ -328,13 +382,14 @@ fun LanguageCard(
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
+                shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
             ) {
-                options.forEach { option ->
+                AppLocalLanguages.forEach { lang ->
                     DropdownMenuItem(
-                        text = { Text(option.label) },
+                        text = { Text(lang.label) },
                         onClick = {
                             expanded = false
-                            onChange(option.tag) // "uk"/"en"/"ru"
+                            onChange(lang.tag) // "uk"/"en"/"ru"
                         },
                     )
                 }
@@ -342,11 +397,10 @@ fun LanguageCard(
         }
     }
 }
-
 @Composable
 private fun ThemeCard(
-    onSetTheme: (ThemeMode) -> Unit,
     modifier: Modifier = Modifier,
+    onSetTheme: (ThemeMode) -> Unit,
 ) {
     var themeMode by LocalThemeMode.current
 
@@ -378,12 +432,11 @@ private fun ThemeCard(
         }
     }
 }
-
 @Composable
 private fun CacheCard(
     cacheSizeBytes: Long,
-    onClearClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onClearClick: () -> Unit,
 ) {
     val cacheSizeText = remember(cacheSizeBytes) {
         AppStringProvider.formatBytesToString(cacheSizeBytes)
@@ -407,6 +460,7 @@ private fun CacheCard(
                     HelperText(cacheSizeText)
                 }
             }
+
             AnimatedVisibility(
                 visible = cacheSizeBytes > 0,
                 enter = slideInHorizontally { it } + fadeIn(),
@@ -419,7 +473,6 @@ private fun CacheCard(
         }
     }
 }
-
 @Composable
 private fun UpdatesCard(
     updateState: UpdateState,
@@ -456,9 +509,9 @@ private fun UpdatesCard(
             OtaStatusIcon(updateState)
 
             SelectionContainer(Modifier.weight(1f)) {
-                Column {
+                Column(verticalArrangement = Arrangement.Center) {
                     BodyText("${stringResource(Res.string.current_app_version)} $currentBuildLabel")
-                    HelperText(progressText)
+                    if (progressText.isNotBlank()) HelperText(progressText)
                 }
             }
 
@@ -472,7 +525,7 @@ private fun UpdatesCard(
         }
     }
 }
-
+private enum class OtaAction { None, Check, Download, Install }
 @Composable
 private fun UpdateActionButton(
     updateState: UpdateState,
@@ -481,7 +534,6 @@ private fun UpdateActionButton(
     onInstall: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Мапимо багато станів в маленький enum — менше "шуму" для анімації
     val action = when (updateState) {
         is UpdateState.Error, UpdateState.Idle, UpdateState.NoUpdate -> OtaAction.Check
         is UpdateState.Available -> OtaAction.Download
@@ -500,15 +552,12 @@ private fun UpdateActionButton(
     ) { a ->
         when (a) {
             OtaAction.None -> Unit
-            OtaAction.Check -> OutlinedButton(onClick = onCheck) { HelperText("Check") }
-            OtaAction.Download -> OutlinedButton(onClick = onDownload) { HelperText("Download") }
-            OtaAction.Install -> OutlinedButton(onClick = onInstall) { HelperText("Install") }
+            OtaAction.Check -> OutlinedButton(onClick = onCheck) { HelperText(stringResource(Res.string.ota_action_check)) }
+            OtaAction.Download -> OutlinedButton(onClick = onDownload) { HelperText(stringResource(Res.string.download)) }
+            OtaAction.Install -> OutlinedButton(onClick = onInstall) { HelperText(stringResource(Res.string.ota_action_install)) }
         }
     }
 }
-
-private enum class OtaAction { None, Check, Download, Install }
-
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun OtaStatusIcon(state: UpdateState) {
@@ -535,7 +584,6 @@ private fun OtaStatusIcon(state: UpdateState) {
         else -> DefaultIcon(Icons.Default.Info)
     }
 }
-
 @Composable
 private fun AccountCard(
     onLogoutClick: (Offset) -> Unit,
@@ -556,6 +604,9 @@ private fun AccountCard(
         }
     }
 }
+
+
+
 
 
 @Preview
@@ -587,89 +638,95 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
         }
     }
 }
-
 @Preview
 @Composable
 private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialTheme {
     SettingsContent(
-        uiState = SettingsUiState(
-            isInitialLoading = false,
-            isDarkEffective = true,
-            cacheSizeBytes = 42L * 1024 * 1024,
-            newAppVersionLabel = "1.2.3",
-            appBuildLabel = "123",
-            updateState = UpdateState.Downloading(progress = .2f),
-        ), onIntent = {}, goBack = {})
+        isInitialLoading = false,
+        cacheSizeBytes = 42L * 1024 * 1024,
+        updateState = UpdateState.Downloading(progress = .2f),
+        currentAppVersionLabel = "123", // або що ти показуєш як currentBuildLabel
+        logoutDialogVisible = false,
+        clearCacheDialogVisible = true,
+        onIntent = {},
+        goBack = {}
+    )
 }
-
 @Preview
 @Composable
 private fun Preview_SettingsContent_LogoutDialog() = PreviewDarkMaterialTheme {
     SettingsContent(
-        uiState = SettingsUiState(
-            isInitialLoading = false,
-            isDarkEffective = false,
-            cacheSizeBytes = 6L * 1024 * 1024,
-            newAppVersionLabel = "1.2.3",
-            appBuildLabel = "123",
-            updateState = UpdateState.NotAvailable,
-            logoutDialogVisible = true
-        ), onIntent = {}, goBack = {})
+        isInitialLoading = false,
+        cacheSizeBytes = 6L * 1024 * 1024,
+        updateState = UpdateState.NotAvailable,
+        currentAppVersionLabel = "123",
+        logoutDialogVisible = true,
+        clearCacheDialogVisible = false,
+        onIntent = {},
+        goBack = {}
+    )
 }
-
 @Preview
 @Composable
 private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialTheme {
     SettingsContent(
-        uiState = SettingsUiState(
-            isInitialLoading = false, isDarkEffective = false, cacheSizeBytes = -1L, // як у wasm
-            clearCacheDialogVisible = true,
-        ), onIntent = {}, goBack = {})
+        isInitialLoading = false,
+        cacheSizeBytes = -1L, // як у wasm
+        updateState = UpdateState.Idle, // підстав дефолт, якщо треба інший
+        currentAppVersionLabel = "",
+        logoutDialogVisible = false,
+        clearCacheDialogVisible = true,
+        onIntent = {},
+        goBack = {}
+    )
 }
-
 @Preview
 @Composable
 private fun Preview_SettingsContent_Loading() = PreviewDarkMaterialTheme {
-    SettingsContent(uiState = SettingsUiState(isInitialLoading = true), onIntent = {}, goBack = {})
+    SettingsContent(
+        isInitialLoading = true,
+        cacheSizeBytes = 0L,
+        updateState = UpdateState.Idle,
+        currentAppVersionLabel = "",
+        logoutDialogVisible = false,
+        clearCacheDialogVisible = false,
+        onIntent = {},
+        goBack = {}
+    )
 }
-
 @Preview
 @Composable
 private fun CacheCardPreview() = PreviewDarkMaterialTheme {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item {
-            CacheCard(0L, {})
-        }
-        item {
-            CacheCard(2650L, {})
-        }
+        item { CacheCard(0L,){} }
+        item { CacheCard(2650L,){} }
     }
 }
-
 @Preview(device = Devices.DESKTOP)
 @Composable
 private fun Preview_SettingsContentDark_ClearCacheDialogPC() = PreviewDarkMaterialTheme {
     SettingsContent(
-        uiState = SettingsUiState(
-            isInitialLoading = false,
-            isDarkEffective = true,
-            cacheSizeBytes = 42L * 1024 * 1024,
-            newAppVersionLabel = "1.2.3",
-            appBuildLabel = "123",
-            updateState = UpdateState.Downloading(),
-        ), onIntent = {}, goBack = {})
+        isInitialLoading = false,
+        cacheSizeBytes = 42L * 1024 * 1024,
+        updateState = UpdateState.Downloading(), // або progress = ...
+        currentAppVersionLabel = "123",
+        logoutDialogVisible = false,
+        clearCacheDialogVisible = true,
+        onIntent = {},
+        goBack = {}
+    )
 }
-
 @Preview(device = Devices.DESKTOP)
 @Composable
 private fun Preview_SettingsContentLight_ClearCacheDialogPC() = PreviewLightMaterialTheme {
     SettingsContent(
-        uiState = SettingsUiState(
-            isInitialLoading = false,
-            isDarkEffective = true,
-            cacheSizeBytes = 42L * 1024 * 1024,
-            newAppVersionLabel = "1.2.3",
-            appBuildLabel = "123",
-            updateState = UpdateState.Downloading(),
-        ), onIntent = {}, goBack = {})
+        isInitialLoading = false,
+        cacheSizeBytes = 42L * 1024 * 1024,
+        updateState = UpdateState.Downloading(),
+        currentAppVersionLabel = "123",
+        logoutDialogVisible = false,
+        clearCacheDialogVisible = true,
+        onIntent = {},
+        goBack = {}
+    )
 }

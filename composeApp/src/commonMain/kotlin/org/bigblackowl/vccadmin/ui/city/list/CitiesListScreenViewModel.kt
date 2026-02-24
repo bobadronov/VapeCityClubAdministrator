@@ -61,7 +61,7 @@ class CitiesListScreenViewModel(
         }
 
         try {
-            val cityList = cityRepository.getCities()
+            val cityList = cityRepository.getCities().sortedBy { it.name }
             val userRole = userRepository.getCurrentUser()?.role ?: UserRole.USER
 
             _state.update {

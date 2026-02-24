@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,18 +53,18 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.dialog.QRCodeDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
-import org.bigblackowl.vccadmin.uiComponent.loading.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.UkrainianPhoneVisualTransformation
 import org.bigblackowl.vccadmin.utils.isWideScreen
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import vccadministrator.composeapp.generated.resources.Res
-import vccadministrator.composeapp.generated.resources.admin
 import vccadministrator.composeapp.generated.resources.copied_to_clipboard
 import vccadministrator.composeapp.generated.resources.created
 import vccadministrator.composeapp.generated.resources.email
@@ -100,45 +101,69 @@ fun UserDetailScreen(
         LoadingComponent()
     } else {
         UserDetailContent(
-            state = state,
+            id = state.id,
+            isRefreshing = state.isRefreshing,
+            firstName = state.firstName,
+            lastName = state.lastName,
+            email = state.email,
+            phone = state.phone,
+            roleNameRes = state.role.getName, // якщо getName — resId
+            createdAt = state.createdAt,
+            lastModified = state.lastModified,
+            lastModifiedByUser = state.lastModifiedByUser,
             onBack = { navigationViewModel.requestBack() },
             onRefresh = { userDetailScreenViewModel.onIntent(UserDetailScreenIntent.Refresh(userId.orEmpty())) },
-            showConfirmMessage = {
-                scope.launch {
-                    snackbarHostState.showSnackbar(getString(Res.string.copied_to_clipboard))
-                }
-            },
+            showConfirmMessage = { scope.launch { snackbarHostState.showSnackbar(getString(Res.string.copied_to_clipboard)) } },
         )
     }
 }
 
-@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun UserDetailContent(
-    state: UserDetailState?,
+    id: String?,
+    isRefreshing: Boolean,
+    firstName: String,
+    lastName: String,
+    email: String,
+    phone: String,
+    roleNameRes: StringResource,           // або String, але resId дешевше
+    createdAt: String,
+    lastModified: String,
+    lastModifiedByUser: String,
     onBack: () -> Unit,
     onRefresh: () -> Unit,
     showConfirmMessage: () -> Unit,
 ) {
-    if (state?.id == null) return
-    var showQRCodeDialog by remember { mutableStateOf(false) }
+    if (id == null) return
+
+    var showQRCodeDialog by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
+    // ✅ Обчислення форматованого телефона — тільки коли phone зміниться
+    val formattedPhone = remember(phone) {
+        UkrainianPhoneVisualTransformation()
+            .filter(AnnotatedString(phone))
+            .text.text
+    }
+
+    val title = remember(firstName, lastName) {
+        "${firstName.trim()} ${lastName.trim()}".trim()
+    }.ifBlank { "—" }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(DefaultValues.Padding.mainBoxPadding),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(DefaultValues.Padding.mainBoxPadding),
         verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding)
     ) {
         TitleText(
-            text = buildString {
-                append(state.firstName, " ")
-                append(state.lastName)
-                if (isBlank()) append(stringResource(Res.string.admin))
-            }.trim(),
+            text = title,
             fontWeight = FontWeight.Bold
         )
+
         PlatformPullToRefreshBox(
-            isRefreshing = state.isRefreshing,
+            isRefreshing = isRefreshing,
             onRefresh = onRefresh,
             modifier = Modifier
                 .fillMaxWidth()
@@ -150,13 +175,9 @@ private fun UserDetailContent(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .padding(16.dp),
-                ) {
+                Row(Modifier.padding(16.dp)) {
                     LazyColumn(
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         state = listState,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -164,7 +185,7 @@ private fun UserDetailContent(
                             InfoRow(
                                 icon = Icons.Default.Person,
                                 label = stringResource(Res.string.user_role),
-                                value = stringResource(state.role.getName),
+                                value = stringResource(roleNameRes),
                             )
                         }
 
@@ -172,7 +193,7 @@ private fun UserDetailContent(
                             InfoRow(
                                 icon = Icons.Default.Email,
                                 label = stringResource(Res.string.email),
-                                value = state.email,
+                                value = email,
                             )
                         }
 
@@ -180,7 +201,7 @@ private fun UserDetailContent(
                             InfoRow(
                                 icon = Icons.Default.Phone,
                                 label = stringResource(Res.string.phone_number),
-                                value = state.phone.let { UkrainianPhoneVisualTransformation().filter(AnnotatedString(it)) }.text.text,
+                                value = formattedPhone,
                             )
                         }
 
@@ -190,7 +211,10 @@ private fun UserDetailContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center,
                             ) {
-                                QRCodeButton(modifier = Modifier.fillMaxWidth(.7f), onClick = { showQRCodeDialog = true })
+                                QRCodeButton(
+                                    modifier = Modifier.fillMaxWidth(.7f),
+                                    onClick = { showQRCodeDialog = true }
+                                )
                             }
                         }
 
@@ -198,7 +222,7 @@ private fun UserDetailContent(
                             InfoRow(
                                 icon = Icons.Default.CalendarToday,
                                 label = stringResource(Res.string.created),
-                                value = state.createdAt,
+                                value = createdAt,
                             )
                         }
 
@@ -210,32 +234,32 @@ private fun UserDetailContent(
                                 DefaultIcon(Icons.Default.Edit)
                                 Spacer(Modifier.width(ButtonDefaults.IconSpacing))
                                 Column {
-                                    HelperText(stringResource(Res.string.last_modified, state.lastModified))
-                                    HelperText(stringResource(Res.string.last_modified_by_user, state.lastModifiedByUser))
+                                    HelperText(stringResource(Res.string.last_modified, lastModified))
+                                    HelperText(stringResource(Res.string.last_modified_by_user, lastModifiedByUser))
                                 }
                             }
                         }
                     }
 
                     DefaultScrollbar(scrollState = listState)
-
                 }
             }
         }
 
         if (isWideScreen()) {
-            ButtonRowContainer {
-                BackButton { onBack() }
-            }
+            ButtonRowContainer { BackButton { onBack() } }
         }
     }
 
-    if (state.phone.isNotBlank()) {
+    if (phone.isNotBlank()) {
         AnimatedVisibility(showQRCodeDialog) {
             QRCodeDialog(
-                data = state.phone.let { UkrainianPhoneVisualTransformation().filter(AnnotatedString(it)) }.text.text,
+                data = formattedPhone,
                 showConfirmMessage = showConfirmMessage,
-                onDismiss = { showQRCodeDialog = false },
+                onDismiss = {
+                    @Suppress("AssignedValueIsNeverRead")
+                    showQRCodeDialog = false
+                },
             )
         }
     }
@@ -269,51 +293,50 @@ private fun InfoRow(
     }
 }
 
+
+
+
+
 @Preview
 @Composable
-private fun UserDetailContentPreview1() = PreviewLightMaterialTheme {
+private fun UserDetailContentPreview1() = PreviewDarkMaterialTheme {
     val user = FakeBackend.singleUser
 
     UserDetailContent(
-        state = UserDetailState(
-            isLoading = false,
-            isRefreshing = false,
-            id = user.id,
-            firstName = user.firstName,
-            lastName = user.lastName,
-            email = user.email,
-            phone = user.phone,
-            role = user.role,
-            createdAt = "user.createdAt",
-            lastModified = " user.",
-            lastModifiedByUser = "user."
-        ),
+        id = user.id,
+        isRefreshing = false,
+        firstName = user.firstName,
+        lastName = user.lastName,
+        email = user.email,
+        phone = user.phone,
+        roleNameRes = user.role.getName,
+        createdAt = "user.createdAt",
+        lastModified = "user.lastModified",
+        lastModifiedByUser = "user.lastModifiedByUser",
         onBack = {},
-        onRefresh = { },
-        showConfirmMessage = {}
+        onRefresh = {},
+        showConfirmMessage = {},
     )
 }
 
 @Preview
 @Composable
-private fun UserDetailContentPreview2() = PreviewDarkMaterialTheme {
+private fun UserDetailContentPreview2() = PreviewLightMaterialTheme {
     val user = FakeBackend.singleUser
+
     UserDetailContent(
-        state = UserDetailState(
-            isLoading = false,
-            isRefreshing = false,
-            id = user.id,
-            firstName = user.firstName,
-            lastName = user.lastName,
-            email = user.email,
-            phone = user.phone,
-            role = user.role,
-            createdAt = "user.createdAt",
-            lastModified = " user.",
-            lastModifiedByUser = "user."
-        ),
+        id = user.id,
+        isRefreshing = false,
+        firstName = user.firstName,
+        lastName = user.lastName,
+        email = user.email,
+        phone = user.phone,
+        roleNameRes = user.role.getName,
+        createdAt = "user.createdAt",
+        lastModified = "user.lastModified",
+        lastModifiedByUser = "user.lastModifiedByUser",
         onBack = {},
-        onRefresh = { },
-        showConfirmMessage = {}
+        onRefresh = {},
+        showConfirmMessage = {},
     )
 }

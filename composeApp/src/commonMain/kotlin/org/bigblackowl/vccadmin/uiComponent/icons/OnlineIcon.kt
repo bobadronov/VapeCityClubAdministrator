@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
-import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.jetbrains.compose.resources.painterResource
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.main_logo

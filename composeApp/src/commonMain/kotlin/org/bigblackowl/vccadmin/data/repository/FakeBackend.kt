@@ -43,14 +43,14 @@ object FakeBackend {
     // -------------------------
     // Users
     // -------------------------
-    val users: List<User> = buildUsers()
+    val users: List<User> = buildUsers().sortedBy { it.lastName }
 
     val admin: User = users.first()
 
     // -------------------------
     // Cities
     // -------------------------
-    val cities: List<City> = buildCities()
+    val cities: List<City> = buildCities().sortedBy { it.name }
 
     // -------------------------
     // Shops (зв’язані з містами)
@@ -226,6 +226,21 @@ object FakeBackend {
             3 to "Одеса",
             4 to "Харків",
             5 to "Дніпро",
+            6 to "Запоріжжя",
+            7 to "Вінниця",
+            8 to "Полтава",
+            9 to "Чернігів",
+            10 to "Черкаси",
+            11 to "Суми",
+            12 to "Житомир",
+            13 to "Рівне",
+            14 to "Тернопіль",
+            15 to "Івано-Франківськ",
+            16 to "Ужгород",
+            17 to "Луцьк",
+            18 to "Хмельницький",
+            19 to "Кропивницький",
+            20 to "Миколаїв",
         )
 
         return cityDefs.mapIndexed { idx, (id, name) ->
@@ -383,7 +398,7 @@ object FakeBackend {
                     position = basePosition + idx,
                     isActive = isActive,
                     lastModified = formatUaLike(modifiedMs),
-                    lastModifiedUserName = "${modUser.firstName} ${modUser.lastName}",
+                    lastModifiedUserName = modUser.fullName,
                     createdAt = formatUaLike(createdMs)
                 )
             }

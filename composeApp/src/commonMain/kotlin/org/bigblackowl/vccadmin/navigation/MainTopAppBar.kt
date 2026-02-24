@@ -61,11 +61,11 @@ import org.bigblackowl.vccadmin.domain.repository.AuthRepository
 import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUiComponent
 import org.bigblackowl.vccadmin.resourses.DefaultValues
-import org.bigblackowl.vccadmin.theme.LocalThemeMode
+import org.bigblackowl.vccadmin.theme.locals.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.theme.ThemeMode
-import org.bigblackowl.vccadmin.theme.rememberIsDarkTheme
+import org.bigblackowl.vccadmin.data.entity.ThemeMode
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.ui.login.LoginScreenIntent
 import org.bigblackowl.vccadmin.ui.login.LoginScreenViewModel
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon

@@ -99,11 +99,7 @@ fun CurrentUserHeader(
 
                     Column {
                         TitleText(
-                            text = buildString {
-                                append(user.firstName, " ")
-                                append(user.lastName)
-                                if (isBlank()) append("Адміністратор")
-                            }.trim(),
+                            text = user.fullName,
                             fontWeight = FontWeight.Medium,
                         )
 
@@ -131,7 +127,7 @@ private fun CurrentUserHeaderPreview1() = PreviewDarkMaterialTheme {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        CurrentUserHeader(currentUser = FakeBackend.users.first(), onClick = {})
+        CurrentUserHeader(currentUser = FakeBackend.singleUser, onClick = {})
         CurrentUserHeader(currentUser = FakeBackend.users[2], onClick = {})
     }
 }
@@ -142,7 +138,7 @@ private fun CurrentUserHeaderPreview2() = PreviewLightMaterialTheme {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        CurrentUserHeader(currentUser = FakeBackend.users.first(), onClick = {})
+        CurrentUserHeader(currentUser = FakeBackend.singleUser, onClick = {})
         CurrentUserHeader(currentUser = FakeBackend.users[2], onClick = {})
     }
 }

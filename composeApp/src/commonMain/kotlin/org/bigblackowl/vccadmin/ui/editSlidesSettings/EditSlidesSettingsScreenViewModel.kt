@@ -102,7 +102,7 @@ class EditSlidesSettingsScreenViewModel(
                     transitionEffect = settings.transitionEffect,
                     autoReloadTime = settings.autoReloadTime,
                     lastModified = AppStringProvider.formatTimestamp(settings.lastModified ?: 0L),
-                    lastModifiedByUser = "${user?.firstName.orEmpty()} ${user?.lastName.orEmpty()}"
+                    lastModifiedByUser = user?.fullName.orEmpty()
                 )
             }
             _isDirty.value = false
@@ -143,7 +143,7 @@ class EditSlidesSettingsScreenViewModel(
                     transitionEffect = settings.transitionEffect,
                     autoReloadTime = settings.autoReloadTime,
                     lastModified = AppStringProvider.formatTimestamp(settings.lastModified ?: 0L),
-                    lastModifiedByUser = "${user?.firstName.orEmpty()} ${user?.lastName.orEmpty()}"
+                    lastModifiedByUser = user?.fullName.orEmpty()
                 )
             }
             showMessage(getString(Res.string.settings_saved))
