@@ -1,1 +1,1 @@
-config.output.publicPath = "/REPO/";
+config.output.publicPath = "/VapeCityClubAdministrator/";
