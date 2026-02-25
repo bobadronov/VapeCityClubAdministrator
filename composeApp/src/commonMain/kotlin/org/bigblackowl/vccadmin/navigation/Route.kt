@@ -95,5 +95,8 @@ sealed interface Route : NavKey {
     data object Settings : Route
 
     @Serializable
-    data object WorkSchedule : Route
+    data object WorkScheduleView : Route
+
+    @Serializable
+    data object WorkScheduleCreate : Route
 }

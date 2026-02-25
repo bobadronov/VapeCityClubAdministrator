@@ -37,7 +37,8 @@ import org.bigblackowl.vccadmin.ui.slidesList.SlidesListScreen
 import org.bigblackowl.vccadmin.ui.users.addEdit.AddEditUserScreen
 import org.bigblackowl.vccadmin.ui.users.detail.UserDetailScreen
 import org.bigblackowl.vccadmin.ui.users.list.UsersScreen
-import org.bigblackowl.vccadmin.ui.workSchedule.WorkScheduleScreen
+import org.bigblackowl.vccadmin.ui.workSchedule.create.WorkScheduleCreateScreen
+import org.bigblackowl.vccadmin.ui.workSchedule.view.WorkScheduleViewScreen
 
 @Composable
 fun Navigator(
@@ -181,8 +182,15 @@ fun Navigator(
                     navigationViewModel = navigationViewModel,
                 )
             }
-            entry<Route.WorkSchedule> {
-                WorkScheduleScreen(
+
+            entry<Route.WorkScheduleView> {
+                WorkScheduleViewScreen(
+                    snackbarHostState = snackbarHostState,
+                    navigationViewModel = navigationViewModel
+                )
+            }
+            entry<Route.WorkScheduleCreate> {
+                WorkScheduleCreateScreen(
                     snackbarHostState = snackbarHostState,
                     navigationViewModel = navigationViewModel
                 )

@@ -1,5 +1,6 @@
 package org.bigblackowl.vccadmin.di
 
+import org.bigblackowl.vccadmin.ui.WorkScheduleView.WorkScheduleViewScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideViewModel
 import org.bigblackowl.vccadmin.ui.city.addEdit.AddEditCityScreenViewModel
@@ -15,7 +16,7 @@ import org.bigblackowl.vccadmin.ui.slidesList.SlidesListScreenViewModel
 import org.bigblackowl.vccadmin.ui.users.addEdit.AddEditUserScreenViewModel
 import org.bigblackowl.vccadmin.ui.users.detail.UserDetailScreenViewModel
 import org.bigblackowl.vccadmin.ui.users.list.UsersScreenViewModel
-import org.bigblackowl.vccadmin.ui.workSchedule.WorkScheduleScreenViewModel
+import org.bigblackowl.vccadmin.ui.workSchedule.create.WorkScheduleCreateScreenViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -35,5 +36,7 @@ val screensViewModelModule = module {
     singleOf(::EditSlidesSettingsScreenViewModel)
     singleOf(::SlideAiGenerationScreenViewModel)
     singleOf(::SettingsScreenViewModel)
-    singleOf(::WorkScheduleScreenViewModel)
+    singleOf(::WorkScheduleViewScreenViewModel)
+    singleOf(::WorkScheduleCreateScreenViewModel) // di
+
 }
