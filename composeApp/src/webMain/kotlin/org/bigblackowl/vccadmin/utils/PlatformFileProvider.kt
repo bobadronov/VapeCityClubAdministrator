@@ -30,23 +30,80 @@ actual object PlatformFileProvider {
         openBytesInNewTab(bytes.toJsNumberArray(), "application/pdf", fileName)
     }
 
-    actual fun openDownloadFolder() {
-        // Працює не всюди/не завжди. Викликати тільки з onClick!
-        val candidates = listOf(
-            "chrome://downloads/",
-            "edge://downloads/all",
-            "about:downloads"
-        )
+    private fun ua(): String = window.navigator.userAgent.lowercase()
+    private fun isMobile(): Boolean {
+        val u = ua()
+        return listOf("android", "iphone", "ipad", "ipod", "mobile").any { it in u }
+    }
+    private fun isMac(): Boolean = listOf("macintosh", "mac os x").any { it in ua() }
+    private fun isAndroid(): Boolean = "android" in ua()
+    private fun isIOS(): Boolean {
+        val u = ua()
+        return ("iphone" in u) || ("ipad" in u) || ("ipod" in u)
+    }
+    private fun isSafari(): Boolean {
+        val u = ua()
+        // Safari на iOS/ macOS: містить "safari", але не "chrome"/"crios"/"edg"
+        return ("safari" in u) && ("chrome" !in u) && ("crios" !in u) && ("edg" !in u)
+    }
+    private fun isChromeLike(): Boolean {
+        val u = ua()
+        return ("chrome" in u) || ("crios" in u) || ("chromium" in u)
+    }
+    private fun isEdge(): Boolean = "edg" in ua()
+    private fun isFirefox(): Boolean = "firefox" in ua()
 
-        for (url in candidates) {
-            val w = window.open(url, "_blank")
-            if (w != null) return
+    actual fun openDownloadFolder() {
+        // Важливо: викликати тільки з onClick / user gesture
+        // Реальність: універсально відкрити Downloads НЕ МОЖНА. Даємо best-effort + інструкцію.
+
+        // Best-effort спроби (в більшості середовищ будуть заблоковані — і це ок)
+        val candidates = buildList {
+            if (!isMobile()) {
+                // Інколи може спрацювати в конкретних конфігураціях, але не розраховуй на це.
+                if (isChromeLike()) add("chrome://downloads/")
+                if (isEdge()) add("edge://downloads/all")
+                // Firefox/Safari зазвичай не дозволяють відкрити свої внутрішні сторінки з JS
+            }
         }
 
-        // fallback
-        window.alert("Не вдалося відкрити сторінку завантажень.\nВідкрий вручну: Ctrl+J (⌘+J на macOS).")
-    }
+        for (url in candidates) {
+            try {
+                val w = window.open(url, "_blank")
+                if (w != null) return
+            } catch (_: Throwable) {
+                // ігноруємо та йдемо в fallback
+            }
+        }
 
+        // Fallback: пояснюємо користувачу, де знайти файл
+        val shortcut = if (isMac()) "⌘+J" else "Ctrl+J"
+
+        val message = when {
+            isMobile() && isAndroid() ->
+                "Завантаження відкриваються в браузері або в застосунку «Файли».\n" +
+                        "Спробуй: Меню браузера → «Завантаження» або «Files/Файли» → «Downloads/Завантаження»."
+
+            isMobile() && isIOS() ->
+                "На iPhone/iPad немає універсальної сторінки «Downloads».\n" +
+                        "Знайди файл у Safari: кнопка «aA/Поділитися» → «Завантаження» (або значок завантажень),\n" +
+                        "або у застосунку «Files/Файли» → «Downloads/Завантаження»."
+
+            isSafari() ->
+                "Safari не дозволяє відкривати системну сторінку завантажень з веб-додатку.\n" +
+                        "Відкрий вручну: меню Safari → «Downloads/Завантаження»."
+
+            isFirefox() ->
+                "Firefox зазвичай блокує відкриття внутрішніх сторінок завантажень з веб-додатку.\n" +
+                        "Відкрий вручну: $shortcut."
+
+            else ->
+                "Не вдалося відкрити сторінку завантажень.\n" +
+                        "Відкрий вручну: $shortcut."
+        }
+
+        window.alert(message)
+    }
     actual suspend fun downloadFile(name: String, content: ByteArray) {
         // зберігаємо, щоб openFile міг відкрити
         memoryCache[name] = content
