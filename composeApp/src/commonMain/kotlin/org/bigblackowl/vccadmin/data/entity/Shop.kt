@@ -94,7 +94,9 @@ data class Shop(
     val lastModified: String,
     val lastModifiedUser: String,
     val deviceType: DeviceType,
-)
+) {
+    val fullAddress = "$street, $houseNumber ${addressComment.ifBlank { "" }}"
+}
 
 // Додаємо extension для конвертації з SupabaseShop + City
 suspend fun List<SupabaseShop>.toUiShops(cities: List<City>): List<Shop> {
