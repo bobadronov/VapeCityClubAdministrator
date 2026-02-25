@@ -7,3 +7,5 @@
 /composeApp/release_desktop/
 /composeApp/src/commonMain/composeResources/files/update.json
 .idea/
+.kotlin/
+.gitignore
