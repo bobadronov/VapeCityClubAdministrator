@@ -84,8 +84,7 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.kotlinx.datetime)
             implementation(libs.openai.client)
-// https://github.com/ryinex/compose-table/tree/dev
-//            implementation("com.dshatz.pdfmp:pdfmp-compose:1.0.9") # https://github.com/dshatz/pdfmp/
+
         }
 
         commonTest.dependencies {
