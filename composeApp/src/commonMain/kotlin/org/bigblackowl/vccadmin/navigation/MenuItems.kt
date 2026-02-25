@@ -65,8 +65,8 @@ fun buildMenuItems(
             MenuItem(
                 text = Res.string.schedule,
                 icon = Icons.Default.CalendarMonth,
-                isSelected = { it == Route.WorkScheduleView },
-                onClick = { navigate(Route.WorkScheduleView) }
+                isSelected = { it == Route.WorkScheduleCreate },
+                onClick = { navigate(Route.WorkScheduleCreate) }
             )
         )
         if (!isLoginScreen) {
