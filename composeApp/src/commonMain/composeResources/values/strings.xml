@@ -162,7 +162,7 @@
     <string name="shop_address">Адреса: %1$s, %2$s, %3$s</string>
     <string name="shop_details">Деталі магазину</string>
     <string name="shops">Магазини</string>
-    <string name="shops_phone_list">Список номерів телефонів</string>
+    <string name="shops_phone_list">Список номерів телефонів (для вибраних магазинів)</string>
     <string name="status">Статус</string>
     <string name="status_active">Активний</string>
     <string name="status_closed">Закритий</string>

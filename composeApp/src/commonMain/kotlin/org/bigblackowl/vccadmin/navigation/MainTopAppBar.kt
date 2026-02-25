@@ -54,18 +54,18 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
+import org.bigblackowl.vccadmin.data.entity.ThemeMode
 import org.bigblackowl.vccadmin.data.entity.User
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.domain.repository.AuthRepository
 import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUiComponent
 import org.bigblackowl.vccadmin.resourses.DefaultValues
-import org.bigblackowl.vccadmin.theme.locals.LocalThemeMode
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.data.entity.ThemeMode
-import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
+import org.bigblackowl.vccadmin.theme.locals.LocalThemeMode
 import org.bigblackowl.vccadmin.ui.login.LoginScreenIntent
 import org.bigblackowl.vccadmin.ui.login.LoginScreenViewModel
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
@@ -252,10 +252,10 @@ private fun AppMenu(
 
             Column(
                 modifier = Modifier.align(Alignment.TopEnd)
-                    .padding(top = 64.dp, end = 16.dp)
+                    .padding(top = 60.dp, end = 20.dp)
                     .pointerInput(Unit) { detectTapGestures(onTap = {}) } // поглинути тап
-                    .width(250.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .width(230.dp).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 CurrentUserHeader(currentUser, onClick = onUserSelected)
 
@@ -293,7 +293,7 @@ private fun AppMenu(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(14.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {

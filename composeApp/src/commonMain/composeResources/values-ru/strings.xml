@@ -163,7 +163,7 @@
     <string name="shop_address">Адрес: %1$s, %2$s, %3$s</string>
     <string name="shop_details">Детали магазина</string>
     <string name="shops">Магазины</string>
-    <string name="shops_phone_list">Список номеров телефонов</string>
+    <string name="shops_phone_list">Список номеров телефонов (для выбранных магазинов)</string>
     <string name="status">Статус</string>
     <string name="status_active">Активный</string>
     <string name="status_closed">Закрыт</string>

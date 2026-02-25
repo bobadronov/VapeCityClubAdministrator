@@ -42,6 +42,7 @@ fun buildMenuItems(
     navigate: (route: Route) -> Unit,
     logout: () -> Unit,
 ): List<MenuItem> {
+
     fun applyThemeMode(next: ThemeMode) {
         setThemeMode(next)
     }
