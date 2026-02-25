@@ -19,6 +19,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -807,7 +808,7 @@ private fun FileTypePicker(
                                 onCheckedChange = { onFileTypeToggled(fileType.id, it) }
                             )
                             DefaultIcon(fileType.icon)
-                            BodyText(stringResource(fileType.label))
+                            BodyText(stringResource(fileType.label), Modifier.basicMarquee())
                         }
                     }
                 }
