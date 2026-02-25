@@ -42,7 +42,7 @@ import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.UkrainianPhoneVisualTransformation
@@ -216,7 +216,7 @@ fun ShareShopDataDialog(
                         }
                     }
 
-                    DefaultScrollbar(scrollState = scrollState)
+                    DefaultVerticalScrollbar(scrollState = scrollState)
 
                 }
 

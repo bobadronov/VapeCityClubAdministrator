@@ -78,7 +78,7 @@ import org.bigblackowl.vccadmin.uiComponent.dialog.QRCodeDialog
 import org.bigblackowl.vccadmin.uiComponent.dialog.ShareShopDataDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
@@ -372,7 +372,7 @@ private fun ShopDetailsScreenContent(
                                 }
                             }
 
-                            DefaultScrollbar(scrollState = listState)
+                            DefaultVerticalScrollbar(scrollState = listState)
                         }
                     }
 

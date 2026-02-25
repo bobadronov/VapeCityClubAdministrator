@@ -18,8 +18,8 @@ import io.github.oikvpqya.compose.fastscroller.VerticalScrollbar
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 
 @Composable
-fun DefaultScrollbar(scrollState: LazyGridState) {
-       if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
+fun DefaultVerticalScrollbar(scrollState: LazyGridState) {
+    if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
 
 
     VerticalScrollbar(
@@ -45,9 +45,9 @@ fun DefaultScrollbar(scrollState: LazyGridState) {
 }
 
 @Composable
-fun DefaultScrollbar(scrollState: LazyListState) {
-    
-       if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
+fun DefaultVerticalScrollbar(scrollState: LazyListState) {
+
+    if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
 
 
     VerticalScrollbar(
@@ -73,9 +73,9 @@ fun DefaultScrollbar(scrollState: LazyListState) {
 }
 
 @Composable
-fun DefaultScrollbar(scrollState: ScrollState) {
+fun DefaultVerticalScrollbar(scrollState: ScrollState) {
 
-       if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
+    if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
 
 
     VerticalScrollbar(

@@ -84,7 +84,7 @@ import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
@@ -228,7 +228,7 @@ private fun MainScreenContent(
                 }
             }
 
-            DefaultScrollbar(scrollState = lazyGridState)
+            DefaultVerticalScrollbar(scrollState = lazyGridState)
         }
 
         AnimatedVisibility(

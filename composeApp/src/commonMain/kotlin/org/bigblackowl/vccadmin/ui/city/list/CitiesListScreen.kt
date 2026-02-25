@@ -56,7 +56,7 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultScrollbar
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
@@ -169,7 +169,7 @@ fun CitiesListScreenContent(
                     }
                 }
 
-                DefaultScrollbar(scrollState = listState)
+                DefaultVerticalScrollbar(scrollState = listState)
             }
 
             ButtonRowContainer {
