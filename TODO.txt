@@ -1,0 +1,11 @@
+
+TODO: check for update in repo https://klibs.io/project/dshatz/pdfmp
+// implementation("com.dshatz.pdfmp:pdfmp-compose:1.0.9")
+
+@Composable
+fun OpenPdfInNewTabButton(url: String, modifier: Modifier = Modifier; {
+val state by rememberPdfViewerState(url)
+PdfViewer(pdfViewerState = state; // NOT_Implemented_for_web)
+}
+
+todo: check table view on https://github.com/ryinex/compose-table/tree/dev
