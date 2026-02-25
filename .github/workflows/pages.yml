@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*"
-      - "github-pages"
+      - "web*"
   workflow_dispatch:
 
 permissions:
