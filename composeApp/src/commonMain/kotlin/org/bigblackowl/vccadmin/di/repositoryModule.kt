@@ -21,7 +21,7 @@ import org.bigblackowl.vccadmin.domain.repository.UserRepository
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    single<LocalRepository>(createdAtStart = true) { LocalRepositoryImpl() }
+    single<LocalRepository>(createdAtStart = true) { LocalRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
     single<ShopRepository> { ShopRepositoryImpl(get()) }
     single<CityRepository> { CityRepositoryImpl(get()) }
