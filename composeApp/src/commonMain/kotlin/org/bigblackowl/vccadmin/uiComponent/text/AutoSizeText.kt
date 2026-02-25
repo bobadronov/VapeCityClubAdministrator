@@ -54,7 +54,6 @@ fun TitleText(
     textAlign: TextAlign? = null,
     maxLines: Int = 2,
     letterSpacing: TextUnit = TextUnit.Unspecified,
-
     fontWeight: FontWeight? = FontWeight.SemiBold,
 ) {
     AppText(

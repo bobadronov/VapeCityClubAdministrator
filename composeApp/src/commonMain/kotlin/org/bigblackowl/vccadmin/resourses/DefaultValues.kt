@@ -32,7 +32,7 @@ object DefaultValues {
         val iconSize = 25.dp
         val gridItemMinSize = 350.dp
         val textTitleAutoSize = TextAutoSize.StepBased(
-            minFontSize = 20.sp, maxFontSize = 26.sp
+            minFontSize = 19.sp, maxFontSize = 24.sp
         )
         val textBodyAutoSize = TextAutoSize.StepBased(
             minFontSize = 14.sp, maxFontSize = 17.sp
