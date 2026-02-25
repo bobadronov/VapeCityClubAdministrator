@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.ui.workSchedule
+package org.bigblackowl.vccadmin.ui.WorkScheduleView
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,7 +34,7 @@ import org.bigblackowl.vccadmin.domain.repository.AuthRepository
 import org.bigblackowl.vccadmin.domain.repository.ShopRepository
 
 @Serializable
-data class WorkScheduleDto(
+data class WorkScheduleViewDto(
     val dates: List<String>,                 // ISO: yyyy-MM-dd
     val shops: List<ShopScheduleDto>
 )
@@ -57,11 +57,11 @@ data class ParseScheduleRequest(
     val base64: String
 )
 
-data class WorkScheduleUiState(
+data class WorkScheduleViewUiState(
     val isInitialLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val currentUser: User? = null,
-    val schedule: WorkScheduleDto? = null,
+    val schedule: WorkScheduleViewDto? = null,
     val rows: List<MatchedShopRow> = emptyList(),
 )
 
@@ -76,15 +76,15 @@ data class MatchedShopRow(
     val groupTitle: String? = null, // якщо це “група/місто”
 )
 
-class WorkScheduleScreenViewModel(
+class WorkScheduleViewScreenViewModel(
     private val json: Json,
     private val supabase: SupabaseClient,
     private val authRepository: AuthRepository,
     private val shopRepository: ShopRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(WorkScheduleUiState())
-    val uiState: StateFlow<WorkScheduleUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(WorkScheduleViewUiState())
+    val uiState: StateFlow<WorkScheduleViewUiState> = _uiState.asStateFlow()
 
     private val _uiEvent = MutableSharedFlow<UIEvents>(replay = 0)
     val uiEvent: SharedFlow<UIEvents> = _uiEvent.asSharedFlow()
@@ -97,9 +97,9 @@ class WorkScheduleScreenViewModel(
         }
     }
 
-    fun onIntent(intent: WorkScheduleIntent) {
+    fun onIntent(intent: WorkScheduleViewIntent) {
         when (intent) {
-            WorkScheduleIntent.Load -> load()
+            WorkScheduleViewIntent.Load -> load()
         }
     }
 
@@ -175,7 +175,7 @@ class WorkScheduleScreenViewModel(
     }
 
     private fun enrichSchedule(
-        schedule: WorkScheduleDto,
+        schedule: WorkScheduleViewDto,
         allStores: List<SupabaseShop>,
         cityIdByTitle: Map<String, Int> = emptyMap(),
     ): List<MatchedShopRow> {
@@ -299,7 +299,7 @@ class WorkScheduleScreenViewModel(
     private suspend fun parseExcel(
         fileName: String,
         bytes: ByteArray
-    ): WorkScheduleDto {
+    ): WorkScheduleViewDto {
         val body = ParseScheduleRequest(
             fileName = fileName,
             base64 = bytes.encodeBase64()
@@ -331,6 +331,6 @@ class WorkScheduleScreenViewModel(
     }
 }
 
-sealed interface WorkScheduleIntent {
-    data object Load : WorkScheduleIntent
+sealed interface WorkScheduleViewIntent {
+    data object Load : WorkScheduleViewIntent
 }

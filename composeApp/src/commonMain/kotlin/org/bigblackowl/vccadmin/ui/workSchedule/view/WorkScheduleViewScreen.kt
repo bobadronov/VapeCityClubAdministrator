@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.ui.workSchedule
+package org.bigblackowl.vccadmin.ui.workSchedule.view
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -30,19 +30,23 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.bigblackowl.vccadmin.data.entity.User
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
+import org.bigblackowl.vccadmin.navigation.Route
+import org.bigblackowl.vccadmin.ui.WorkScheduleView.WorkScheduleViewDto
+import org.bigblackowl.vccadmin.ui.WorkScheduleView.WorkScheduleViewIntent
+import org.bigblackowl.vccadmin.ui.WorkScheduleView.WorkScheduleViewScreenViewModel
+import org.bigblackowl.vccadmin.ui.WorkScheduleView.WorkScheduleViewUiState
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.koin.compose.koinInject
 
 @Composable
-fun WorkScheduleScreen(
+fun WorkScheduleViewScreen(
     snackbarHostState: SnackbarHostState,
     navigationViewModel: NavigationViewModel,
-    viewModel: WorkScheduleScreenViewModel = koinInject(),
+    viewModel: WorkScheduleViewScreenViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
@@ -57,24 +61,34 @@ fun WorkScheduleScreen(
         LoadingComponent()
         return
     }
-    WorkScheduleContent(
+
+    WorkScheduleViewContent(
         uiState = uiState,
-        onIntent = viewModel::onIntent
+        onIntent = viewModel::onIntent,
+        onCreateClicked = {navigationViewModel.navigateTo(Route.WorkScheduleCreate)}
     )
 }
 
 @Composable
-private fun WorkScheduleContent(
-    uiState: WorkScheduleUiState,
-    onIntent: (WorkScheduleIntent) -> Unit,
-) {
+private fun WorkScheduleViewContent(
+    uiState: WorkScheduleViewUiState,
+    onIntent: (WorkScheduleViewIntent) -> Unit,
+    onCreateClicked: () -> Unit,
+    ) {
     Scaffold(
         floatingActionButton = {
             AnimatedVisibility(!uiState.isInitialLoading) {
+                Row {
+                    FloatingActionButton(
+                        onClick = onCreateClicked
+                    ) {
+                        Text("Створити", Modifier.padding(12.dp))
+                    }
                 FloatingActionButton(
-                    onClick = { onIntent(WorkScheduleIntent.Load) }
+                    onClick = { onIntent(WorkScheduleViewIntent.Load) }
                 ) {
                     Text("Завантажити Excel", Modifier.padding(12.dp))
+                }
                 }
             }
         },
@@ -83,14 +97,14 @@ private fun WorkScheduleContent(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             BodyText("На тесті")
             uiState.schedule?.let { schedule ->
-                WorkScheduleTable(schedule, currentUser = uiState.currentUser)
+                WorkScheduleViewTable(schedule, currentUser = uiState.currentUser)
             }
         }
     }
 }
 
 @Composable
-fun WorkScheduleTable(schedule: WorkScheduleDto, currentUser: User?) {
+fun WorkScheduleViewTable(schedule: WorkScheduleViewDto, currentUser: User?) {
     val horizontal = rememberScrollState()
     val vertical = rememberScrollState()
     Column(
