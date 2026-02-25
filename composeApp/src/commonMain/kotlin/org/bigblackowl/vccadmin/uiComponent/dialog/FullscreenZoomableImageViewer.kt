@@ -18,6 +18,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
+import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
+import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
 
@@ -46,6 +48,7 @@ fun FullscreenZoomableImageViewer(
                 model = model,
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(10.dp)
                     .zoomable(zoomState),
             )
 
@@ -65,6 +68,12 @@ fun FullscreenZoomableImageViewer(
 
 @Preview
 @Composable
-private fun FullscreenZoomableImageViewerPreview() {
+private fun FullscreenZoomableImageViewerPreviewDark() = PreviewDarkMaterialTheme {
+    FullscreenZoomableImageViewer(model = "", onClose = {})
+}
+
+@Preview
+@Composable
+private fun FullscreenZoomableImageViewerPreviewLight() = PreviewLightMaterialTheme {
     FullscreenZoomableImageViewer(model = "", onClose = {})
 }
