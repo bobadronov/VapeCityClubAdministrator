@@ -85,6 +85,9 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.openai.client)
 
+            implementation("ua.wwind.table-kmp:table-core:1.7.13")
+            implementation("com.github.skydoves:colorpicker-compose:1.1.3")
+
         }
 
         commonTest.dependencies {
