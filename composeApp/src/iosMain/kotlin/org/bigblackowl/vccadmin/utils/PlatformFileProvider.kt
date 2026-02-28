@@ -16,7 +16,7 @@ import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import org.jetbrains.compose.resources.getString
 import platform.Foundation.*

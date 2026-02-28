@@ -63,7 +63,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import org.bigblackowl.vccadmin.BuildConfig
 import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon

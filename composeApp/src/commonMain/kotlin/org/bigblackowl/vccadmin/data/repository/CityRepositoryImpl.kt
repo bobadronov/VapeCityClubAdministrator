@@ -13,7 +13,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bigblackowl.vccadmin.data.entity.City
 import org.bigblackowl.vccadmin.domain.repository.CityRepository
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.failed_retrieve_city

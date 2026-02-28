@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 
 @Composable
 fun ButtonRowContainer(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {

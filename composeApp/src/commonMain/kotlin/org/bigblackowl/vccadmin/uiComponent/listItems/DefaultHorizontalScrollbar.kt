@@ -1,7 +1,8 @@
 package org.bigblackowl.vccadmin.uiComponent.listItems
 
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -16,7 +17,7 @@ import io.github.oikvpqya.compose.fastscroller.TrackStyle
 import io.github.oikvpqya.compose.fastscroller.rememberScrollbarAdapter
 
 @Composable
-fun DefaultHorizontalScrollbar(scrollState: ScrollState) {
+fun DefaultHorizontalScrollbar(scrollState: LazyGridState) {
     if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
 
     HorizontalScrollbar(
@@ -32,11 +33,36 @@ fun DefaultHorizontalScrollbar(scrollState: ScrollState) {
             ),
             trackStyle = TrackStyle(
                 shape = RectangleShape,
-                unhoverColor = Color.Companion.Transparent,
-                hoverColor = Color.Companion.Transparent,
+                unhoverColor = Color.Transparent,
+                hoverColor = Color.Transparent,
             ),
         ),
-        modifier = Modifier.Companion.fillMaxHeight(),
+        modifier = Modifier.fillMaxWidth(),
+        enablePressToScroll = true,
+    )
+}
+@Composable
+fun DefaultHorizontalScrollbar(scrollState: ScrollState, modifier: Modifier= Modifier) {
+    if (!scrollState.canScrollForward && !scrollState.canScrollBackward) return
+
+    HorizontalScrollbar(
+        adapter = rememberScrollbarAdapter(scrollState = scrollState),
+        style = ScrollbarStyle(
+            minimalHeight = 16.dp,
+            thickness = 8.dp,
+            hoverDurationMillis = 300,
+            thumbStyle = ThumbStyle(
+                shape = RoundedCornerShape(4.dp),
+                unhoverColor = MaterialTheme.colorScheme.secondary,
+                hoverColor = MaterialTheme.colorScheme.primary,
+            ),
+            trackStyle = TrackStyle(
+                shape = RectangleShape,
+                unhoverColor = Color.Transparent,
+                hoverColor = Color.Transparent,
+            ),
+        ),
+        modifier = modifier,
         enablePressToScroll = true,
     )
 }

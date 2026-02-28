@@ -20,6 +20,7 @@ data class User(
     val email: String,
     val phone: String,
     val role: UserRole,
+    @SerialName("schedule_color") val scheduleColor: Long = 4280307852,
     @SerialName("created_at") val createdAt: Long,
     @SerialName("last_modified") val lastModified: Long,
     @SerialName("last_modified_user_id") val lastModifiedUserId: String,

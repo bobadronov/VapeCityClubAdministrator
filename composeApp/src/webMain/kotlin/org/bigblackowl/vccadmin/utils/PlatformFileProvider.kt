@@ -7,7 +7,7 @@ import io.github.aakira.napier.Napier
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.download
 import kotlinx.browser.window
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import org.jetbrains.compose.resources.getString
 import org.khronos.webgl.Uint8Array

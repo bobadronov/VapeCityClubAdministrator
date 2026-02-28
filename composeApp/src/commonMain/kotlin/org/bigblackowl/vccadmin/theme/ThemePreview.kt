@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.theme.locals.LocalShopStatusColors
 import org.bigblackowl.vccadmin.theme.locals.LocalUserRoleColors
 import org.bigblackowl.vccadmin.theme.locals.shopStatusColors

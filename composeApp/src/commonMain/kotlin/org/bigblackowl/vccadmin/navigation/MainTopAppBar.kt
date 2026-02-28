@@ -62,7 +62,7 @@ import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.domain.repository.AuthRepository
 import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.ota.OtaUiComponent
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.theme.locals.LocalThemeMode

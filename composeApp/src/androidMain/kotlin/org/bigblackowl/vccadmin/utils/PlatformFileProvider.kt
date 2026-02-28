@@ -22,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.bigblackowl.vccadmin.BuildConfig
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.ui.fileGenerator.GeneratedFile
 import org.jetbrains.compose.resources.getString
 import org.koin.java.KoinJavaComponent.inject

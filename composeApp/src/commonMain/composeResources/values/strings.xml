@@ -335,7 +335,14 @@
     <string name="select_day">Виберіть день</string>
     <string name="select_month">Виберіть місяць</string>
     <string name="selected_day">Вибрано день</string>
-
+    <!-- Days of week (full) -->
+    <string name="monday">Понеділок</string>
+    <string name="tuesday">Вівторок</string>
+    <string name="wednesday">Середа</string>
+    <string name="thursday">Четвер</string>
+    <string name="friday">Пʼятниця</string>
+    <string name="saturday">Субота</string>
+    <string name="sunday">Неділя</string>
     <!-- ========================================================= -->
     <!-- Tray -->
     <!-- ========================================================= -->

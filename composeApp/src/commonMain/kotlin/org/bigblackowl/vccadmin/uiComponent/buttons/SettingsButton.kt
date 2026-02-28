@@ -21,10 +21,10 @@ fun SettingsButton(
     title: String = stringResource(Res.string.settings),
     enabled: Boolean = true,
     showLabel: Boolean = isWideScreen(),
-    navigate: () -> Unit,
+    onSettingsClicked: () -> Unit,
 ) {
     OutlinedButton(
-        onClick = navigate,
+        onClick = onSettingsClicked,
         modifier = modifier,
         enabled = enabled,
     ) {

@@ -1,4 +1,4 @@
-package org.bigblackowl.vccadmin.resourses
+package org.bigblackowl.vccadmin.theme
 
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.unit.dp
@@ -20,7 +20,7 @@ object DefaultValues {
         @OptIn(ExperimentalTime::class)
         val now = Clock.System.now().toEpochMilliseconds()
         val date = Clock.System.now()
-            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .toLocalDateTime(TimeZone.Companion.currentSystemDefault())
             .date.toString().replace("-", "_")
     }
 
@@ -31,16 +31,16 @@ object DefaultValues {
     object Size {
         val iconSize = 25.dp
         val gridItemMinSize = 350.dp
-        val textTitleAutoSize = TextAutoSize.StepBased(
+        val textTitleAutoSize = TextAutoSize.Companion.StepBased(
             minFontSize = 19.sp, maxFontSize = 24.sp
         )
-        val textBodyAutoSize = TextAutoSize.StepBased(
+        val textBodyAutoSize = TextAutoSize.Companion.StepBased(
             minFontSize = 14.sp, maxFontSize = 17.sp
         )
-        val textHelperAutoSize = TextAutoSize.StepBased(
+        val textHelperAutoSize = TextAutoSize.Companion.StepBased(
             minFontSize = 11.sp, maxFontSize = 14.sp
         )
-        val textSmallAutoSize = TextAutoSize.StepBased(
+        val textSmallAutoSize = TextAutoSize.Companion.StepBased(
             minFontSize = 8.sp, maxFontSize = 11.sp
         )
     }

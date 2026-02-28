@@ -24,7 +24,7 @@ import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
 import org.bigblackowl.vccadmin.domain.repository.CityRepository
 import org.bigblackowl.vccadmin.domain.repository.ShopRepository
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.error_delete_shop

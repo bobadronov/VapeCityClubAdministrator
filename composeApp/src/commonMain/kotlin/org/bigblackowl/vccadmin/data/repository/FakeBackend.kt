@@ -192,7 +192,8 @@ object FakeBackend {
             role = UserRole.ADMIN,
             createdAt = baseCreatedAt,
             lastModified = nowMs - 10_000L,
-            lastModifiedUserId = adminId
+            lastModifiedUserId = adminId,
+            scheduleColor = 0
         )
 
         // Декілька додаткових користувачів
@@ -212,7 +213,9 @@ object FakeBackend {
                 role = if (idx % 2 == 0) UserRole.ADMIN else UserRole.USER,
                 createdAt = baseCreatedAt + (idx + 1) * 7L * 24 * 60 * 60 * 1000,
                 lastModified = nowMs - (idx + 1) * 3_600_000L,
-                lastModifiedUserId = adminId
+                lastModifiedUserId = adminId,
+                scheduleColor = 0
+
             )
         }
 

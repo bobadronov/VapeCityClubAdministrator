@@ -12,7 +12,7 @@ import org.bigblackowl.vccadmin.data.entity.SlideSettings
 import org.bigblackowl.vccadmin.data.entity.SupabaseSlide
 import org.bigblackowl.vccadmin.data.entity.TransitionEffect
 import org.bigblackowl.vccadmin.domain.repository.SlideRepository
-import org.bigblackowl.vccadmin.resourses.DefaultValues
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.jetbrains.compose.resources.getString
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.positions_slides_mismatch

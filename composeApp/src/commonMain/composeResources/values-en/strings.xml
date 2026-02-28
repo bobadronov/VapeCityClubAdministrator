@@ -336,7 +336,14 @@
     <string name="select_day">Select day</string>
     <string name="select_month">Select month</string>
     <string name="selected_day">Day selected</string>
-
+    <!-- Days of week (full) -->
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
     <!-- ========================================================= -->
     <!-- Tray -->
     <!-- ========================================================= -->
