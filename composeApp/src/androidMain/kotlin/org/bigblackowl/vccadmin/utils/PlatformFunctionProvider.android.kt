@@ -3,9 +3,12 @@
 package org.bigblackowl.vccadmin.utils
 
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.toClipEntry
 import coil3.ImageLoader
 import coil3.disk.DiskCache
 import kotlinx.coroutines.Dispatchers
@@ -62,5 +65,23 @@ actual object PlatformFunctionProvider : KoinComponent {
         var sum = 0L
         walkTopDown().forEach { f -> if (f.isFile) sum += f.length() }
         return sum
+    }
+
+    // android
+    actual suspend fun Clipboard.setPlainText(text: String) {
+        val clipData = ClipData.newPlainText("vcc", text)
+        // IMPORTANT: call the member function, not the extension again
+        this.setClipEntry(clipData.toClipEntry())
+    }
+
+    actual suspend fun Clipboard.getPlainText(): String? {
+        val entry = this.getClipEntry() ?: return null
+        val clipData = entry.clipData
+        if (clipData.itemCount <= 0) return null
+
+        // Prefer coerced text (handles text/plain, text/html, etc.)
+        val item = clipData.getItemAt(0)
+        return item.coerceToText(context)?.toString()
+            ?: item.text?.toString()
     }
 }

@@ -2,6 +2,7 @@
 
 package org.bigblackowl.vccadmin.utils
 
+import androidx.compose.ui.platform.Clipboard
 import io.github.aakira.napier.Napier
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
@@ -13,18 +14,23 @@ import kotlin.js.Promise
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(c) => c.keys()")
 private external fun cachesKeys(caches: JsAny): Promise<JsAny?>
+
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(c, k) => c.delete(k)")
 private external fun cachesDelete(caches: JsAny, key: String): Promise<JsAny?>
+
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(arr) => arr.length")
 private external fun jsLength(arr: JsAny): Int
+
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(arr, i) => arr[i]")
 private external fun jsGetString(arr: JsAny, i: Int): String?
+
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("() => navigator.storage && navigator.storage.estimate ? navigator.storage.estimate() : null")
 private external fun storageEstimateOrNull(): Promise<JsAny?>?
+
 @OptIn(ExperimentalWasmJsInterop::class)
 @JsFun("(o) => o && (o.usage ?? -1)")
 private external fun estimateUsage(o: JsAny): Double
@@ -61,6 +67,7 @@ actual object PlatformFunctionProvider {
             }
         }
     }
+
     fun installReloadBlocker() {
         window.addEventListener("keydown", { e ->
             val ke = e as KeyboardEvent
@@ -71,5 +78,24 @@ actual object PlatformFunctionProvider {
                 ke.stopPropagation()
             }
         }, true) // capture=true — краще перехоплює раніше
+    }
+    @OptIn(ExperimentalWasmJsInterop::class)
+    actual suspend fun Clipboard.setPlainText(text: String) {
+        try {
+            val clip = window.navigator.clipboard
+            clip.writeText(text).await()
+        } catch (t: Throwable) {
+            Napier.w(t) { "Clipboard writeText failed (permission/insecure context/user gesture?)" }
+        }
+    }
+    @OptIn(ExperimentalWasmJsInterop::class)
+    actual suspend fun Clipboard.getPlainText(): String? {
+        return try {
+            val clip = window.navigator.clipboard
+            clip.readText().await()
+        } catch (t: Throwable) {
+            Napier.w(t) { "Clipboard readText failed (permission/insecure context/user gesture?)" }
+            null
+        }
     }
 }

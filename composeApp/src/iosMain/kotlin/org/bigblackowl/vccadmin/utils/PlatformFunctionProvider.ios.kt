@@ -2,8 +2,11 @@
 
 package org.bigblackowl.vccadmin.utils
 
+import androidx.compose.ui.platform.Clipboard
 import coil3.ImageLoader
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
@@ -17,12 +20,11 @@ import platform.Foundation.NSURL
 import platform.Foundation.stringByAppendingPathComponent
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationOpenSettingsURLString
+import platform.UIKit.UIPasteboard
 
 actual object PlatformFunctionProvider : KoinComponent {
-
     private val cacheDirPath: String get() = get(named("imageCacheDir"))
     private val imageLoader: ImageLoader get() = get()
-
     actual fun openNetwork() {
         val app = UIApplication.sharedApplication
         // ✅ Safe, App Store friendly: відкриває налаштування саме твого застосунку.
@@ -32,9 +34,7 @@ actual object PlatformFunctionProvider : KoinComponent {
             return
         }
     }
-
     actual suspend fun getCacheSize(): Long = nsDirectorySizeBytes(cacheDirPath)
-
     @OptIn(ExperimentalForeignApi::class)
     actual fun clearCache() {
         imageLoader.memoryCache?.clear()
@@ -48,7 +48,6 @@ actual object PlatformFunctionProvider : KoinComponent {
             error = null
         )
     }
-
     @OptIn(ExperimentalForeignApi::class)
     private fun nsDirectorySizeBytes(path: String): Long {
         val fm = NSFileManager.defaultManager
@@ -66,5 +65,18 @@ actual object PlatformFunctionProvider : KoinComponent {
             }
         }
         return total
+    }
+
+    actual suspend fun Clipboard.setPlainText(text: String) {
+        // UIPasteboard бажано чіпати на Main
+        withContext(Dispatchers.Main) {
+            UIPasteboard.generalPasteboard.string = text
+        }
+    }
+
+    actual suspend fun Clipboard.getPlainText(): String? {
+        return withContext(Dispatchers.Main) {
+            UIPasteboard.generalPasteboard.string
+        }
     }
 }
