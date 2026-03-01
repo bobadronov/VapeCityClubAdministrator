@@ -1,4 +1,4 @@
-```markdown
+
 # VCC Administrator
 
 Кросплатформенний адміністратор VCC, розроблений на **Kotlin Multiplatform** + **Compose Multiplatform**.
@@ -12,7 +12,6 @@
 ```bash
 ./gradlew :androidApp:assembleDebug
 ```
-APK: `androidApp/build/outputs/apk/debug/androidApp-debug.apk`
 
 ### Desktop
 ```bash
