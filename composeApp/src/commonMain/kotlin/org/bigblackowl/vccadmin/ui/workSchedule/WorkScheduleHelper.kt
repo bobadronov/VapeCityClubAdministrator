@@ -22,11 +22,11 @@ class WorkScheduleHelper(
     private val localRepository: LocalRepository,
     private val workScheduleRepository: WorkScheduleRepository,
     private val dayNameProvider: suspend (LocalDate) -> String,
-    private val weeksBack: Int = 1,
-    private val weeksForward: Int = 2,
-    private val zoomMin: Float = 0.60f,
-    private val zoomMax: Float = 1.30f,
 ) {
+    private val weeksBack: Int = 1
+    private val weeksForward: Int = 2
+    private val zoomMin: Float = 0.60f
+    private val zoomMax: Float = 1.30f
     private val daysInWeek = 7
     private val windowDays = (weeksBack + 1 + weeksForward) * daysInWeek // 28
 

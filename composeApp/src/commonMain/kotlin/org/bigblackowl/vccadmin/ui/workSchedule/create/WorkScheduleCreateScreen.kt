@@ -78,7 +78,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
@@ -98,6 +97,10 @@ import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.theme.DefaultValues
+import org.bigblackowl.vccadmin.ui.workSchedule.COL_SHOP
+import org.bigblackowl.vccadmin.ui.workSchedule.WorkRow
+import org.bigblackowl.vccadmin.ui.workSchedule.colDay
+import org.bigblackowl.vccadmin.ui.workSchedule.scaled
 import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.SettingsButton
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
@@ -109,6 +112,7 @@ import org.bigblackowl.vccadmin.uiComponent.text.ScaledText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.PlatformFunctionProvider.getPlainText
 import org.bigblackowl.vccadmin.utils.PlatformFunctionProvider.setPlainText
+import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.koin.compose.koinInject
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
@@ -186,8 +190,8 @@ private fun WorkScheduleCreateContent(
     var settingWindowVisible by remember { mutableStateOf(false) }
 
     // cols = first pinned "Shop" + days
-    val cols: ImmutableList<WorkCol> = remember(uiState.days) {
-        (listOf(WorkCol.Shop) + uiState.days.map { WorkCol.Day(it) }).toPersistentList()
+    val cols: ImmutableList<String> = remember(uiState.days) {
+        (listOf(COL_SHOP) + uiState.days.map { colDay(it) }).toPersistentList()
     }
 
     // --------- OPT: rect cache is NOT state (no snapshot invalidations) ----------
@@ -314,10 +318,10 @@ private fun WorkScheduleCreateContent(
 
     // ✅ columns depend ONLY on structure (days/scale/rowH)
     val columns = remember(uiState.days, tableScale, rowH) {
-        tableColumns<WorkRow, WorkCol, WorkTableData> {
+        tableColumns<WorkRow, String, WorkTableData> {
 
             // 1) Shop column
-            column(WorkCol.Shop, valueOf = { row ->
+            column(COL_SHOP, valueOf = { row ->
                 when (row) {
                     is WorkRow.CityHeader -> row.cityName
                     is WorkRow.Shop -> row.shopId
@@ -374,8 +378,7 @@ private fun WorkScheduleCreateContent(
 
             // 2) Day columns
             uiState.days.forEach { day ->
-                val key = WorkCol.Day(day)
-                column(key, valueOf = { row ->
+                column(colDay(day), valueOf = { row ->
                     when (row) {
                         is WorkRow.CityHeader -> ""
                         is WorkRow.Shop -> assignmentsState.value[day]?.get(row.shopId).orEmpty()
@@ -463,7 +466,7 @@ private fun WorkScheduleCreateContent(
             }
         }
     }
-
+    val isWide = isWideScreen()
     val state = rememberTableState(
         columns = cols,
         settings = TableSettings(
@@ -473,7 +476,7 @@ private fun WorkScheduleCreateContent(
             showRowDividers = true,
             stripedRows = true,
             selectionMode = SelectionMode.None,
-            pinnedColumnsCount = 1,
+            pinnedColumnsCount = if (isWide) 1 else 0 ,
             pinnedColumnsSide = PinnedSide.Left,
             rowHeightMode = RowHeightMode.Dynamic
         ),
@@ -585,26 +588,6 @@ private fun WorkScheduleCreateContent(
             onDismiss = { settingWindowVisible = false }
         )
     }
-}
-
-/* --------------------------------- Clipboard --------------------------------- */
-private fun Dp.scaled(k: Float): Dp = (value * k).dp
-
-private data class CopiedUser(val userId: String, val userName: String)
-
-private const val CLIP_PREFIX = "vcc_user:"
-private fun encodeClipboard(u: CopiedUser): String = "$CLIP_PREFIX${u.userId}|${u.userName}"
-
-private fun decodeClipboard(text: String?): CopiedUser? {
-    val t = text?.trim().orEmpty()
-    if (!t.startsWith(CLIP_PREFIX)) return null
-    val payload = t.removePrefix(CLIP_PREFIX)
-    val sep = payload.indexOf('|')
-    if (sep <= 0) return null
-    val id = payload.substring(0, sep).trim()
-    val name = payload.substring(sep + 1).trim()
-    if (id.isBlank()) return null
-    return CopiedUser(id, name)
 }
 
 /* --------------------------------- Settings Dialog --------------------------------- */
@@ -957,18 +940,26 @@ private fun WorkScheduleHeader(
     }
 }
 
+/* --------------------------------- Clipboard --------------------------------- */
+
+private data class CopiedUser(val userId: String, val userName: String)
+
+private const val CLIP_PREFIX = "vcc_user:"
+private fun encodeClipboard(u: CopiedUser): String = "$CLIP_PREFIX${u.userId}|${u.userName}"
+
+private fun decodeClipboard(text: String?): CopiedUser? {
+    val t = text?.trim().orEmpty()
+    if (!t.startsWith(CLIP_PREFIX)) return null
+    val payload = t.removePrefix(CLIP_PREFIX)
+    val sep = payload.indexOf('|')
+    if (sep <= 0) return null
+    val id = payload.substring(0, sep).trim()
+    val name = payload.substring(sep + 1).trim()
+    if (id.isBlank()) return null
+    return CopiedUser(id, name)
+}
+
 /* --------------------------------- Private models --------------------------------- */
-
-private sealed interface WorkCol {
-    data object Shop : WorkCol
-    data class Day(val date: LocalDate) : WorkCol
-}
-
-private sealed interface WorkRow {
-    data class CityHeader(val cityName: String) : WorkRow
-    data class Shop(val shopId: String) : WorkRow
-}
-
 private data class CellKey(val day: LocalDate, val shopId: String)
 
 private data class DragPayload(

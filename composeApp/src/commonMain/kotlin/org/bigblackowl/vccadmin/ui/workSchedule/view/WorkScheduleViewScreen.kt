@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -42,12 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -57,11 +52,16 @@ import kotlinx.datetime.toLocalDateTime
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
 import org.bigblackowl.vccadmin.theme.DefaultValues
+import org.bigblackowl.vccadmin.ui.workSchedule.COL_SHOP
+import org.bigblackowl.vccadmin.ui.workSchedule.WorkRow
+import org.bigblackowl.vccadmin.ui.workSchedule.colDay
+import org.bigblackowl.vccadmin.ui.workSchedule.scaled
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.ScaledText
+import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.koin.compose.koinInject
 import ua.wwind.table.ExperimentalTableApi
 import ua.wwind.table.Table
@@ -152,8 +152,8 @@ private fun WorkScheduleViewContent(
         out
     }
 
-    val cols: ImmutableList<WorkCol> = remember(uiState.days) {
-        (listOf(WorkCol.Shop) + uiState.days.map { WorkCol.Day(it) }).toPersistentList()
+    val cols: ImmutableList<String> = remember(uiState.days) {
+        (listOf(COL_SHOP) + uiState.days.map { colDay(it) }).toPersistentList()
     }
 
     // -------- OPT: стабільні refs на мінливі дані (без rebuild columns) --------
@@ -166,9 +166,9 @@ private fun WorkScheduleViewContent(
 
     // ✅ columns залежать тільки від структури (days + scale + rowH)
     val columns = remember(uiState.days, tableScale, rowH) {
-        tableColumns<WorkRow, WorkCol, WorkTableData> {
+        tableColumns<WorkRow, String, WorkTableData> {
 
-            column(WorkCol.Shop, valueOf = { row ->
+            column(COL_SHOP, valueOf = { row ->
                 when (row) {
                     is WorkRow.CityHeader -> row.cityName
                     is WorkRow.Shop -> row.shopId
@@ -224,8 +224,7 @@ private fun WorkScheduleViewContent(
             }
 
             uiState.days.forEach { day ->
-                val key = WorkCol.Day(day)
-                column(key, valueOf = { row ->
+                column(colDay(day), valueOf = { row ->
                     when (row) {
                         is WorkRow.CityHeader -> ""
                         is WorkRow.Shop -> assignmentsState.value[day]?.get(row.shopId).orEmpty()
@@ -278,6 +277,8 @@ private fun WorkScheduleViewContent(
         }
     }
 
+    val isWide = isWideScreen()
+
     val state = rememberTableState(
         columns = cols,
         settings = TableSettings(
@@ -287,7 +288,7 @@ private fun WorkScheduleViewContent(
             showRowDividers = true,
             stripedRows = true,
             selectionMode = SelectionMode.None,
-            pinnedColumnsCount = 1,
+            pinnedColumnsCount = if (isWide) 1 else 0 ,
             pinnedColumnsSide = PinnedSide.Left,
             rowHeightMode = RowHeightMode.Dynamic
         ),
@@ -301,7 +302,6 @@ private fun WorkScheduleViewContent(
         Column {
             WorkScheduleViewHeader(
                 uiState = uiState,
-                scale = tableScale,
                 onIntent = onIntent,
                 periodLabel = uiState.periodLabel,
                 onPrevWeekClicked = { onIntent(WorkScheduleViewIntent.PrevWeek) },
@@ -360,7 +360,6 @@ private fun WorkScheduleViewContent(
 @Composable
 private fun WorkScheduleViewHeader(
     uiState: WorkScheduleViewUiState,
-    scale: Float,
     onIntent: (WorkScheduleViewIntent) -> Unit,
     periodLabel: String,
     onPrevWeekClicked: () -> Unit,
@@ -387,14 +386,12 @@ private fun WorkScheduleViewHeader(
             ) {
                 TextField(
                     modifier = Modifier
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
-                        .widthIn(min = 220.dp.scaled(scale), max = 360.dp.scaled(scale)),
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
                     value = selectedUser?.fullName ?: "Юзер не вибраний",
                     onValueChange = {},
                     readOnly = true,
-                    label = { ScaledText("Юзер", scale) },
+                    label = { BodyText("Юзер") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    textStyle = MaterialTheme.typography.bodyMedium.scaled(scale)
                 )
 
                 ExposedDropdownMenu(
@@ -403,7 +400,7 @@ private fun WorkScheduleViewHeader(
                 ) {
                     // (опційно) перший пункт: скинути підсвітку
                     DropdownMenuItem(
-                        text = { ScaledText("— Не підсвічувати —", scale) },
+                        text = { BodyText("— Не підсвічувати —") },
                         onClick = {
                             expanded = false
                             onIntent(WorkScheduleViewIntent.SelectUser(null))
@@ -412,7 +409,7 @@ private fun WorkScheduleViewHeader(
 
                     uiState.users.forEach { u ->
                         DropdownMenuItem(
-                            text = { ScaledText(u.fullName, scale) },
+                            text = { BodyText(u.fullName) },
                             onClick = {
                                 expanded = false
                                 onIntent(WorkScheduleViewIntent.SelectUser(u.id))
@@ -480,30 +477,6 @@ private fun ReadOnlyUserCell(
     }
 }
 
-/* --------------------------------- Helpers --------------------------------- */
-
-private fun Dp.scaled(k: Float): Dp = (value * k).dp
-
-fun TextStyle.scaled(k: Float): TextStyle {
-    fun TextUnit.scale(): TextUnit = (this.value * k).sp
-    val fs = this.fontSize
-    val lh = this.lineHeight
-    return this.copy(
-        fontSize = if (fs != TextUnit.Unspecified) fs.scale() else fs,
-        lineHeight = if (lh != TextUnit.Unspecified) lh.scale() else lh,
-    )
-}
-
 /* --------------------------------- Private models --------------------------------- */
-
-private sealed interface WorkCol {
-    data object Shop : WorkCol
-    data class Day(val date: LocalDate) : WorkCol
-}
-
-private sealed interface WorkRow {
-    data class CityHeader(val cityName: String) : WorkRow
-    data class Shop(val shopId: String) : WorkRow
-}
 
 private object WorkTableData
