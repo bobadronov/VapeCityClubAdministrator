@@ -1,29 +1,29 @@
 {
-  "version": "1.0.819",
-  "published_at": 1771964597000,
-  "release_notes": "- v1.0.819 (0b52cc5)\n- Add GitHub Actions workflow for deploying wasmJs (feb50f3)\n- add schedule screen (7f0e6d8)\n- remove unused element (bd857cf)\n- Merge remote-tracking branch 'origin/master' (0a20109)\n- UX/UI optimization (3b57ba8)\n- chore(ota): update manifest for v1.0.818 (829fe19)",
+  "version": "1.0.900",
+  "published_at": 1772360562000,
+  "release_notes": "- v1.0.9 (ecf0127)\n- add color picker and table import (0ab15aa)\n- move DefaultValues.kt into theme directory (2d815e0)\n- added function for clipboard (6b71362)\n- add color picker and table import (1377a96)\n- added screen for view work schedule (9720e5d)\n- added create schedule screen (33fb55c)\n- added function for save/get local schedule (a8fd9bb)\n- replace route (60e12b5)\n- added JSON import (02b7076)\n- add fullAddress value for Shop (30e1775)\n- rename ScrollBar (cd47226)\n- UX/UI optimization (5b7054f)\n- cleanup code (969bea7)\n- cleanup code (ba6a981)\n- rename screen (6aeaa23)\n- add reorderable (80ed591)\n- UX/UI optimization (9f73c4c)\n- UX/UI optimization (a1bbf8b)\n- UX/UI optimization (d6314d8)\n- fix open download window on web (36c1bbe)\n- UX/UI optimization (0a169e2)\n- UX/UI optimization (c306f62)\n- change font size (7ab4126)\n- Merge remote-tracking branch 'origin/master' (265a387)\n- delete unused files (6463f97)\n- Update pages.yml (1df8694)\n- Update publicPath.js (678c1df)",
   "windows": {
-    "name": "VCC.Administrator-1.0.819.msi",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.819/VCC.Administrator-1.0.819.msi",
-    "size": 127001033,
-    "sha256": "8b5fd7602fda65804aa9dde93872aafbfdec126171f621dee56ab2677f33e2f9"
+    "name": "VCC.Administrator-1.0.900.msi",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.9/VCC.Administrator-1.0.900.msi",
+    "size": 128783876,
+    "sha256": "aec5ad6fd0c07253c4108291692c8b930187355f1fd1f097795756e95dfb342f"
   },
   "macos": {
-    "name": "VCC.Administrator-1.0.819.dmg",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.819/VCC.Administrator-1.0.819.dmg",
-    "size": 138384835,
-    "sha256": "d809b5edf90b6adacedc2d43a8e28c4da3e4779c577477206f04b3c29aa5fe82"
+    "name": "VCC.Administrator-1.0.900.dmg",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.9/VCC.Administrator-1.0.900.dmg",
+    "size": 140150753,
+    "sha256": "3f069db407545571b735f84d73e8f95d1dad334bbf5fedca0aeb48e43e1ee5be"
   },
   "linux": {
-    "name": "vcc-administrator_1.0.819_amd64.deb",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.819/vcc-administrator_1.0.819_amd64.deb",
-    "size": 115512006,
-    "sha256": "713f5ea566bb3eeb8c66a295e26f101a51487e13437635891b85a39f40c0cfce"
+    "name": "vcc-administrator_1.0.900_amd64.deb",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.9/vcc-administrator_1.0.900_amd64.deb",
+    "size": 117295950,
+    "sha256": "be073a15e079c0d9afe88b7206c9be78b39d4170e237160c7a1dbcdf03e0de67"
   },
   "android": {
-    "name": "VCC.Administrator-1.0.819.apk",
-    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.819/VCC.Administrator-1.0.819.apk",
-    "size": 7430653,
-    "sha256": "a583d023dd8862c62c856066407cc0d254052c8f9c2f4576500d1dccfa21e2ac"
+    "name": "VCC.Administrator-1.0.9.apk",
+    "url": "https://github.com/bobadronov/VapeCityClubAdministrator/releases/download/v1.0.9/VCC.Administrator-1.0.9.apk",
+    "size": 7758693,
+    "sha256": "2b770c41bf0ef76fc9bf44cb264155dc442df1ee3e592da5a6259b661c7ea29e"
   }
 }
