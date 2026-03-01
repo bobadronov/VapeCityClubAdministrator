@@ -42,8 +42,6 @@ Hot-reload:
 - `composeApp/` — спільний код (`commonMain` + платформоспецифічні папки)  
 - `androidApp/`, `desktopApp/`, `webApp/` — платформенні модулі  
 - `iosApp/` — Xcode-проєкт
-
 ---
 
 Made with ❤️ Kotlin Multiplatform & Jetpack Compose Multiplatform
-```
