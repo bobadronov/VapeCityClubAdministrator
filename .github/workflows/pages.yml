@@ -47,6 +47,9 @@ jobs:
           chmod +x gradlew
           sed -i 's/\r$//' gradlew
 
+      - name: Upgrade Yarn Lock
+        run: ./gradlew kotlinWasmUpgradeYarnLock
+
       - name: Build wasmJs distribution
         run: ./gradlew :composeApp:wasmJsBrowserDistribution
 
