@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Maximize
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,11 +19,10 @@ import com.kdroid.composetray.tray.api.Tray
 import com.kdroid.composetray.utils.SingleInstanceManager
 import io.github.vinceglb.filekit.FileKit
 import org.bigblackowl.vccadmin.di.coreModules
-import org.bigblackowl.vccadmin.domain.repository.LocalRepository
+import org.bigblackowl.vccadmin.utils.PlatformFunctionProvider
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinApplication
-import org.koin.compose.koinInject
 import org.koin.dsl.koinConfiguration
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.exit
@@ -40,12 +40,17 @@ fun main() =
         KoinApplication(
             configuration = koinConfiguration { modules(coreModules) }
         ) {
-            val localRepository: LocalRepository = koinInject()
 
             var awtWindowRef by remember { mutableStateOf<java.awt.Window?>(null) }
             var isWindowVisible by remember { mutableStateOf(true) }
 
-            var minimizeToTrayOnClose by remember { mutableStateOf(localRepository.getWindowClosableState()) }
+            var minimizeToTrayOnClose by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                PlatformFunctionProvider.windowClosableState.collect {
+                    minimizeToTrayOnClose = it
+                }
+            }
 
             // Allows triggering tray disposal from outside Tray scope
             var trayDisposer by remember { mutableStateOf<(() -> Unit)?>(null) }
@@ -105,8 +110,7 @@ fun main() =
                     label = stayOnlineLabel,
                     checked = minimizeToTrayOnClose,
                     onCheckedChange = {
-                        minimizeToTrayOnClose = it
-                        localRepository.setWindowClosable(it)
+                        PlatformFunctionProvider.changeWindowClosableState(it)
                     }
                 )
 

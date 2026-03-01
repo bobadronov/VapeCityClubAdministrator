@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +69,7 @@ import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.DeleteButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
+import org.bigblackowl.vccadmin.uiComponent.checkbox.DefaultCheckbox
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.FullscreenZoomableImageViewer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
@@ -365,7 +365,7 @@ private fun LazyItemScope.ShopCardSlideListItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Checkbox(
+                DefaultCheckbox(
                     checked = shop.code in list,
                     onCheckedChange = { onIntent(AddEditSlideIntent.OnShopToggled(shop.code)) }
                 )

@@ -149,9 +149,9 @@ fun MainTopAppBar(
         actions = {
             NetworkStatusIcon(isConnected)
             OtaUiComponent(snackbarHostState)
-            Crossfade(isLoginScreen) { isShowMenu ->
+            Crossfade(isLoginScreen) { isLoginScreen ->
 
-                if (isShowMenu) {
+                if (isLoginScreen) {
 
                     val themeItem = menuItems.first()
 
@@ -260,7 +260,7 @@ private fun AppMenu(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
                     ) { onDismiss() }
-                    .background(Color.Black.copy(.4f))
+                    .background(Color.Black.copy(.5f))
             )
 
             // 2) Меню (кліки всередині НЕ мають закривати через scrim)

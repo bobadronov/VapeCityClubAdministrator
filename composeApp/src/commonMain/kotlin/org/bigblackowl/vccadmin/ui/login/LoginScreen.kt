@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +67,7 @@ import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
+import org.bigblackowl.vccadmin.uiComponent.checkbox.DefaultCheckbox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
@@ -216,7 +216,7 @@ private fun LoginScreenContent(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
 
-                        Checkbox(
+                        DefaultCheckbox(
                             checked = autoLoginState,
                             onCheckedChange = {
                                 onAutoLoginChanged(it)

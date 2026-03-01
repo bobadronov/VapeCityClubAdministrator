@@ -1,6 +1,5 @@
 package org.bigblackowl.vccadmin.uiComponent.dialog
 
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,16 +9,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,9 +37,11 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
+import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.CancelButton
+import org.bigblackowl.vccadmin.uiComponent.checkbox.DefaultCheckbox
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
@@ -133,27 +135,27 @@ fun ShareShopDataDialog(
                         modifier = Modifier
                             .verticalScroll(scrollState)
                             .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        FieldCheckbox(
+                        SelectionField(
                             label = stringResource(Res.string.select_all),
                             checked = allSelected,
                             onCheckedChange = { newValue ->
                                 selectedFields = selectedFields.mapValues { newValue }
                             }
                         )
-                        Spacer(Modifier.height(8.dp))
-                        FieldCheckbox(
+                        Spacer(Modifier.height(2.dp))
+                        SelectionField(
                             "${stringResource(Res.string.address)}: м. ${shop.cityName}, вул. ${shop.street}, ${shop.houseNumber}",
                             selectedFields["address"]!!
                         ) { selectedFields = selectedFields + ("address" to it) }
-                        FieldCheckbox("${stringResource(Res.string.address_comment)}: ${shop.addressComment}", selectedFields["addressComment"]!!) {
+                        SelectionField("${stringResource(Res.string.address_comment)}: ${shop.addressComment}", selectedFields["addressComment"]!!) {
                             selectedFields = selectedFields + ("addressComment" to it)
                         }
-                        FieldCheckbox("${stringResource(Res.string.status)}: ${stringResource(shop.status.title)}", selectedFields["status"]!!) {
+                        SelectionField("${stringResource(Res.string.status)}: ${stringResource(shop.status.title)}", selectedFields["status"]!!) {
                             selectedFields = selectedFields + ("status" to it)
                         }
-                        FieldCheckbox(
+                        SelectionField(
                             "${stringResource(Res.string.phone_number)}: ${
                                 UkrainianPhoneVisualTransformation().filter(AnnotatedString(shop.phoneNumber)).text.text.replace(
                                     " ",
@@ -164,16 +166,16 @@ fun ShareShopDataDialog(
                         ) {
                             selectedFields = selectedFields + ("phoneNumber" to it)
                         }
-                        FieldCheckbox("${stringResource(Res.string.slide_code)}: ${shop.code}", selectedFields["code"]!!) {
+                        SelectionField("${stringResource(Res.string.slide_code)}: ${shop.code}", selectedFields["code"]!!) {
                             selectedFields = selectedFields + ("code" to it)
                         }
-                        FieldCheckbox("${stringResource(Res.string.status_comment)}: ${shop.statusComment}", selectedFields["statusComment"]!!) {
+                        SelectionField("${stringResource(Res.string.status_comment)}: ${shop.statusComment}", selectedFields["statusComment"]!!) {
                             selectedFields = selectedFields + ("statusComment" to it)
                         }
-                        FieldCheckbox("${stringResource(Res.string.internet_provider)}: ${shop.internetProvider}", selectedFields["internetProvider"]!!) {
+                        SelectionField("${stringResource(Res.string.internet_provider)}: ${shop.internetProvider}", selectedFields["internetProvider"]!!) {
                             selectedFields = selectedFields + ("internetProvider" to it)
                         }
-                        FieldCheckbox(
+                        SelectionField(
                             "${stringResource(Res.string.internet_provider_personal_account)}: ${
                                 if (shop.internetProviderPersonalAccount.isEmpty()) stringResource(Res.string.not_specified) else shop.internetProviderPersonalAccount.joinToString(
                                     ", "
@@ -183,22 +185,22 @@ fun ShareShopDataDialog(
                         ) {
                             selectedFields = selectedFields + ("internetProviderPersonalAccount" to it)
                         }
-                        FieldCheckbox(
+                        SelectionField(
                             "${stringResource(Res.string.internet_replenishment_day)}: ${shop.internetReplenishmentDay}",
                             selectedFields["internetReplenishmentDay"]!!
                         ) {
                             selectedFields = selectedFields + ("internetReplenishmentDay" to it)
                         }
-                        FieldCheckbox(
+                        SelectionField(
                             "${stringResource(Res.string.internet_replenishment_amount)}: ${shop.internetReplenishmentAmount}",
                             selectedFields["internetReplenishmentAmount"]!!
                         ) {
                             selectedFields = selectedFields + ("internetReplenishmentAmount" to it)
                         }
-                        FieldCheckbox("${stringResource(Res.string.remote_number)}: ${shop.remoteNumber}", selectedFields["remoteNumber"]!!) {
+                        SelectionField("${stringResource(Res.string.remote_number)}: ${shop.remoteNumber}", selectedFields["remoteNumber"]!!) {
                             selectedFields = selectedFields + ("remoteNumber" to it)
                         }
-                        FieldCheckbox(
+                        SelectionField(
                             "${stringResource(Res.string.camera_codes)}: ${
                                 if (shop.cameraCodes.isEmpty()) stringResource(Res.string.not_specified) else shop.cameraCodes.joinToString(
                                     ", "
@@ -208,10 +210,10 @@ fun ShareShopDataDialog(
                         ) {
                             selectedFields = selectedFields + ("cameraCodes" to it)
                         }
-                        FieldCheckbox(stringResource(Res.string.last_modified, shop.lastModified), selectedFields["lastModified"]!!) {
+                        SelectionField(stringResource(Res.string.last_modified, shop.lastModified), selectedFields["lastModified"]!!) {
                             selectedFields = selectedFields + ("lastModified" to it)
                         }
-                        FieldCheckbox(stringResource(Res.string.last_modified_by_user, shop.lastModifiedUser), selectedFields["lastModifiedUser"]!!) {
+                        SelectionField(stringResource(Res.string.last_modified_by_user, shop.lastModifiedUser), selectedFields["lastModifiedUser"]!!) {
                             selectedFields = selectedFields + ("lastModifiedUser" to it)
                         }
                     }
@@ -263,7 +265,7 @@ fun ShareShopDataDialog(
 }
 
 @Composable
-private fun FieldCheckbox(
+private fun SelectionField(
     label: String,
     checked: Boolean,
     modifier: Modifier = Modifier,
@@ -273,15 +275,15 @@ private fun FieldCheckbox(
         modifier = modifier.then(Modifier.fillMaxWidth()),
         onClick = {
             onCheckedChange(!checked)
-        }
+        },
+        shape = RoundedCornerShape(DefaultValues.Shape.defaultShape)
     ) {
         Row(
-            modifier = Modifier.padding(15.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Checkbox(checked = checked, onCheckedChange = onCheckedChange)
-            BodyText(label, modifier = Modifier.basicMarquee(), maxLines = 2)
+            DefaultCheckbox(checked = checked, onCheckedChange = onCheckedChange)
+            Text(label, modifier = Modifier.fillMaxWidth(), maxLines = 3)
         }
     }
 }

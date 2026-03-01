@@ -57,7 +57,6 @@ fun OnlineIcon(
             onLoading = { isLoading = true },
             onSuccess = {
                 isLoading = false
-                Napier.d { it.result.request.data.toString() }
             },
             onError = {
                 isLoading = false

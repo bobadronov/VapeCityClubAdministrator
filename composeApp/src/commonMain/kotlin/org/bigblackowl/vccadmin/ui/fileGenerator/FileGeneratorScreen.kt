@@ -50,7 +50,6 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -96,6 +95,7 @@ import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.OpenButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.ShareAllFilesButton
+import org.bigblackowl.vccadmin.uiComponent.checkbox.DefaultCheckbox
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
@@ -733,7 +733,7 @@ private fun SelectAllItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.rowItemPadding)
         ) {
-            Checkbox(
+            DefaultCheckbox(
                 checked = allSelected,
                 onCheckedChange = { isChecked ->
                     if (isChecked) onSelectAll() else onDeselectAll()
@@ -773,7 +773,7 @@ private fun CardListItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(DefaultValues.Padding.rowItemPadding)
         ) {
-            Checkbox(
+            DefaultCheckbox(
                 checked = checked,
                 onCheckedChange = { onShopToggled(shop.id, it) }
             )
@@ -840,7 +840,7 @@ private fun FileTypePicker(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(5.dp)
                         ) {
-                            Checkbox(
+                            DefaultCheckbox(
                                 checked = checked,
                                 onCheckedChange = {
                                     onFileTypeToggled(fileType.id, it)
