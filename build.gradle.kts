@@ -19,7 +19,7 @@ plugins {
 plugins.withType<YarnPlugin>().configureEach {
     extensions.configure<YarnRootExtension> {
         yarnLockAutoReplace = true
-        yarnLockMismatchReport = YarnLockMismatchReport.WARNING // або NONE
+        yarnLockMismatchReport = YarnLockMismatchReport.NONE // або NONE
         reportNewYarnLock = true
     }
 }
