@@ -1,11 +1,13 @@
 # Project exclude paths
+.env
 /.gradle/
 /build/
 /composeApp/build/
 /composeApp/build/classes/kotlin/jvm/main/
-.env
 /composeApp/release_desktop/
 /composeApp/src/commonMain/composeResources/files/update.json
 .idea/
 .kotlin/
-.gitignore
+# або якщо store у корені (часто так):
+!kotlin-js-store/
+!kotlin-js-store/**
