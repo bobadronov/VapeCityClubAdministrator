@@ -3,7 +3,7 @@
 #       git push --tags
 
 
-subpath                     = "0"
+subpath                     = "1"
 patch                       = "9"
 minor                       = "0"
 major                       = "1"
