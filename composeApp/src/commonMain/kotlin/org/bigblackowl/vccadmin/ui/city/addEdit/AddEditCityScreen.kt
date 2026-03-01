@@ -39,11 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -62,8 +64,8 @@ import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -96,15 +98,16 @@ fun AddEditCityScreen(
 
     DisposableEffect(Unit) { onDispose { addEditCityScreenViewModel.onIntent(AddEditCityScreenIntent.Clear) } }
 
-    val uiEvent by addEditCityScreenViewModel.uiEvent.collectAsStateWithLifecycle(null)
     val autocomplete by addEditCityScreenViewModel.cityAutocomplete.collectAsStateWithLifecycle()
 
     // Обробка одноразових подій (наприклад, помилок у Snackbar)
-    LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+    LaunchedEffect(Unit) {
+        addEditCityScreenViewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
-                is UIEvents.NavigateBack -> navigationViewModel.popBackStack()
+                is UIEvents.NavigateBack -> {
+                    navigationViewModel.popBackStack()
+                }
                 is UIEvents.ShowUnsavedChangesDialog -> showUnsavedDialog = true
                 else -> {}
             }
@@ -140,6 +143,7 @@ private fun AddEditCityScreenContent(
     autocomplete: CityAutocompleteUiState,
     onIntent: (AddEditCityScreenIntent) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
 
     val isAddMode = uiState.selectedCity == null
 
@@ -170,18 +174,36 @@ private fun AddEditCityScreenContent(
             }
 
             OutlinedButton(
-                onClick = { onIntent(AddEditCityScreenIntent.EditLogo) }, modifier = Modifier.fillMaxWidth(0.8f)
+                onClick = {
+                    onIntent(AddEditCityScreenIntent.EditLogo)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }, modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 BodyText(text = if (imageModel != null) stringResource(Res.string.change_logo) else stringResource(Res.string.select_logo))
             }
 
             CityAutocompleteField(
                 value = uiState.newCityName,
-                onValueChange = { onIntent(AddEditCityScreenIntent.EditName(it)) },
-                onSuggestionSelected = { onIntent(AddEditCityScreenIntent.CitySelected(it)) },
-                onHighlightNext = { onIntent(AddEditCityScreenIntent.HighlightNextCity) },
-                onHighlightPrev = { onIntent(AddEditCityScreenIntent.HighlightPrevCity) },
-                onSelectHighlighted = { onIntent(AddEditCityScreenIntent.SelectHighlightedCity) },
+                onValueChange = {
+                    onIntent(AddEditCityScreenIntent.EditName(it))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
+                onSuggestionSelected = {
+                    onIntent(AddEditCityScreenIntent.CitySelected(it))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
+                onHighlightNext = {
+                    onIntent(AddEditCityScreenIntent.HighlightNextCity)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
+                onHighlightPrev = {
+                    onIntent(AddEditCityScreenIntent.HighlightPrevCity)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
+                onSelectHighlighted = {
+                    onIntent(AddEditCityScreenIntent.SelectHighlightedCity)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
                 isLoading = autocomplete.isLoading,
                 suggestions = autocomplete.suggestions,
                 highlightedIndex = autocomplete.highlightedIndex,
@@ -196,21 +218,36 @@ private fun AddEditCityScreenContent(
 
         ButtonRowContainer {
             if (isWideScreen()) {
-                BackButton(modifier = Modifier.weight(1f)) { onIntent(AddEditCityScreenIntent.GoBack) }
+                BackButton(modifier = Modifier.weight(1f)) {
+                    onIntent(AddEditCityScreenIntent.GoBack)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             }
             if (isAddMode) {
                 AddButton(
                     enabled = uiState.newCityName.length >= 2, modifier = Modifier.weight(1f)
-                ) { onIntent(AddEditCityScreenIntent.Save) }
-                CancelButton(modifier = Modifier.weight(1f)) { onIntent(AddEditCityScreenIntent.GoBack) }
+                ) {
+                    onIntent(AddEditCityScreenIntent.Save)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
+                CancelButton(modifier = Modifier.weight(1f)) {
+                    onIntent(AddEditCityScreenIntent.GoBack)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             } else {
                 DeleteButton(
                     message = stringResource(Res.string.delete_confirmation_message, "${stringResource(Res.string.city).lowercase()}: ${uiState.selectedCity.name}"),
                     modifier = Modifier.weight(1f)
-                ) { onIntent(AddEditCityScreenIntent.DeleteCity(uiState.selectedCity)) }
+                ) {
+                    onIntent(AddEditCityScreenIntent.DeleteCity(uiState.selectedCity))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
                 SaveButton(
                     enabled = uiState.newCityName.length >= 2, modifier = Modifier.weight(1f)
-                ) { onIntent(AddEditCityScreenIntent.Save) }
+                ) {
+                    onIntent(AddEditCityScreenIntent.Save)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             }
         }
     }
@@ -327,10 +364,9 @@ private fun CityAutocompleteField(
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(10.dp)
-                                        ,
-                                        colors =  CardDefaults.cardColors().copy(containerColor = bg),
-                                        onClick = { if (!s.exists) onSuggestionSelected(s)}
+                                            .padding(10.dp),
+                                        colors = CardDefaults.cardColors().copy(containerColor = bg),
+                                        onClick = { if (!s.exists) onSuggestionSelected(s) }
                                     ) {
                                         Column(
                                             modifier = Modifier

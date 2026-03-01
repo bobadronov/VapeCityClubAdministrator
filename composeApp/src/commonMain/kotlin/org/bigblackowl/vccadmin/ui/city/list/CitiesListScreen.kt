@@ -32,6 +32,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -131,6 +133,7 @@ fun CitiesListScreenContent(
     onAddCity: () -> Unit,
 ) {
     val listState = rememberLazyGridState()
+    val haptic = LocalHapticFeedback.current
 
     if (isInitialLoading) {
         LoadingComponent()
@@ -138,7 +141,10 @@ fun CitiesListScreenContent(
     }
 
     PlatformPullToRefreshBox(
-        isRefreshing = isRefreshing, onRefresh = { onIntent(CitiesListScreenIntent.Refresh) }) {
+        isRefreshing = isRefreshing, onRefresh = {
+            onIntent(CitiesListScreenIntent.Refresh)
+            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+        }) {
         Column(
             modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding)
@@ -164,7 +170,9 @@ fun CitiesListScreenContent(
                     } else {
                         items(cities, key = { it.id }) { city ->
                             CityCard(
-                                city = city, isAdmin = isAdmin, onEditClicked = { onEditClicked(city.id) })
+                                city = city, isAdmin = isAdmin, onEditClicked = { onEditClicked(city.id)
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                })
                         }
                     }
                 }
@@ -174,15 +182,20 @@ fun CitiesListScreenContent(
 
             ButtonRowContainer {
                 if (isWideScreen()) {
-                    BackButton(modifier = Modifier.weight(1f)) { onBack() }
+                    BackButton(modifier = Modifier.weight(1f)) {
+                        onBack()
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    }
 
                     RetryButton(modifier = Modifier.weight(1f)) {
                         onIntent(CitiesListScreenIntent.Refresh)
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                     }
                 }
 
                 AddButton(modifier = Modifier.weight(1f)) {
                     onAddCity()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 }
             }
         }

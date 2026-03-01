@@ -26,6 +26,8 @@ class UserRepositoryImpl(private val supabase: SupabaseClient) : UserRepository 
         private const val USER_ADMINISTRATION_FUNCTION = "user_administration"
         private const val USER_TABLE = "users"
         private const val COLUMN_EMAIL = "email"
+        private const val COLUMN_ID = "id"
+
         @Serializable
         private data class UserAdminRequest(
             @SerialName("id") val id: String? = null,
@@ -126,5 +128,15 @@ class UserRepositoryImpl(private val supabase: SupabaseClient) : UserRepository 
         }
         Napier.d(tag = "DELETE USER") { "request: $request" }
         return request.status == HttpStatusCode.OK
+    }
+
+    override suspend fun setUserColor(userId: String, newColor: Long) {
+        val adminId = supabase.auth.currentUserOrNull()?.id
+        userTable.update({
+                             set("schedule_color", newColor)
+                             set("last_modified_user_id", adminId)
+                         }) {
+            filter { eq("id", userId) }
+        }
     }
 }

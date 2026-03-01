@@ -54,6 +54,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -73,8 +75,8 @@ import org.bigblackowl.vccadmin.uiComponent.buttons.SaveButton
 import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
@@ -105,7 +107,6 @@ fun EditSlidesSettingsScreen(
     navigationViewModel: NavigationViewModel,
     viewModel: EditSlidesSettingsScreenViewModel = koinInject(),
 ) {
-    val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
     val settingsTabUiState by viewModel.state.collectAsStateWithLifecycle()
     var showUnsavedDialog by remember { mutableStateOf(false) }
 
@@ -114,8 +115,8 @@ fun EditSlidesSettingsScreen(
     }
 
     // Обробка одноразових подій (наприклад, помилок у Snackbar)
-    LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> snackbarHostState.showSnackbar(event.message)
                 is UIEvents.ShowUnsavedChangesDialog -> showUnsavedDialog = true
@@ -128,9 +129,6 @@ fun EditSlidesSettingsScreen(
     EditSlidesSettingsScreenContent(
         state = settingsTabUiState,
         onIntent = viewModel::onIntent,
-        onBack = {
-            viewModel.onIntent(SlidesSettingsIntent.GoBack)
-        },
     )
 
     UnsavedChangesDialog(show = showUnsavedDialog, onSave = {
@@ -148,9 +146,9 @@ fun EditSlidesSettingsScreen(
 private fun EditSlidesSettingsScreenContent(
     state: SlidesSettingsState,
     onIntent: (SlidesSettingsIntent) -> Unit,
-    onBack: () -> Unit,
 ) {
     val listState = rememberLazyListState()
+    val haptic = LocalHapticFeedback.current
 
     if (state.isLoading) {
         LoadingComponent()
@@ -182,7 +180,10 @@ private fun EditSlidesSettingsScreenContent(
 
                             Slider(
                                 value = state.slideDuration.toFloat(),
-                                onValueChange = { onIntent(SlidesSettingsIntent.ChangeSlideDuration(it.toInt())) },
+                                onValueChange = {
+                                    onIntent(SlidesSettingsIntent.ChangeSlideDuration(it.toInt()))
+                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                },
                                 valueRange = 1f..10f,
                                 steps = 8,
                                 modifier = Modifier.fillMaxWidth()
@@ -202,7 +203,10 @@ private fun EditSlidesSettingsScreenContent(
 
                             Slider(
                                 value = state.transitionDuration.toFloat(),
-                                onValueChange = { onIntent(SlidesSettingsIntent.ChangeTransitionDuration(it.toInt())) },
+                                onValueChange = {
+                                    onIntent(SlidesSettingsIntent.ChangeTransitionDuration(it.toInt()))
+                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                },
                                 valueRange = 500f..5000f,
                                 steps = 44,
                                 modifier = Modifier.fillMaxWidth()
@@ -221,7 +225,10 @@ private fun EditSlidesSettingsScreenContent(
                             BodyText(stringResource(Res.string.slides_refresh_interval, rememberAutoReloadTimeText(state.autoReloadTime)))
                             Slider(
                                 value = state.autoReloadTime.toFloat(),
-                                onValueChange = { onIntent(SlidesSettingsIntent.ChangeAutoReloadTime(it.toInt())) },
+                                onValueChange = {
+                                    onIntent(SlidesSettingsIntent.ChangeAutoReloadTime(it.toInt()))
+                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                },
                                 valueRange = 1f..180f,
                                 steps = 179,
                                 modifier = Modifier.fillMaxWidth()
@@ -263,6 +270,7 @@ private fun EditSlidesSettingsScreenContent(
                                     onClick = {
                                         onIntent(SlidesSettingsIntent.ChangeEffect(effect))
                                         expanded = false
+                                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )
@@ -286,9 +294,7 @@ private fun EditSlidesSettingsScreenContent(
                     ) {
                         BodyText(
                             "${stringResource(Res.string.last_modified, state.lastModified)}\n${
-                                stringResource(
-                                    Res.string.last_modified_by_user, state.lastModifiedByUser
-                                )
+                                stringResource(Res.string.last_modified_by_user, state.lastModifiedByUser)
                             }",
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = .5f),
                         )
@@ -303,12 +309,18 @@ private fun EditSlidesSettingsScreenContent(
         ButtonRowContainer {
             if (isWideScreen()) {
                 BackButton(
-                    modifier = Modifier.weight(1f), onBack = onBack
+                    modifier = Modifier.weight(1f), onBack = {
+                        onIntent(SlidesSettingsIntent.GoBack)
+                        haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                    }
                 )
             }
 
             SaveButton(
-                modifier = Modifier.weight(1f), onSave = { onIntent(SlidesSettingsIntent.SaveSettings) })
+                modifier = Modifier.weight(1f), onSave = {
+                    onIntent(SlidesSettingsIntent.SaveSettings)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                })
         }
     }
 
@@ -457,11 +469,11 @@ private fun EditSlidesSettingsContentPreview1() = PreviewDarkMaterialTheme {
             position = FakeBackend.singleSlide.position,
             url = FakeBackend.singleSlide.publicUrl
         )
-    }), onIntent = {}, onBack = {})
+    }), onIntent = {})
 }
 
 @Preview
 @Composable
 private fun EditSlidesSettingsContentPreview2() = PreviewLightMaterialTheme {
-    EditSlidesSettingsScreenContent(state = SlidesSettingsState(), onIntent = {}, onBack = {})
+    EditSlidesSettingsScreenContent(state = SlidesSettingsState(), onIntent = {})
 }

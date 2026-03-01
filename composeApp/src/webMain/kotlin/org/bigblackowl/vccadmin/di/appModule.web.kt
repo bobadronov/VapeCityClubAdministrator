@@ -2,6 +2,7 @@ package org.bigblackowl.vccadmin.di
 
 import coil3.ImageLoader
 import coil3.PlatformContext
+import coil3.request.CachePolicy
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.ktor.client.engine.HttpClientEngine
@@ -17,6 +18,7 @@ actual val platformModule = module {
             .components {
                 addPlatformFileSupport()
             }
+            .networkCachePolicy(CachePolicy.ENABLED)
             .build()
     }
     singleOf(::OtaUpdateManager)

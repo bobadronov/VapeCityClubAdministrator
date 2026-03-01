@@ -3,6 +3,7 @@ package org.bigblackowl.vccadmin.di
 import coil3.ImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.request.CachePolicy
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.ktor.client.engine.HttpClientEngine
@@ -52,14 +53,15 @@ actual val platformModule = module {
 
     single<ImageLoader> {
         ImageLoader.Builder(get())
+            .crossfade(true)
+            .networkCachePolicy(CachePolicy.ENABLED)
             .memoryCache {
                 MemoryCache.Builder().maxSizePercent(get(),0.25).build()
             }
-            .crossfade(true)
+            .diskCache { get<DiskCache>() }
             .components {
                 addPlatformFileSupport()
             }
-            .diskCache { get<DiskCache>() }
             .build()
     }
 

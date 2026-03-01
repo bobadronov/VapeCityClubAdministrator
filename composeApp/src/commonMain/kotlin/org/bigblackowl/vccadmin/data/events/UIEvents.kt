@@ -5,6 +5,7 @@ sealed interface UIEvents {
     data class ShowMessage(val message: String) : UIEvents
 
     object NavigateBack : UIEvents
+    object Navigate : UIEvents
 
     object ShowUnsavedChangesDialog : UIEvents
 

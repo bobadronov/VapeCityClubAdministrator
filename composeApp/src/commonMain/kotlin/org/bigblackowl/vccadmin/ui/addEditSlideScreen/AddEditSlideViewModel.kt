@@ -87,11 +87,9 @@ class AddEditSlideViewModel(
             is AddEditSlideIntent.OnFileNameChanged -> onFileNameChanged(intent.newName)
             AddEditSlideIntent.OnSave -> onSave()
             is AddEditSlideIntent.OnShopToggled -> onShopToggled(intent.code)
-
             AddEditSlideIntent.OnToggleAllShops -> onToggleAllShops()
             AddEditSlideIntent.OnToggleAllShopsWithTablet -> onToggleAllShopsWithTablet()
             AddEditSlideIntent.OnToggleAllShopsWithTv -> onToggleAllShopsWithTv()
-
             AddEditSlideIntent.SelectFile -> selectFile()
             AddEditSlideIntent.DiscardChanges -> discardChanges()
             AddEditSlideIntent.DownloadIconFile -> downloadIconFile()
@@ -212,9 +210,10 @@ class AddEditSlideViewModel(
                 val file = FileKit.openFilePicker(
                     type = FileKitType.File(listOf("png", "jpg", "jpeg", "gif"))
                 )
+                Napier.d { file?.name.orEmpty() }
 
                 if (file == null) {
-                    _uiEvent.emit(UIEvents.ShowMessage(getString(Res.string.file_not_selected)))
+                    onEvent(UIEvents.ShowMessage(getString(Res.string.file_not_selected)))
                     return@launch
                 }
 

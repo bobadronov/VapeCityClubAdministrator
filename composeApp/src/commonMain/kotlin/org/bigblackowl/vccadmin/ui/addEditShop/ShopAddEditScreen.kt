@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -56,6 +57,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Devices
@@ -81,8 +83,8 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.TitleText
 import org.bigblackowl.vccadmin.utils.UkrainianPhoneVisualTransformation
@@ -183,6 +185,8 @@ private fun ShopEditContent(
     onIntent: (ShopAddEditIntent) -> Unit,
     onAddNewCity: () -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val localFocusManager = LocalFocusManager.current
     val state = rememberLazyListState()
 
@@ -247,6 +251,7 @@ private fun ShopEditContent(
                                         onIntent(ShopAddEditIntent.UpdateSelectedCityId(city.id))
                                         onIntent(ShopAddEditIntent.UpdateCityDropdownExpanded(false))
                                         localFocusManager.moveFocus(FocusDirection.Next)
+                                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                     },
                                     modifier = Modifier.padding(bottom = 10.dp).background(backgroundColor),
                                     leadingIcon = {
@@ -264,6 +269,7 @@ private fun ShopEditContent(
                                 onAddNewCity()
                                 onIntent(ShopAddEditIntent.UpdateCityDropdownExpanded(false))
                                 localFocusManager.moveFocus(FocusDirection.Next)
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             }, leadingIcon = { DefaultIcon(Icons.Default.Add) })
                         }
                     }
@@ -395,6 +401,7 @@ private fun ShopEditContent(
                         expanded = uiState.deviceDropdownExpanded,
                         onExpandedChange = {
                             onIntent(ShopAddEditIntent.UpdateDeviceDropdownExpanded(!uiState.deviceDropdownExpanded))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -418,6 +425,7 @@ private fun ShopEditContent(
                             expanded = uiState.deviceDropdownExpanded,
                             onDismissRequest = {
                                 onIntent(ShopAddEditIntent.UpdateDeviceDropdownExpanded(false))
+                                haptic.performHapticFeedback(HapticFeedbackType.Reject)
                             }
                         ) {
                             DeviceType.all().forEach { info ->
@@ -434,6 +442,7 @@ private fun ShopEditContent(
                                         deviceDropdownIndex = info.index
                                         onIntent(ShopAddEditIntent.UpdateDeviceType(info.type))
                                         onIntent(ShopAddEditIntent.UpdateDeviceDropdownExpanded(false))
+                                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                     },
                                     modifier = Modifier
                                         .padding(bottom = 10.dp)
@@ -485,6 +494,7 @@ private fun ShopEditContent(
                                         statusDropdownIndex = info.index
                                         onIntent(ShopAddEditIntent.UpdateStatus(info.status))
                                         onIntent(ShopAddEditIntent.UpdateStatusDropdownExpanded(false))
+                                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                     },
                                     modifier = Modifier.padding(bottom = 10.dp).background(backgroundColor)
                                 )
@@ -639,11 +649,8 @@ private fun ShopEditContent(
 
                         AddButton(modifier = Modifier.padding(start = 8.dp), enabled = uiState.internetProviderAccountInput.isNotBlank()) {
                             if (uiState.internetProviderAccountInput.isBlank()) return@AddButton
-                            onIntent(
-                                ShopAddEditIntent.AddInternetProviderPersonalAccount(
-                                    uiState.internetProviderAccountInput
-                                )
-                            )
+                            onIntent(ShopAddEditIntent.AddInternetProviderPersonalAccount(uiState.internetProviderAccountInput))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         }
                     }
                 }
@@ -662,6 +669,7 @@ private fun ShopEditContent(
                                 message = stringResource(Res.string.delete_confirmation_message, "${stringResource(Res.string.internet_provider_account)} $account")
                             ) {
                                 onIntent(ShopAddEditIntent.RemoveInternetProviderPersonalAccount(account))
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             }
                         }
                     }
@@ -670,7 +678,10 @@ private fun ShopEditContent(
                     var showDialog by remember { mutableStateOf(false) }
 
                     ExposedDropdownMenuBox(
-                        expanded = showDialog, onExpandedChange = { showDialog = true }, modifier = Modifier.fillMaxWidth()
+                        expanded = showDialog, onExpandedChange = {
+                            showDialog = true
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }, modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
                             value = uiState.internetReplenishmentDay.toString(),
@@ -689,7 +700,10 @@ private fun ShopEditContent(
                         var selectedDay by remember { mutableStateOf(uiState.internetReplenishmentDay) }
 
                         AlertDialog(
-                            onDismissRequest = { showDialog = false },
+                            onDismissRequest = {
+                                showDialog = false
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            },
                             title = { TitleText(stringResource(Res.string.select_day)) },
                             text = {
                                 Column(
@@ -724,10 +738,14 @@ private fun ShopEditContent(
                                 SaveButton {
                                     onIntent(ShopAddEditIntent.UpdateInternetReplenishmentDay(selectedDay))
                                     showDialog = false
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                 }
                             },
                             dismissButton = {
-                                CancelButton { showDialog = false }
+                                CancelButton {
+                                    showDialog = false
+                                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                                }
                             }
                         )
                     }
@@ -806,6 +824,7 @@ private fun ShopEditContent(
                         AddButton(modifier = Modifier.padding(start = 8.dp), enabled = uiState.cameraCodeInput.isNotBlank()) {
                             if (uiState.cameraCodeInput.isBlank()) return@AddButton
                             onIntent(ShopAddEditIntent.AddCameraCode(uiState.cameraCodeInput))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         }
                     }
                 }
@@ -824,7 +843,10 @@ private fun ShopEditContent(
 
                             DeleteButton(
                                 message = stringResource(Res.string.delete_confirmation_message, "цей код камери: $code")
-                            ) { onIntent(ShopAddEditIntent.RemoveCameraCode(code)) }
+                            ) {
+                                onIntent(ShopAddEditIntent.RemoveCameraCode(code))
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            }
                         }
                     }
                 }
@@ -836,7 +858,10 @@ private fun ShopEditContent(
 
         ButtonRowContainer {
             if (isWideScreen()) {
-                BackButton(modifier = Modifier.weight(1f), onBack = onBack)
+                BackButton(modifier = Modifier.weight(1f), onBack = {
+                    onBack()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                })
             }
 
             if (isEditMode) {
@@ -845,14 +870,19 @@ private fun ShopEditContent(
                     modifier = Modifier.weight(1f)
                 ) {
                     onIntent(ShopAddEditIntent.ValidateAndSaveShopAddEdit)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 }
                 DeleteButton(
                     modifier = Modifier.weight(1f),
                     message = stringResource(Res.string.delete_confirmation_message, "${stringResource(Res.string.this_shop)}: ${uiState.street}, ${uiState.houseNumber}")
                 ) {
                     onIntent(ShopAddEditIntent.DeleteShopAddEdit(uiState.shopId))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 }
-                CancelButton(modifier = Modifier.weight(1f)) { onDismissRequest() }
+                CancelButton(modifier = Modifier.weight(1f)) {
+                    onDismissRequest()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             } else {
                 AddButton(
                     enabled = uiState.selectedCityId != null && uiState.street.isNotBlank() && uiState.phoneNumber?.isNotBlank() ?: false,
@@ -860,9 +890,12 @@ private fun ShopEditContent(
                     title = stringResource(Res.string.add_shop)
                 ) {
                     onIntent(ShopAddEditIntent.ValidateAndSaveShopAddEdit)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+
                 }
                 CancelButton(modifier = Modifier.weight(1f)) {
                     onIntent(ShopAddEditIntent.ClearData)
+                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
                 }
             }
         }

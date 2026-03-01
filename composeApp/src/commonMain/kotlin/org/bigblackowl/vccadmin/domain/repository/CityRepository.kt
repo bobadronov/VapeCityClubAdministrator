@@ -9,3 +9,4 @@ interface CityRepository {
     suspend fun updateCity(city: City, newCityName: String, newCityLogoFile: PlatformFile?)
     suspend fun deleteCity(city: City)
 }
+

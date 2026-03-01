@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -42,6 +43,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -146,6 +148,8 @@ private fun AddEditUserScreenContent(
         LoadingComponent()
         return
     }
+    val haptic = LocalHapticFeedback.current
+
     var showPassword by remember { mutableStateOf(!isEditMode) }
     val focusManager = LocalFocusManager.current
     val localKeyboard = LocalSoftwareKeyboardController.current
@@ -282,14 +286,18 @@ private fun AddEditUserScreenContent(
                         )
 
                         OutlinedIconButton({
-                            scope.launch {
-                                clipboardManager.setText(AnnotatedString(state.editablePassword))
-                            }
-                        }) {
+                                               scope.launch {
+                                                   clipboardManager.setText(AnnotatedString(state.editablePassword))
+                                               }
+                                               haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                           }) {
                             Icon(Icons.Default.CopyAll, null)
                         }
 
-                        RetryButton(showLabel = false, onClick = { onIntent(AddEditUserScreenIntent.UpdatePassword(AppStringProvider.generatePassword())) })
+                        RetryButton(showLabel = false, onClick = {
+                            onIntent(AddEditUserScreenIntent.UpdatePassword(AppStringProvider.generatePassword()))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        })
                     }
                 }
             }
@@ -307,7 +315,10 @@ private fun AddEditUserScreenContent(
                             OutlinedCard(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                onClick = { onIntent(AddEditUserScreenIntent.UpdateRole(role)) }
+                                onClick = {
+                                    onIntent(AddEditUserScreenIntent.UpdateRole(role))
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                }
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -315,9 +326,12 @@ private fun AddEditUserScreenContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     RadioButton(
-                                        selected = role == state.editableRole, onClick = {
+                                        selected = role == state.editableRole,
+                                        onClick = {
                                             onIntent(AddEditUserScreenIntent.UpdateRole(role))
-                                        }, enabled = !state.isLoading
+                                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                        },
+                                        enabled = !state.isLoading
                                     )
                                     BodyText(stringResource(role.getName))
                                 }
@@ -330,13 +344,19 @@ private fun AddEditUserScreenContent(
 
         ButtonRowContainer {
             if (isWideScreen()) {
-                BackButton(modifier = Modifier.weight(1f)) { onIntent(AddEditUserScreenIntent.GoBack) }
+                BackButton(modifier = Modifier.weight(1f)) {
+                    onIntent(AddEditUserScreenIntent.GoBack)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             }
 
             SaveButton(
                 enabled = state.isFormValid && !state.isLoading,
                 modifier = Modifier.weight(1f)
-            ) { onIntent(AddEditUserScreenIntent.Save) }
+            ) {
+                onIntent(AddEditUserScreenIntent.Save)
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+            }
 
             if (isEditMode && state.userId != null) {
                 DeleteButton(
@@ -345,7 +365,10 @@ private fun AddEditUserScreenContent(
                         "${stringResource(Res.string.this_user)}: ${state.editableFirstName}, ${state.editableLastName} який є ${state.editableRole.name}-ом"
                     ),
                     modifier = Modifier.weight(1f)
-                ) { onIntent(AddEditUserScreenIntent.DeleteUser(state.userId)) }
+                ) {
+                    onIntent(AddEditUserScreenIntent.DeleteUser(state.userId))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             }
         }
     }

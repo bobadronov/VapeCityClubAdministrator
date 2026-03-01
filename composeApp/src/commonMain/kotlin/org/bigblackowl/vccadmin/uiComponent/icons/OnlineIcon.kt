@@ -16,10 +16,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import coil3.ImageLoader
 import coil3.compose.AsyncImage
+import io.github.aakira.napier.Napier
 import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import vccadministrator.composeapp.generated.resources.Res
 import vccadministrator.composeapp.generated.resources.main_logo
 import vccadministrator.composeapp.generated.resources.main_logo_white_theme
@@ -31,9 +34,9 @@ fun OnlineIcon(
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit,
 ) {
+    val imageLoader: ImageLoader = koinInject()
     val fallbackPainter =
         if (rememberIsDarkTheme()) Res.drawable.main_logo else Res.drawable.main_logo_white_theme
-
     var isLoading by remember { mutableStateOf(true) }
 
     // Скидаємо лоадер, коли змінюється model
@@ -47,13 +50,21 @@ fun OnlineIcon(
         AsyncImage(
             model = model,
             contentDescription = contentDescription,
+            imageLoader = imageLoader,
             contentScale = contentScale,
             placeholder = if (!isLoading) painterResource(fallbackPainter) else null,
             error = painterResource(fallbackPainter),
             onLoading = { isLoading = true },
-            onSuccess = { isLoading = false },
-            onError = { isLoading = false },
-        )
+            onSuccess = {
+                isLoading = false
+                Napier.d { it.result.request.data.toString() }
+            },
+            onError = {
+                isLoading = false
+                Napier.e { it.result.throwable.message.orEmpty() }
+            },
+
+            )
 
         // Лоадер поверх, плавно зникає
         AnimatedVisibility(

@@ -4,6 +4,7 @@ import android.content.Context
 import coil3.ImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.request.CachePolicy
 import coil3.request.crossfade
 import io.github.vinceglb.filekit.coil.addPlatformFileSupport
 import io.ktor.client.engine.HttpClientEngine
@@ -35,6 +36,7 @@ actual val platformModule = module {
         val context: Context by inject(Context::class.java)
         ImageLoader.Builder(context)
             .crossfade(true)
+            .networkCachePolicy(CachePolicy.ENABLED)
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.25)

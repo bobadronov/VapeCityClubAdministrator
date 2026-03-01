@@ -61,15 +61,15 @@ fun buildMenuItems(
                 onClick = { applyThemeMode(nextThemeMode(themeMode)) }
             )
         )
-        add(
-            MenuItem(
-                text = Res.string.schedule,
-                icon = Icons.Default.CalendarMonth,
-                isSelected = { it == Route.WorkScheduleCreate },
-                onClick = { navigate(Route.WorkScheduleCreate) }
-            )
-        )
         if (!isLoginScreen) {
+            add(
+                MenuItem(
+                    text = Res.string.schedule,
+                    icon = Icons.Default.CalendarMonth,
+                    isSelected = { if (currentUserRole == UserRole.ADMIN) it == Route.WorkScheduleCreate else it == Route.WorkScheduleView },
+                    onClick = { navigate(if (currentUserRole == UserRole.ADMIN) Route.WorkScheduleCreate else Route.WorkScheduleView) }
+                )
+            )
             add(
                 MenuItem(
                     text = Res.string.file_generation,
@@ -78,7 +78,6 @@ fun buildMenuItems(
                     onClick = { navigate(Route.FileGenerator) }
                 )
             )
-
             if (currentUserRole == UserRole.ADMIN) {
                 add(
                     MenuItem(

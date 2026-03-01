@@ -1,21 +1,8 @@
-package org.bigblackowl.vccadmin.ui.WorkScheduleView
+// File: commonMain/org/bigblackowl/vccadmin/ui/workSchedule/view/WorkScheduleViewScreenViewModel.kt
+package org.bigblackowl.vccadmin.ui.workSchedule.view
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.aakira.napier.Napier
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.functions.functions
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.openFilePicker
-import io.github.vinceglb.filekit.name
-import io.github.vinceglb.filekit.readBytes
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.utils.io.InternalAPI
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -24,64 +11,45 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import okio.ByteString.Companion.toByteString
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
+import org.bigblackowl.vccadmin.data.entity.City
+import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.SupabaseShop
 import org.bigblackowl.vccadmin.data.entity.User
+import org.bigblackowl.vccadmin.data.entity.toUiShops
 import org.bigblackowl.vccadmin.data.events.UIEvents
-import org.bigblackowl.vccadmin.domain.repository.AuthRepository
+import org.bigblackowl.vccadmin.data.utils.NetworkMonitorProvider
+import org.bigblackowl.vccadmin.domain.repository.CityRepository
+import org.bigblackowl.vccadmin.domain.repository.LocalRepository
 import org.bigblackowl.vccadmin.domain.repository.ShopRepository
-
-@Serializable
-data class WorkScheduleViewDto(
-    val dates: List<String>,                 // ISO: yyyy-MM-dd
-    val shops: List<ShopScheduleDto>
-)
-
-@Serializable
-data class ShopScheduleDto(
-    val shop: String,
-    val shifts: List<ShiftDto>
-)
-
-@Serializable
-data class ShiftDto(
-    val date: String,                        // ISO
-    val employees: List<String>
-)
-
-@Serializable
-data class ParseScheduleRequest(
-    val fileName: String,
-    val base64: String
-)
-
-data class WorkScheduleViewUiState(
-    val isInitialLoading: Boolean = false,
-    val isRefreshing: Boolean = false,
-    val currentUser: User? = null,
-    val schedule: WorkScheduleViewDto? = null,
-    val rows: List<MatchedShopRow> = emptyList(),
-)
-
-@Serializable
-data class MatchedShopRow(
-    val rawShop: String,
-    val matchedShopId: String? = null,
-    val matchedCode: String? = null,
-    val matchedAddress: String? = null,
-    val score: Int = 0, // 0..100
-    val shifts: List<ShiftDto>,
-    val groupTitle: String? = null, // якщо це “група/місто”
-)
+import org.bigblackowl.vccadmin.domain.repository.UserRepository
+import org.bigblackowl.vccadmin.domain.repository.WorkScheduleRepository
+import org.bigblackowl.vccadmin.ui.workSchedule.WorkScheduleHelper
+import org.bigblackowl.vccadmin.utils.AppStringProvider
+import org.bigblackowl.vccadmin.utils.AppStringProvider.toStringRes
+import org.jetbrains.compose.resources.getString
+import vccadministrator.composeapp.generated.resources.Res
+import vccadministrator.composeapp.generated.resources.error_load_data
 
 class WorkScheduleViewScreenViewModel(
-    private val json: Json,
-    private val supabase: SupabaseClient,
-    private val authRepository: AuthRepository,
     private val shopRepository: ShopRepository,
+    private val userRepository: UserRepository,
+    private val cityRepository: CityRepository,
+    private val localRepository: LocalRepository,
+    private val workScheduleRepository: WorkScheduleRepository,
+    private val networkMonitorProvider: NetworkMonitorProvider,
 ) : ViewModel() {
+
+    private companion object {
+        private const val ZOOM_STEP = 0.10f
+    }
+
+    private val helper = WorkScheduleHelper(
+        localRepository = localRepository,
+        workScheduleRepository = workScheduleRepository,
+        dayNameProvider = { d -> getString(d.dayOfWeek.toStringRes()) },
+    )
 
     private val _uiState = MutableStateFlow(WorkScheduleViewUiState())
     val uiState: StateFlow<WorkScheduleViewUiState> = _uiState.asStateFlow()
@@ -91,246 +59,119 @@ class WorkScheduleViewScreenViewModel(
 
     init {
         viewModelScope.launch {
-            authRepository.currentUser.collect { user ->
-                _uiState.update { it.copy(currentUser = user) }
+            networkMonitorProvider.isConnected.collect { connected ->
+                if (connected) load(initial = true)
             }
         }
     }
 
     fun onIntent(intent: WorkScheduleViewIntent) {
         when (intent) {
-            WorkScheduleViewIntent.Load -> load()
+            WorkScheduleViewIntent.Load -> load(initial = true)
+            WorkScheduleViewIntent.Refresh -> load(initial = false, refreshing = true)
+
+            is WorkScheduleViewIntent.SelectUser ->
+                _uiState.update { it.copy(selectedUserId = intent.userId) }
+
+            WorkScheduleViewIntent.PrevWeek -> shiftWeek(-7)
+            WorkScheduleViewIntent.NextWeek -> shiftWeek(+7)
+
+            WorkScheduleViewIntent.ZoomIn -> zoomApply(_uiState.value.zoomScale + ZOOM_STEP)
+            WorkScheduleViewIntent.ZoomOut -> zoomApply(_uiState.value.zoomScale - ZOOM_STEP)
+            WorkScheduleViewIntent.ZoomReset -> zoomApply(1f)
+            is WorkScheduleViewIntent.ZoomSet -> zoomApply(intent.scale)
         }
     }
 
-    private fun load() = viewModelScope.launch {
-        _uiState.update { it.copy(isInitialLoading = true, schedule = null) }
+    private fun zoomApply(newScale: Float) = viewModelScope.launch {
+        val clamped = helper.clampZoom(newScale)
+        _uiState.update { it.copy(zoomScale = clamped) }
+        helper.saveZoomState(clamped)
+    }
 
-        try {
-            val file = FileKit.openFilePicker(
-                type = FileKitType.File(extensions = listOf("xls", "xlsx"))
-            )
+    private fun shiftWeek(deltaDays: Int) {
+        _uiState.update { st ->
+            st.copy(weekStart = st.weekStart.plus(deltaDays, DateTimeUnit.DAY))
+        }
+        load(initial = false, refreshing = true)
+    }
 
-            if (file == null) {
-                _uiState.update { it.copy(isInitialLoading = false) }
-                return@launch
+    private fun load(initial: Boolean, refreshing: Boolean = false) = viewModelScope.launch {
+        if (initial) _uiState.update { it.copy(isInitialLoading = true, errorText = null) }
+        else _uiState.update { it.copy(isRefreshing = refreshing, errorText = null) }
+
+        runCatching {
+            val zoom = helper.loadZoomState()
+
+            val currentUser: User? = userRepository.getCurrentUser()
+            val users: List<User> = userRepository.getUsers()
+            val cities: List<City> = cityRepository.getCities()
+            val shopsRaw: List<SupabaseShop> = shopRepository.getStores()
+
+            val usersById = users.associateBy { it.id }
+            val userColors = users.associate { it.id to it.scheduleColor }
+
+            // show ALL shops across ALL cities
+            val shopsUiAll: List<Shop> = shopsRaw.toUiShops(cities)
+
+            // ordering: city -> street (UA collator)
+            val sortedShops = shopsUiAll.sortedWith { a, b ->
+                val byCity = AppStringProvider.ukrainianCollator.compare(a.cityName, b.cityName)
+                if (byCity != 0) byCity
+                else AppStringProvider.ukrainianCollator.compare(a.street, b.street)
+            }
+            val shopsById = sortedShops.associateBy { it.id }
+
+            val focusWeekStart = _uiState.value.weekStart
+            val days = helper.buildWindowDays(focusWeekStart)
+            val headerByDay = helper.buildHeaderByDay(days)
+            val periodLabel = helper.buildPeriodLabel(days.firstOrNull(), days.lastOrNull())
+
+            // order — from focus week if exists; else from sortedShops
+            val scheduleOfFocusWeek = workScheduleRepository.loadWorkSchedule(focusWeekStart)
+            val scheduleOrder = scheduleOfFocusWeek?.shopOrder.orEmpty()
+            val shopOrder = when {
+                scheduleOrder.isNotEmpty() -> scheduleOrder.filter { it in shopsById.keys }
+                else -> sortedShops.map { it.id }
             }
 
-            val bytes = file.readBytes()
-            val fileName = file.name
-
-            val schedule = parseExcel(fileName, bytes)
-            val allStores = shopRepository.getStores()
-            Napier.d { allStores.toString() }
-
-            val rows = enrichSchedule(
-                schedule = schedule,
-                allStores = allStores,
-                cityIdByTitle = emptyMap(), // або cityIdByTitle
-            )
+            val merged = helper.loadMergedAssignmentsForDays(days, shopsById.keys)
+            val selectedUserId = _uiState.value.selectedUserId ?: currentUser?.id
 
             _uiState.update {
                 it.copy(
                     isInitialLoading = false,
-                    schedule = schedule,
-                    rows = rows
+                    isRefreshing = false,
+                    errorText = null,
+                    currentUser = currentUser,
+                    selectedUserId = selectedUserId,
+                    weekStart = focusWeekStart,
+                    days = days,
+                    headerByDay = headerByDay,
+                    periodLabel = periodLabel,
+                    shopsById = shopsById,
+                    shopOrder = shopOrder,
+                    users = users,
+                    usersById = usersById,
+                    userColors = userColors,
+                    assignments = merged,
+                    zoomScale = zoom,
                 )
             }
-
-        } catch (t: Throwable) {
-            _uiState.update { it.copy(isInitialLoading = false) }
-            Napier.d { t.message ?: "Помилка парсингу Excel" }
-            showMessage(t.message ?: "Помилка парсингу Excel")
-        }
-    }
-
-    private fun normalize(s: String): String =
-        s.lowercase()
-            .replace('’', '\'')
-            .replace(Regex("[^a-zа-яіїєґ0-9\\s]"), " ")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-
-    private fun levenshtein(a: String, b: String): Int {
-        if (a == b) return 0
-        if (a.isEmpty()) return b.length
-        if (b.isEmpty()) return a.length
-
-        val dp = IntArray(b.length + 1) { it }
-        for (i in a.indices) {
-            var prev = dp[0]
-            dp[0] = i + 1
-            for (j in b.indices) {
-                val temp = dp[j + 1]
-                val cost = if (a[i] == b[j]) 0 else 1
-                dp[j + 1] = minOf(
-                    dp[j + 1] + 1,     // deletion
-                    dp[j] + 1,         // insertion
-                    prev + cost        // substitution
-                )
-                prev = temp
-            }
-        }
-        return dp[b.length]
-    }
-
-    private fun enrichSchedule(
-        schedule: WorkScheduleViewDto,
-        allStores: List<SupabaseShop>,
-        cityIdByTitle: Map<String, Int> = emptyMap(),
-    ): List<MatchedShopRow> {
-
-        val threshold: Int = 55
-
-        var currentGroup: String? = null
-        var currentCityId: Int? = null
-
-        return schedule.shops.map { row ->
-            if (row.isGroupRow()) {
-                currentGroup = row.shop.trim()
-                currentCityId = cityIdByTitle[normalize(currentGroup)]
-                return@map MatchedShopRow(
-                    rawShop = row.shop,
-                    groupTitle = currentGroup,
-                    shifts = row.shifts,
-                    score = 0
+        }.onFailure { e ->
+            val msg = e.message ?: getString(Res.string.error_load_data)
+            _uiState.update {
+                it.copy(
+                    isInitialLoading = false,
+                    isRefreshing = false,
+                    errorText = msg
                 )
             }
-
-            val candidates = if (currentCityId != null) {
-                allStores.filter { it.cityId == currentCityId }
-            } else {
-                allStores
-            }
-
-            val q = row.shop
-            val best = candidates
-                .asSequence()
-                .map { shop ->
-                    val score = totalScore(q, shop)   // <- тут
-                    shop to score
-                }
-                .maxByOrNull { it.second }
-
-            val (bestShop, bestScore) = best ?: (null to 0)
-
-            if (bestShop != null && bestScore >= threshold) {
-                MatchedShopRow(
-                    rawShop = row.shop,
-                    matchedShopId = bestShop.id,
-                    matchedCode = bestShop.code,
-                    matchedAddress = "${bestShop.street} ${bestShop.houseNumber.orEmpty()}",
-                    score = bestScore,
-                    shifts = row.shifts,
-                    groupTitle = currentGroup
-                )
-            } else {
-                MatchedShopRow(
-                    rawShop = row.shop,
-                    matchedShopId = null,
-                    matchedCode = null,
-                    matchedAddress = null,
-                    score = bestScore,
-                    shifts = row.shifts,
-                    groupTitle = currentGroup
-                )
-            }
+            showMessage(msg)
         }
     }
-
-    private fun tokenOverlapScore(a: String, b: String): Int {
-        val ta = tokenize(a)
-        val tb = tokenize(b)
-        if (ta.isEmpty() || tb.isEmpty()) return 0
-        val inter = ta.intersect(tb).size
-        val union = ta.union(tb).size
-        return ((inter.toDouble() / union.toDouble()) * 100).toInt().coerceIn(0, 100)
-    }
-
-    private fun similarityRatio(a: String, b: String): Int {
-        val na = normalize(a)
-        val nb = normalize(b)
-        if (na.isEmpty() || nb.isEmpty()) return 0
-        val dist = levenshtein(na, nb)
-        val maxLen = maxOf(na.length, nb.length)
-        return ((1.0 - dist.toDouble() / maxLen.toDouble()) * 100).toInt().coerceIn(0, 100)
-    }
-
-    private fun tokenize(s: String): Set<String> = normalize(s).split(" ").filter { it.isNotBlank() }.toSet()
-    private fun ShopScheduleDto.isGroupRow(): Boolean {
-        val allEmpty = shifts.all { it.employees.isEmpty() }
-        if (!allEmpty) return false
-
-        val s = rawShopLikeGroup(shop)
-        return s
-    }
-
-    private fun rawShopLikeGroup(text: String): Boolean {
-        val n = normalize(text)
-        if (n.isBlank()) return false
-        if (n.any { it.isDigit() }) return false
-        // 1-2 слова — типово для "Бровари", "Ірпінь", "Вишневе"
-        val words = n.split(" ").filter { it.isNotBlank() }
-        return words.size <= 2
-    }
-
-    private fun SupabaseShop.candidateStreet(): String =
-        buildString {
-            append(street)
-            houseNumber?.let { append(" ").append(it) }
-        }
-
-    private fun totalScore(query: String, shop: SupabaseShop): Int {
-        val q = normalize(query)
-
-        val streetScore = maxOf(
-            similarityRatio(q, shop.candidateStreet()),
-            tokenOverlapScore(q, shop.candidateStreet())
-        )
-
-        val codeScore = if (q.contains(shop.code.lowercase())) 100 else 0
-
-        // якщо query дуже короткий ("Ашан", "Дарниця") — streetScore буде низький,
-        // тож кодScore може допомогти лише якщо код є в query (не твій кейс)
-        // Тому основа — streetScore.
-        return (streetScore * 0.9 + codeScore * 0.1).toInt().coerceIn(0, 100)
-    }
-
-    private suspend fun parseExcel(
-        fileName: String,
-        bytes: ByteArray
-    ): WorkScheduleViewDto {
-        val body = ParseScheduleRequest(
-            fileName = fileName,
-            base64 = bytes.encodeBase64()
-        )
-        val response = invokeFunction("parse-work-schedule", body).bodyAsText()
-        Napier.d { response }
-        return json.decodeFromString(response)
-    }
-
-    /**
-     * Викликає Supabase Edge Function з вказаним тілом запиту.
-     */
-    @OptIn(InternalAPI::class)
-    private suspend inline fun <reified T> invokeFunction(function: String, body: T): HttpResponse {
-        val response = supabase.functions.invoke(function) {
-            this.body = json.encodeToString(body)
-            contentType(ContentType.Application.Json)
-        }
-        if (response.status != HttpStatusCode.OK) {
-            throw IllegalStateException(response.bodyAsText())
-        }
-        return response
-    }
-
-    private fun ByteArray.encodeBase64(): String = toByteString().base64()
 
     private fun showMessage(message: String) = viewModelScope.launch {
         _uiEvent.emit(UIEvents.ShowMessage(message))
     }
-}
-
-sealed interface WorkScheduleViewIntent {
-    data object Load : WorkScheduleViewIntent
 }

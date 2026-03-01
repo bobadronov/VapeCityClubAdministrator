@@ -1,6 +1,6 @@
 package org.bigblackowl.vccadmin.di
 
-import org.bigblackowl.vccadmin.ui.WorkScheduleView.WorkScheduleViewScreenViewModel
+import org.bigblackowl.vccadmin.ui.workSchedule.view.WorkScheduleViewScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditShop.ShopAddEditScreenViewModel
 import org.bigblackowl.vccadmin.ui.addEditSlideScreen.AddEditSlideViewModel
 import org.bigblackowl.vccadmin.ui.city.addEdit.AddEditCityScreenViewModel

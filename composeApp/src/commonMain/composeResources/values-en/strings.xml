@@ -349,7 +349,7 @@
     <!-- ========================================================= -->
     <string name="show_pc_window">Show window</string>
     <string name="stay_online_on_close">On close — minimize to tray</string>
-
+    <string name="work_in_background">Work in the background</string>
     <!-- ========================================================= -->
     <!-- OTA -->
     <!-- ========================================================= -->

@@ -27,9 +27,9 @@ class NetworkMonitorProvider : ViewModel() {
             "https://ngqtxspsdehzkramqxlt.supabase.co/functions/v1/ping",
             "https://api.github.com/zen"
         )
-        method = HttpMethod.Companion.Head  // HEAD-запит для економії трафіку (без тіла відповіді)
+        method = HttpMethod.Head  // HEAD-запит для економії трафіку (без тіла відповіді)
         port = 443            // HTTPS порт за замовчуванням
-        pollingIntervalMs = 15.seconds  // Інтервал полінгу
+        pollingIntervalMs = 6.seconds  // Інтервал полінгу
         timeoutMs = 5.seconds          // Таймаут запиту
         autoStart = false            // Ручний старт для контролю в WasmJS/JS
 
@@ -49,7 +49,7 @@ class NetworkMonitorProvider : ViewModel() {
         .map { status -> status is Connectivity.Status.Connected }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(10_000),
+            started = SharingStarted.WhileSubscribed(10_000),
             initialValue = false  // Початкове значення до першого полінгу
         )
 

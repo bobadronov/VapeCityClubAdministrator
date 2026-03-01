@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -136,6 +138,7 @@ private fun UserDetailContent(
     showConfirmMessage: () -> Unit,
 ) {
     if (id == null) return
+    val haptic = LocalHapticFeedback.current
 
     var showQRCodeDialog by rememberSaveable { mutableStateOf(false) }
     val listState = rememberLazyListState()
@@ -213,7 +216,10 @@ private fun UserDetailContent(
                             ) {
                                 QRCodeButton(
                                     modifier = Modifier.fillMaxWidth(.7f),
-                                    onClick = { showQRCodeDialog = true }
+                                    onClick = {
+                                        showQRCodeDialog = true
+                                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    }
                                 )
                             }
                         }
@@ -247,7 +253,12 @@ private fun UserDetailContent(
         }
 
         if (isWideScreen()) {
-            ButtonRowContainer { BackButton { onBack() } }
+            ButtonRowContainer {
+                BackButton {
+                    onBack()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
+            }
         }
     }
 
@@ -259,6 +270,7 @@ private fun UserDetailContent(
                 onDismiss = {
                     @Suppress("AssignedValueIsNeverRead")
                     showQRCodeDialog = false
+                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
                 },
             )
         }
@@ -292,9 +304,6 @@ private fun InfoRow(
         }
     }
 }
-
-
-
 
 
 @Preview

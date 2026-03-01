@@ -13,48 +13,43 @@ import java.util.Properties
 // composeApp/build/dist/js/productionExecutable/
 // composeApp:hotRunJvm --autoReload
 
-private val isDebugBuild = libs.versions.isDebugBuild.get().toBoolean()
+
 private val major = libs.versions.major.get().toInt()
 private val minor = libs.versions.minor.get().toInt()
 private val patch = libs.versions.patch.get().toInt()
 private val subpath = libs.versions.subpath.get().toInt()
-private val desktopBuild = patch * 100 + subpath              // 0..65535
-private val projectVersionName = "$major.$minor.$desktopBuild"        // те, що показуєш користувачу
-private val desktopVersion = "$major.$minor.$desktopBuild"        // MAJOR.MINOR.BUILD
+private val desktopBuild = patch * 100 + subpath
+private val projectVersionName = "$major.$minor.$desktopBuild"
+private val desktopVersion = "$major.$minor.$desktopBuild"
 private val androidVersionCode: Int =
     libs.versions.major.get().toInt() * 1000 + libs.versions.minor.get().toInt() * 100 + libs.versions.patch.get().toInt() * 10 + libs.versions.subpath.get().toInt()
 private val currentYear: Int = LocalDateTime.now().toLocalDate().year
 
+
 plugins {
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
-    alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.buildConfig)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.buildConfig)
 }
+
 
 kotlin {
     applyDefaultHierarchyTemplate()
-
-    jvmToolchain(17)
-
+    jvmToolchain(21)
     androidTarget()
-
 //    iosX64()
 //    iosSimulatorArm64()
     iosArm64()
-
     jvm()
-
 //    js {
 //        browser()
 //        binaries.executable()
 //    }
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
@@ -73,13 +68,10 @@ kotlin {
             implementation(libs.bundles.supabase)
             implementation(libs.bundles.filekit)
             implementation(libs.bundles.connectivity)
-
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-
             implementation(libs.napier)
             implementation(libs.multiplatform.settings)
             implementation(libs.kotlinx.datetime)
@@ -176,8 +168,8 @@ extensions.configure<ApplicationExtension> {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
 }
@@ -247,7 +239,6 @@ val envProps = Properties().apply {
 buildConfig {
     packageName("org.bigblackowl.vccadmin")
     buildConfigField("APP_NAME", libs.versions.appName.get())
-    buildConfigField("IS_DEBUG_BUILD", isDebugBuild)
     buildConfigField("APP_VERSION", projectVersionName)
     buildConfigField("SUPABASE_URL", "${envProps["SUPABASE_URL"] ?: ""}")
     buildConfigField("SUPABASE_KEY", "${envProps["SUPABASE_KEY"] ?: ""}")

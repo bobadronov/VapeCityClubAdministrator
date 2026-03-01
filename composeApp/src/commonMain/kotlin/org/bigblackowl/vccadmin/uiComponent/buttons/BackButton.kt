@@ -21,6 +21,7 @@ fun BackButton(
     showLabel: Boolean = isWideScreen(),
     onBack: () -> Unit
 ) {
+
     OutlinedButton(
         onClick = onBack,
         modifier = modifier

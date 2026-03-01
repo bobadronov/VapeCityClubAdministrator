@@ -74,6 +74,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -281,6 +283,8 @@ private fun GeneratedContent(
     generatedFiles: List<GeneratedFile>,
     onIntent: (FileGenerationIntent) -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tween(300, easing = FastOutLinearInEasing),
@@ -318,6 +322,7 @@ private fun GeneratedContent(
                     ) { file ->
                         FileCardItem(file) {
                             onIntent(FileGenerationIntent.OpenFile(file.name))
+                            haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                         }
                     }
                 }
@@ -325,10 +330,13 @@ private fun GeneratedContent(
                 ButtonRowContainer {
                     BackButton {
                         onIntent(FileGenerationIntent.GoBack)
+                        haptic.performHapticFeedback(HapticFeedbackType.Reject)
                     }
                     if (canShareAll) {
                         ShareAllFilesButton {
                             onIntent(FileGenerationIntent.ShareAllFiles)
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+
                         }
                     }
                 }
@@ -457,6 +465,8 @@ private fun ShopPickerContent(
     canGenerate: Boolean,
     onIntent: (FileGenerationIntent) -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
         MultiShopPicker(
@@ -472,11 +482,16 @@ private fun ShopPickerContent(
         )
 
         ButtonRowContainer {
-            BackButton { onIntent(FileGenerationIntent.GoBack) }
+            BackButton { onIntent(FileGenerationIntent.GoBack)
+                haptic.performHapticFeedback(HapticFeedbackType.Reject)
+            }
 
             OutlinedButton(
                 enabled = canGenerate,
-                onClick = { onIntent(FileGenerationIntent.Generate) }
+                onClick = {
+                    onIntent(FileGenerationIntent.Generate)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             ) {
                 BodyText(stringResource(Res.string.generate))
             }
@@ -495,6 +510,8 @@ private fun SelectFileContent(
     needsShops: Boolean,
     onIntent: (FileGenerationIntent) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DefaultValues.Padding.verticalListItemPadding),
@@ -531,12 +548,16 @@ private fun SelectFileContent(
 
         ButtonRowContainer {
             if (isWideScreen()) {
-                BackButton { onIntent(FileGenerationIntent.GoBack) }
+                BackButton {
+                    onIntent(FileGenerationIntent.GoBack)
+                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                }
             }
 
             OutlinedButton(
                 onClick = {
                     PlatformFileProvider.openDownloadFolder()
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
                 },
                 modifier = Modifier.sizeIn(minWidth = 150.dp),
             ) {
@@ -555,6 +576,7 @@ private fun SelectFileContent(
                     } else {
                         onIntent(FileGenerationIntent.Generate)
                     }
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 },
                 modifier = Modifier.sizeIn(minWidth = 150.dp),
             ) {
@@ -601,6 +623,7 @@ private fun MultiShopPicker(
     onIntent: (FileGenerationIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     val gridState = rememberLazyGridState()
 
     if (initialLoading) {
@@ -617,7 +640,10 @@ private fun MultiShopPicker(
 
     PlatformPullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = { onIntent(FileGenerationIntent.Refresh) },
+        onRefresh = {
+            onIntent(FileGenerationIntent.Refresh)
+            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+        },
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter,
     ) {
@@ -647,8 +673,14 @@ private fun MultiShopPicker(
                         item(span = { GridItemSpan(this.maxLineSpan) }) {
                             SelectAllItem(
                                 allSelected = allSelected,
-                                onSelectAll = { onIntent(FileGenerationIntent.SelectAllShops) },
-                                onDeselectAll = { onIntent(FileGenerationIntent.DeselectAllShops) },
+                                onSelectAll = {
+                                    onIntent(FileGenerationIntent.SelectAllShops)
+                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                },
+                                onDeselectAll = {
+                                    onIntent(FileGenerationIntent.DeselectAllShops)
+                                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                                },
                             )
                         }
 
@@ -669,6 +701,7 @@ private fun MultiShopPicker(
                                     checked = checked,
                                     onShopToggled = { id, isSelected ->
                                         onIntent(FileGenerationIntent.ToggleShop(id, isSelected))
+                                        haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                                     }
                                 )
                             }
@@ -763,6 +796,7 @@ private fun FileTypePicker(
     onFileTypeToggled: (FileType, Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
     val listState = rememberLazyListState()
 
     if (initialLoading) {
@@ -793,7 +827,10 @@ private fun FileTypePicker(
                 ) { fileType ->
                     val checked = selectedFileTypes.contains(fileType.id) // якщо Set<FileTypeId>
                     OutlinedCard(
-                        onClick = { onFileTypeToggled(fileType.id, !checked) },
+                        onClick = {
+                            onFileTypeToggled(fileType.id, !checked)
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -805,7 +842,10 @@ private fun FileTypePicker(
                         ) {
                             Checkbox(
                                 checked = checked,
-                                onCheckedChange = { onFileTypeToggled(fileType.id, it) }
+                                onCheckedChange = {
+                                    onFileTypeToggled(fileType.id, it)
+                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                }
                             )
                             DefaultIcon(fileType.icon)
                             BodyText(stringResource(fileType.label), Modifier.basicMarquee())
@@ -827,6 +867,7 @@ private fun MonthPicker(
     showMonthPicker: Boolean,
     onShowMonthPickerChange: (Boolean) -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     val monthArray = stringArrayResource(Res.array.all_months)
 
     val selectedIndex by remember(selectedMonth) {
@@ -856,7 +897,10 @@ private fun MonthPicker(
         ) {
             TitleText(stringResource(Res.string.select_month))
             OutlinedButton(
-                onClick = { onShowMonthPickerChange(true) },
+                onClick = {
+                    onShowMonthPickerChange(true)
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .sizeIn(minWidth = 150.dp),
@@ -867,7 +911,10 @@ private fun MonthPicker(
 
                 DropdownMenu(
                     expanded = showMonthPicker,
-                    onDismissRequest = { onShowMonthPickerChange(false) },
+                    onDismissRequest = {
+                        onShowMonthPickerChange(false)
+                        haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                    },
                     modifier = Modifier.fillMaxWidth(.3f)
                 ) {
                     monthArray.forEachIndexed { index, monthName ->
@@ -888,6 +935,7 @@ private fun MonthPicker(
                             onClick = {
                                 onMonthSelected(monthValue)
                                 onShowMonthPickerChange(false)
+                                haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                             },
                             colors = MenuDefaults.itemColors(
                                 textColor = if (selectedMonth == monthValue)

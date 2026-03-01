@@ -31,6 +31,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -131,12 +133,17 @@ private fun SlidesListScreenContent(
     onAddSlide: () -> Unit,
 ) {
     val listState = rememberLazyGridState()
+    val haptic = LocalHapticFeedback.current
+
     val toggle: (String) -> Unit = remember(onIntent) {
         { id -> onIntent(SlidesListScreenIntent.ToggleSlideVisibility(id)) }
     }
     PlatformPullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = { onIntent(SlidesListScreenIntent.Refresh) },
+        onRefresh = {
+            onIntent(SlidesListScreenIntent.Refresh)
+            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+        },
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
@@ -165,6 +172,7 @@ private fun SlidesListScreenContent(
                             onClick = { onEditSlide(slide.id) },
                             onToggleActive = {
                                 toggle(slide.id)
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
                         )
                     }
@@ -178,7 +186,10 @@ private fun SlidesListScreenContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    SettingsButton { onOpenSettings() }
+                    SettingsButton {
+                        onOpenSettings()
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    }
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -187,9 +198,20 @@ private fun SlidesListScreenContent(
                             Alignment.CenterHorizontally
                         ),
                     ) {
-                        BackButton(Modifier.weight(1f)) { onBack() }
-                        AddButton(Modifier.weight(1f)) { onAddSlide() }
-                        RetryButton(Modifier.weight(1f)) { onIntent(SlidesListScreenIntent.Refresh) }
+                        BackButton(Modifier.weight(1f)) {
+                            onBack()
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+
+                        }
+                        AddButton(Modifier.weight(1f)) {
+                            onAddSlide()
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+
+                        }
+                        RetryButton(Modifier.weight(1f)) {
+                            onIntent(SlidesListScreenIntent.Refresh)
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                     }
                 }
             }

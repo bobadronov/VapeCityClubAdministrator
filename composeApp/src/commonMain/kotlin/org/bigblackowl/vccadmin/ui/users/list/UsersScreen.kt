@@ -24,6 +24,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -124,6 +126,8 @@ fun UsersScreenContent(
 ) {
     val listState = rememberLazyGridState()
 
+    val haptic = LocalHapticFeedback.current
+
     Column(
         modifier = Modifier.padding(DefaultValues.Padding.mainBoxPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -152,7 +156,11 @@ fun UsersScreenContent(
                                 user = user,
                                 isCurrentUser = (currentUserId == user.id),
                                 onEdit = onEdit,
-                                onClick = { onSelect(user.id) }
+                                onClick = {
+                                    onSelect(user.id)
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+
+                                }
                             )
                         }
                     }
@@ -163,9 +171,16 @@ fun UsersScreenContent(
 
         ButtonRowContainer {
             if (isWideScreen()) {
-                BackButton(modifier = Modifier.weight(1f)) { onBack() }
+                BackButton(modifier = Modifier.weight(1f)) {
+                    onBack()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             }
-            AddButton(modifier = Modifier.weight(1f)) { addNewUser() }
+            AddButton(modifier = Modifier.weight(1f)) {
+                addNewUser()
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+
+            }
         }
     }
 }

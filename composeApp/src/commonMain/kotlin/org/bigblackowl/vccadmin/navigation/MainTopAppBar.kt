@@ -47,7 +47,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -88,6 +90,7 @@ fun MainTopAppBar(
     networkMonitorProvider: NetworkMonitorProvider = koinInject(),
 ) {
     var themeMode by LocalThemeMode.current
+    val haptic = LocalHapticFeedback.current
     val systemDark = rememberIsDarkTheme()
 
     val currentUser by authRepository.currentUser.collectAsStateWithLifecycle()
@@ -113,17 +116,20 @@ fun MainTopAppBar(
                         ThemeMode.LIGHT -> false
                     }
                 )
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
             },
             currentUserRole = currentUser?.role,
             isLoginScreen = isLoginScreen,
             navigate = { route ->
                 showMenu = false
                 navigationViewModel.navigateTo(route)
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
             },
             logout = {
                 showMenu = false
                 loginScreenViewModel.onIntent(LoginScreenIntent.LogoutClicked)
                 navigationViewModel.logout()
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
             },
         )
     }
@@ -132,7 +138,10 @@ fun MainTopAppBar(
         title = { Text(if (isLoginScreen) "" else currentTitleFor(lastRoute)) },
         navigationIcon = {
             if (!isLoginScreen && !isMainScreen) {
-                IconButton(onClick = { navigationViewModel.requestBack() }) {
+                IconButton(onClick = {
+                    navigationViewModel.requestBack()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }) {
                     DefaultIcon(Icons.AutoMirrored.Filled.ArrowBack)
                 }
             }
@@ -164,6 +173,7 @@ fun MainTopAppBar(
                         onUserSelected = { id ->
                             showMenu = false
                             navigationViewModel.navigateTo(Route.UserDetail(id))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         },
                         currentRoute = lastRoute,
                         currentUser = currentUser,
@@ -180,6 +190,8 @@ private fun NetworkStatusIcon(
     isConnected: Boolean,
     hideDelayMs: Long = 1200L,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     var visible by remember { mutableStateOf(!isConnected) }
 
     LaunchedEffect(isConnected) {
@@ -207,7 +219,10 @@ private fun NetworkStatusIcon(
         exit = fadeOut(tween(easing = LinearEasing)),
         modifier = Modifier.padding(end = 8.dp)
     ) {
-        IconButton(onClick = { PlatformFunctionProvider.openNetwork() }) {
+        IconButton(onClick = {
+            PlatformFunctionProvider.openNetwork()
+            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+        }) {
             DefaultIcon(
                 image = if (isConnected) Icons.Default.SignalWifi4Bar else Icons.Default.WifiOff,
                 tint = color

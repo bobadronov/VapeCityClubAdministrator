@@ -20,7 +20,7 @@ object DefaultValues {
         @OptIn(ExperimentalTime::class)
         val now = Clock.System.now().toEpochMilliseconds()
         val date = Clock.System.now()
-            .toLocalDateTime(TimeZone.Companion.currentSystemDefault())
+            .toLocalDateTime(TimeZone.currentSystemDefault())
             .date.toString().replace("-", "_")
     }
 
@@ -29,20 +29,22 @@ object DefaultValues {
     }
 
     object Size {
-        val iconSize = 25.dp
+        val iconSize = 24.dp
         val gridItemMinSize = 350.dp
-        val textTitleAutoSize = TextAutoSize.Companion.StepBased(
+        val textTitleAutoSize = TextAutoSize.StepBased(
             minFontSize = 19.sp, maxFontSize = 24.sp
         )
-        val textBodyAutoSize = TextAutoSize.Companion.StepBased(
+        val textBodyAutoSize = TextAutoSize.StepBased(
             minFontSize = 14.sp, maxFontSize = 17.sp
         )
-        val textHelperAutoSize = TextAutoSize.Companion.StepBased(
+        val textHelperAutoSize = TextAutoSize.StepBased(
             minFontSize = 11.sp, maxFontSize = 14.sp
         )
-        val textSmallAutoSize = TextAutoSize.Companion.StepBased(
+        val textSmallAutoSize = TextAutoSize.StepBased(
             minFontSize = 8.sp, maxFontSize = 11.sp
         )
+        val scheduleDayCellWidth = 200.dp
+        val scheduleShopCellWidth = 250.dp
     }
 
     object Padding {

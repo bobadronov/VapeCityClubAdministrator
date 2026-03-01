@@ -61,6 +61,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -199,6 +201,7 @@ fun SettingsScreen(
         goBack = { navigationViewModel.popBackStack() }
     )
 }
+
 @Suppress("VariableNeverRead")
 @Composable
 private fun SettingsContent(
@@ -214,6 +217,7 @@ private fun SettingsContent(
     var themeMode by LocalThemeMode.current
     val systemDark = rememberIsDarkTheme()
     val listState = rememberLazyListState()
+    val haptic = LocalHapticFeedback.current
 
     if (isInitialLoading) {
         LoadingComponent()
@@ -248,6 +252,7 @@ private fun SettingsContent(
                             }
                             themeMode = theme
                             onIntent(SettingsIntent.SetTheme(isDark))
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                         }
                     )
                 }
@@ -255,13 +260,17 @@ private fun SettingsContent(
                 item(key = "lang") {
                     LanguageCard { iso ->
                         onIntent(SettingsIntent.SetLanguage(iso))
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                     }
                 }
-
+                platformSettingsItems()
                 item(key = "cache") {
                     CacheCard(
                         cacheSizeBytes = cacheSizeBytes,
-                        onClearClick = { onIntent(SettingsIntent.SetClearCacheDialog(true)) }
+                        onClearClick = {
+                            onIntent(SettingsIntent.SetClearCacheDialog(true))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                     )
                 }
 
@@ -269,15 +278,27 @@ private fun SettingsContent(
                     UpdatesCard(
                         updateState = updateState,
                         currentBuildLabel = currentAppVersionLabel,
-                        onCheck = { onIntent(SettingsIntent.CheckUpdates) },
-                        onDownload = { onIntent(SettingsIntent.DownloadUpdate) },
-                        onInstall = { onIntent(SettingsIntent.InstallUpdate) },
+                        onCheck = {
+                            onIntent(SettingsIntent.CheckUpdates)
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        },
+                        onDownload = {
+                            onIntent(SettingsIntent.DownloadUpdate)
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        },
+                        onInstall = {
+                            onIntent(SettingsIntent.InstallUpdate)
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        },
                     )
                 }
 
                 item(key = "account") {
                     AccountCard(
-                        onLogoutClick = { onIntent(SettingsIntent.SetLogoutDialog(true)) }
+                        onLogoutClick = {
+                            onIntent(SettingsIntent.SetLogoutDialog(true))
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                     )
                 }
             }
@@ -287,7 +308,10 @@ private fun SettingsContent(
 
         ButtonRowContainer {
             if (isWideScreen()) {
-                BackButton { goBack() }
+                BackButton {
+                    goBack()
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
             }
         }
     }
@@ -301,6 +325,7 @@ private fun SettingsContent(
                 TextButton(onClick = {
                     onIntent(SettingsIntent.Logout)
                     onIntent(SettingsIntent.SetLogoutDialog(false))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 }) {
                     BodyText(
                         stringResource(Res.string.confirm),
@@ -309,7 +334,10 @@ private fun SettingsContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onIntent(SettingsIntent.SetLogoutDialog(false)) }) {
+                TextButton(onClick = {
+                    onIntent(SettingsIntent.SetLogoutDialog(false))
+                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                }) {
                     BodyText(stringResource(Res.string.cancel))
                 }
             }
@@ -325,6 +353,7 @@ private fun SettingsContent(
                 TextButton(onClick = {
                     onIntent(SettingsIntent.ClearCache)
                     onIntent(SettingsIntent.SetClearCacheDialog(false))
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 }) {
                     BodyText(
                         stringResource(Res.string.clear),
@@ -333,13 +362,18 @@ private fun SettingsContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onIntent(SettingsIntent.SetClearCacheDialog(false)) }) {
+                TextButton(onClick = {
+                    onIntent(SettingsIntent.SetClearCacheDialog(false))
+                    haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                }) {
                     BodyText(stringResource(Res.string.cancel))
                 }
             }
         )
     }
 }
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LanguageCard(
@@ -397,6 +431,7 @@ private fun LanguageCard(
         }
     }
 }
+
 @Composable
 private fun ThemeCard(
     modifier: Modifier = Modifier,
@@ -432,6 +467,7 @@ private fun ThemeCard(
         }
     }
 }
+
 @Composable
 private fun CacheCard(
     cacheSizeBytes: Long,
@@ -473,6 +509,7 @@ private fun CacheCard(
         }
     }
 }
+
 @Composable
 private fun UpdatesCard(
     updateState: UpdateState,
@@ -525,7 +562,9 @@ private fun UpdatesCard(
         }
     }
 }
+
 private enum class OtaAction { None, Check, Download, Install }
+
 @Composable
 private fun UpdateActionButton(
     updateState: UpdateState,
@@ -558,6 +597,7 @@ private fun UpdateActionButton(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun OtaStatusIcon(state: UpdateState) {
@@ -584,6 +624,7 @@ private fun OtaStatusIcon(state: UpdateState) {
         else -> DefaultIcon(Icons.Default.Info)
     }
 }
+
 @Composable
 private fun AccountCard(
     onLogoutClick: (Offset) -> Unit,
@@ -604,9 +645,6 @@ private fun AccountCard(
         }
     }
 }
-
-
-
 
 
 @Preview
@@ -638,6 +676,7 @@ private fun Preview_SettingsContent_Normal() = PreviewDarkMaterialTheme {
         }
     }
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialTheme {
@@ -652,6 +691,7 @@ private fun Preview_SettingsContent_ClearCacheDialog() = PreviewDarkMaterialThem
         goBack = {}
     )
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_LogoutDialog() = PreviewDarkMaterialTheme {
@@ -666,6 +706,7 @@ private fun Preview_SettingsContent_LogoutDialog() = PreviewDarkMaterialTheme {
         goBack = {}
     )
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialTheme {
@@ -680,6 +721,7 @@ private fun Preview_SettingsContent_WasmCacheUnknown() = PreviewDarkMaterialThem
         goBack = {}
     )
 }
+
 @Preview
 @Composable
 private fun Preview_SettingsContent_Loading() = PreviewDarkMaterialTheme {
@@ -694,14 +736,16 @@ private fun Preview_SettingsContent_Loading() = PreviewDarkMaterialTheme {
         goBack = {}
     )
 }
+
 @Preview
 @Composable
 private fun CacheCardPreview() = PreviewDarkMaterialTheme {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { CacheCard(0L,){} }
-        item { CacheCard(2650L,){} }
+        item { CacheCard(0L) {} }
+        item { CacheCard(2650L) {} }
     }
 }
+
 @Preview(device = Devices.DESKTOP)
 @Composable
 private fun Preview_SettingsContentDark_ClearCacheDialogPC() = PreviewDarkMaterialTheme {
@@ -716,6 +760,7 @@ private fun Preview_SettingsContentDark_ClearCacheDialogPC() = PreviewDarkMateri
         goBack = {}
     )
 }
+
 @Preview(device = Devices.DESKTOP)
 @Composable
 private fun Preview_SettingsContentLight_ClearCacheDialogPC() = PreviewLightMaterialTheme {

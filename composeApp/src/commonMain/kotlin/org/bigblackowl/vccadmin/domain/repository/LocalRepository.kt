@@ -1,8 +1,5 @@
 package org.bigblackowl.vccadmin.domain.repository
 
-import kotlinx.datetime.LocalDate
-import org.bigblackowl.vccadmin.ui.workSchedule.create.WorkScheduleDraft
-
 interface LocalRepository {
 
     fun getAutoEnterState(): Boolean
@@ -21,7 +18,6 @@ interface LocalRepository {
 
     fun getLanguage(): String?
     fun setLanguage(iso: String)
-
-    suspend fun loadWorkScheduleDraft(weekStart: LocalDate): WorkScheduleDraft?
-    suspend fun saveWorkScheduleDraft(draft: WorkScheduleDraft)
+    fun getZoomState(): Float
+    fun saveZoomState(scale: Float)
 }

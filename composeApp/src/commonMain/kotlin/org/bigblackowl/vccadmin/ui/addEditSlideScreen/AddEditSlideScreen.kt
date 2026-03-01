@@ -57,8 +57,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
+import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import io.github.vinceglb.filekit.coil.securelyAccessFile
 import org.bigblackowl.vccadmin.data.entity.Shop
@@ -74,9 +74,9 @@ import org.bigblackowl.vccadmin.uiComponent.container.ButtonRowContainer
 import org.bigblackowl.vccadmin.uiComponent.dialog.FullscreenZoomableImageViewer
 import org.bigblackowl.vccadmin.uiComponent.dialog.UnsavedChangesDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
-import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -116,12 +116,11 @@ fun AddEditSlideScreen(
         onDispose { viewModel.onIntent(AddEditSlideIntent.ClearData) }
     }
 
-    val uiEvent by viewModel.uiEvent.collectAsStateWithLifecycle(null)
     var showUnsavedDialog by remember { mutableStateOf(false) }
 
     // Обробка одноразових подій (наприклад, помилок у Snackbar)
-    LaunchedEffect(uiEvent) {
-        uiEvent?.let { event ->
+    LaunchedEffect(Unit) {
+        viewModel.uiEvent.collect { event ->
             when (event) {
                 is UIEvents.ShowMessage -> {
                     val snackbarResult = snackbarHostState.showSnackbar(event.message, actionLabel = if (event.message.contains("Файл збережено", true)) "Open" else null)
@@ -138,6 +137,7 @@ fun AddEditSlideScreen(
 
                 is UIEvents.ShowUnsavedChangesDialog -> showUnsavedDialog = true
                 is UIEvents.NavigateBack -> navigationViewModel.popBackStack()
+                else -> {}
             }
         }
     }
@@ -419,6 +419,7 @@ private fun ImagePreview(
                 AsyncImage(
                     model = request,
                     contentDescription = stringResource(Res.string.slides_preview),
+                    imageLoader = koinInject<ImageLoader>(),
                     modifier = Modifier.fillMaxSize()
                         .clip(RoundedCornerShape(DefaultValues.Shape.defaultShape)),
                     onState = { sta ->

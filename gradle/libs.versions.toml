@@ -2,64 +2,51 @@
 #       git tag v1.0.817
 #       git push --tags
 
-#noinspection UnusedVersionCatalogEntry
-colorpickerCompose = "1.1.3"
-isDebugBuild = "false"
-#isDebugBuild    = "true"
 
-#noinspection UnusedVersionCatalogEntry
-subpath = "19"
-#noinspection UnusedVersionCatalogEntry
-patch = "8"
-#noinspection UnusedVersionCatalogEntry
-minor = "0"
-#noinspection UnusedVersionCatalogEntry
-major = "1"
-#noinspection UnusedVersionCatalogEntry
-android-minSdk = "29"
-#noinspection UnusedVersionCatalogEntry
-android-targetSdk = "36"
-#noinspection UnusedVersionCatalogEntry
-android-compileSdk = "36"
+subpath                     = "0"
+patch                       = "9"
+minor                       = "0"
+major                       = "1"
 
-#noinspection UnusedVersionCatalogEntry
-appName = "VCC Administrator"
-kotlin = "2.3.20-RC"
-agp = "9.0.1"
 
-ksp = "2.3.4"
-tableCore = "1.7.13"
-workRuntimeKtx = "2.11.1"
-androidx-nav3 = "1.1.0-alpha03"
-adaptiveLayout = "1.3.0-alpha05"
-composeHotReload = "1.1.0-alpha05"
-androidx-activity = "1.12.4"
-androidx-lifecycle = "2.9.6"
-kotlinx-coroutines = "1.10.2"
-material3-expressive = "1.11.0-alpha03"
-materialIconsExtended = "1.7.3"
-kotlinx-serialization = "1.10.0"
-compose-multiplatform = "1.10.1"
-androidx-nav3-viewmodel = "2.10.0-alpha08"
-ktor = "3.4.0"               # https://ktor.io/docs/releases.html
-koin = "4.2.0-RC1"           # https://insert-koin.io/docs/setup/koin/
-coil = "3.4.0"               # https://github.com/coil-kt/coil
-qrose = "1.1.2"               # https://github.com/alexzhirkevich/qrose
-napier = "2.7.1"               # https://github.com/AAkira/Napier
-filekit = "0.13.0"              # https://github.com/vinceglb/FileKit?tab=readme-ov-file
-supabase = "3.3.0"               # https://supabase.com/docs/reference/kotlin/installing
-zoomable = "2.11.1"              # https://github.com/usuiat/Zoomable
-reorderable = "3.0.0"               # https://github.com/Calvin-LL/Reorderable
-koin-plugin = "0.3.0"               # https://insert-koin.io/docs/setup/compiler-plugin/
-buildConfig = "6.0.7"               # https://github.com/gmazzo/gradle-buildconfig-plugin
-openaiClient = "4.1.0"               # https://github.com/aallam/openai-kotlin
-fastscroller = "0.3.2"               # https://github.com/oikvpqya/fastscroller-compose-multiplatform
-connectivity = "2.4.1"               # https://github.com/jordond/connectivity
-kotlinx-datetime = "0.7.1"               # https://github.com/Kotlin/kotlinx-datetime
-composenativetray = "1.1.0"               # https://github.com/kdroidFilter/ComposeNativeTray?tab=readme-ov-file
-multiplatformSettings = "1.3.0"               # https://github.com/russhwolf/multiplatform-settings
-
-#windowStyler = "0.3.2"              # https://klibs.io/project/MayakaApps/ComposeWindowStyler
+android-minSdk              = "29"
+android-targetSdk           = "36"
+android-compileSdk          = "36"
+appName                     = "VCC Administrator"
+kotlin                      = "2.3.20-RC"
+agp                         = "9.0.1"
+tableCore                   = "1.7.13"
+workRuntimeKtx              = "2.11.1"
+androidx-nav3               = "1.1.0-alpha02"
+adaptiveLayout              = "1.3.0-alpha04"
+composeHotReload            = "1.1.0-alpha05"
+androidx-activity           = "1.12.4"
+androidx-lifecycle          = "2.9.6"
+kotlinx-coroutines          = "1.10.2"
+colorpickerCompose          = "1.1.3"
+material3-expressive        = "1.11.0-alpha02"
+materialIconsExtended       = "1.7.3"
+kotlinx-serialization       = "1.10.0"
+compose-multiplatform       = "1.10.1"
+androidx-nav3-viewmodel     = "2.10.0-alpha08"
+ktor                        = "3.4.0"               # https://ktor.io/docs/releases.html
+koin                        = "4.2.0-RC1"           # https://insert-koin.io/docs/setup/koin/
+coil                        = "3.3.0"               # https://github.com/coil-kt/coil
+qrose                       = "1.1.2"               # https://github.com/alexzhirkevich/qrose
+napier                      = "2.7.1"               # https://github.com/AAkira/Napier
+filekit                     = "0.12.0"              # https://github.com/vinceglb/FileKit?tab=readme-ov-file
+supabase                    = "3.3.0"               # https://supabase.com/docs/reference/kotlin/installing
+zoomable                    = "2.11.1"              # https://github.com/usuiat/Zoomable
+reorderable                 = "3.0.0"               # https://github.com/Calvin-LL/Reorderable
+koin-plugin                 = "0.3.0"               # https://insert-koin.io/docs/setup/compiler-plugin/
+buildConfig                 = "6.0.7"               # https://github.com/gmazzo/gradle-buildconfig-plugin
+openaiClient                = "4.1.0"               # https://github.com/aallam/openai-kotlin
+fastscroller                = "0.3.2"               # https://github.com/oikvpqya/fastscroller-compose-multiplatform
+connectivity                = "2.4.1"               # https://github.com/jordond/connectivity
+kotlinx-datetime            = "0.7.1"               # https://github.com/Kotlin/kotlinx-datetime
+composenativetray           = "1.1.0"               # https://github.com/kdroidFilter/ComposeNativeTray?tab=readme-ov-file
+multiplatformSettings       = "1.3.0"               # https://github.com/russhwolf/multiplatform-settings
+#windowStyler                = "0.3.2"               # https://klibs.io/project/MayakaApps/ComposeWindowStyler
 
 
 [libraries]
@@ -87,7 +74,6 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -97,44 +83,34 @@ ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", vers
 ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 #ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-compose-navigation3 = { module = "io.insert-koin:koin-compose-navigation3", version.ref = "koin" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
 koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-viewmodel-navigation", version.ref = "koin" }
-
 coil = { module = "io.coil-kt.coil3:coil-compose-core", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 #coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
-
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
-
 fastscroller-core = { module = "io.github.oikvpqya.compose.fastscroller:fastscroller-core", version.ref = "fastscroller" }
 fastscroller-material3 = { module = "io.github.oikvpqya.compose.fastscroller:fastscroller-material3", version.ref = "fastscroller" }
 fastscroller-indicator = { module = "io.github.oikvpqya.compose.fastscroller:fastscroller-indicator", version.ref = "fastscroller" }
-
 connectivity-core = { module = "dev.jordond.connectivity:connectivity-core", version.ref = "connectivity" }
 connectivity-compose-http = { module = "dev.jordond.connectivity:connectivity-compose-http", version.ref = "connectivity" }
-
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-coil = { module = "io.github.vinceglb:filekit-coil", version.ref = "filekit" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
-
 openai-client = { module = "com.aallam.openai:openai-client", version.ref = "openaiClient" }
 qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 qrose-oned = { module = "io.github.alexzhirkevich:qrose-oned", version.ref = "qrose" }
-
 supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
 supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt" }
 supabase-storage = { module = "io.github.jan-tennert.supabase:storage-kt" }
-
 compose-native-tray = { module = "io.github.kdroidfilter:composenativetray", version.ref = "composenativetray" }
 table-core = { module = "ua.wwind.table-kmp:table-core", version.ref = "tableCore" }
 zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
-
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 
@@ -149,9 +125,7 @@ android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }
-
 
 
 [bundles]

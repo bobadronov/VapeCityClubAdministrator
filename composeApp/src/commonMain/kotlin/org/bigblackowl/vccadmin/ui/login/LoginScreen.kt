@@ -49,6 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.autofill.contentType
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -92,45 +94,25 @@ fun LoginScreen(
     snackbarHostState: SnackbarHostState,
     viewModel: LoginScreenViewModel = koinInject(),
 ) {
-    val email by viewModel.uiState.map { it.email }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = "")
+    val email by viewModel.uiState.map { it.email }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = "")
 
-    val password by viewModel.uiState.map { it.password }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = "")
+    val password by viewModel.uiState.map { it.password }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = "")
 
-    val isEmailError by viewModel.uiState.map { it.isEmailError }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val isEmailError by viewModel.uiState.map { it.isEmailError }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = false)
 
-    val isPasswordError by viewModel.uiState.map { it.isPasswordError }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val isPasswordError by viewModel.uiState.map { it.isPasswordError }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = false)
 
-    val isPasswordVisible by viewModel.uiState.map { it.isPasswordVisible }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val isPasswordVisible by viewModel.uiState.map { it.isPasswordVisible }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = false)
 
-    val canLogin by viewModel.uiState.map { it.canLogin }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val canLogin by viewModel.uiState.map { it.canLogin }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = false)
 
-    val isLoading by viewModel.uiState.map { it.isLoading }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val isLoading by viewModel.uiState.map { it.isLoading }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = false)
 
-    val autoLoginState by viewModel.uiState.map { it.autoLoginState }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val autoLoginState by viewModel.uiState.map { it.autoLoginState }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = false)
 
-    val networkState by viewModel.uiState.map { it.networkState }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = true)
+    val networkState by viewModel.uiState.map { it.networkState }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = true)
 
-    val errorMessage by viewModel.uiState.map { it.errorMessage }
-        .distinctUntilChanged()
-        .collectAsStateWithLifecycle(initialValue = null)
+    val errorMessage by viewModel.uiState.map { it.errorMessage }.distinctUntilChanged().collectAsStateWithLifecycle(initialValue = null)
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let { snackbarHostState.showSnackbar(it) }
@@ -172,13 +154,12 @@ private fun LoginScreenContent(
     onAutoLoginChanged: (Boolean) -> Unit,
     onLogin: () -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val loginButtonWidth by animateDpAsState(
-        targetValue = if (isLoading) 80.dp else 200.dp,
-        animationSpec = tween(
-            durationMillis = 400,
-            easing = FastOutSlowInEasing
-        ),
-        label = "login_button_width"
+        targetValue = if (isLoading) 80.dp else 200.dp, animationSpec = tween(
+            durationMillis = 400, easing = FastOutSlowInEasing
+        ), label = "login_button_width"
     )
     val isDarkTheme = rememberIsDarkTheme()
     val darkLogo = painterResource(Res.drawable.main_logo)
@@ -194,40 +175,26 @@ private fun LoginScreenContent(
         Icon(
             painter = logo,
             contentDescription = null,
-            modifier = Modifier
-                .alpha(if (isDarkTheme) .05f else .2f)
-                .padding(DefaultValues.Padding.mainBoxPadding)
-                .fillMaxSize()
+            modifier = Modifier.alpha(if (isDarkTheme) .05f else .2f).padding(DefaultValues.Padding.mainBoxPadding).fillMaxSize()
         )
     }
 
     Crossfade(networkState) { state ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(DefaultValues.Padding.mainBoxPadding)
-                .imePadding()
-                .navigationBarsPadding(),
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(DefaultValues.Padding.mainBoxPadding).imePadding().navigationBarsPadding(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             if (state) {
                 TitleText(
-                    text = BuildConfig.APP_NAME,
-                    textAlign = TextAlign.Center,
-                    letterSpacing = 2.5.sp
+                    text = BuildConfig.APP_NAME, textAlign = TextAlign.Center, letterSpacing = 2.5.sp
                 )
 
                 Spacer(Modifier.height(48.dp))
 
                 EmailField(
-                    value = email,
-                    onValueChange = onEmailChanged,
-                    isError = isEmailError,
-                    enabled = !isLoading,
-                    modifier = Modifier.width(270.dp)
+                    value = email, onValueChange = onEmailChanged, isError = isEmailError, enabled = !isLoading, modifier = Modifier.width(270.dp)
                 )
 
                 Spacer(Modifier.height(20.dp))
@@ -251,7 +218,10 @@ private fun LoginScreenContent(
 
                         Checkbox(
                             checked = autoLoginState,
-                            onCheckedChange = onAutoLoginChanged,
+                            onCheckedChange = {
+                                onAutoLoginChanged(it)
+                                haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                            },
                             enabled = !isLoading,
                         )
 
@@ -263,22 +233,22 @@ private fun LoginScreenContent(
                 Spacer(Modifier.height(48.dp))
 
                 OutlinedButton(
-                    onClick = onLogin,
+                    onClick = {
+                        onLogin()
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    },
                     modifier = Modifier.size(height = 50.dp, width = loginButtonWidth),
                     enabled = !isLoading && canLogin,
                     colors = ButtonDefaults.outlinedButtonColors(),
                     border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.onSurface)
                 ) {
                     Crossfade(
-                        targetState = isLoading,
-                        animationSpec = tween(300),
-                        label = "login_button_content"
+                        targetState = isLoading, animationSpec = tween(300), label = "login_button_content"
                     ) { loading ->
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             if (loading) {
                                 LoadingIndicator(
-                                    modifier = Modifier
-                                        .fillMaxSize(),
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                             } else {
                                 BodyText(stringResource(Res.string.login_button))
@@ -292,7 +262,10 @@ private fun LoginScreenContent(
                 Spacer(Modifier.height(15.dp))
 
                 Button(
-                    onClick = { PlatformFunctionProvider.openNetwork() },
+                    onClick = {
+                        PlatformFunctionProvider.openNetwork()
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    },
                 ) {
                     DefaultIcon(image = Icons.Default.Settings, tint = MaterialTheme.colorScheme.onPrimary)
                     Spacer(Modifier.width(ButtonDefaults.IconSpacing))
@@ -305,11 +278,7 @@ private fun LoginScreenContent(
 
 @Composable
 private fun EmailField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    isError: Boolean,
-    enabled: Boolean,
-    modifier: Modifier = Modifier
+    value: String, onValueChange: (String) -> Unit, isError: Boolean, enabled: Boolean, modifier: Modifier = Modifier
 ) {
     OutlinedTextField(
         value = value,
@@ -366,9 +335,6 @@ private fun PasswordField(
         shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
     )
 }
-
-
-
 
 
 @Preview

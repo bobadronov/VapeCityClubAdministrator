@@ -15,4 +15,5 @@ interface UserRepository {
     suspend fun registerUser(email: String, phone: String?, password: String, firstName: String, lastName: String, role: UserRole): Boolean
     suspend fun updateUser(id: String, phone: String?, firstName: String, lastName: String, role: UserRole): Boolean
     suspend fun deleteUser(userId: String): Boolean
+    suspend fun setUserColor(userId: String, newColor: Long)
 }

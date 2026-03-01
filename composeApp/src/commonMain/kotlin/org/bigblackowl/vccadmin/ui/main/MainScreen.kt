@@ -60,8 +60,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,9 +86,9 @@ import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
 import org.bigblackowl.vccadmin.uiComponent.container.PlatformPullToRefreshBox
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
+import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.listItems.StickyCityHeader
-import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.utils.isWideScreen
@@ -147,6 +149,7 @@ fun MainScreen(
         onClearFilters = { viewModel.onIntent(MainScreenIntent.ClearFilters) },
     )
 }
+
 @Composable
 private fun MainScreenContent(
     cities: List<City>,
@@ -167,10 +170,14 @@ private fun MainScreenContent(
     val showScrollToTop by remember {
         derivedStateOf { lazyGridState.firstVisibleItemIndex > 5 }
     }
+    val haptic = LocalHapticFeedback.current
 
     PlatformPullToRefreshBox(
         isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
+        onRefresh = {
+            onRefresh()
+            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+        },
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
@@ -221,7 +228,10 @@ private fun MainScreenContent(
                                 StickyCityHeader(city = city)
                             }
                             items(items = shops, key = { it.id }) { shop ->
-                                ShopCardItem(shop = shop, onClick = { onShopClick(shop.id) })
+                                ShopCardItem(shop = shop, onClick = {
+                                    onShopClick(shop.id)
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                })
                             }
                         }
                     }
@@ -240,7 +250,12 @@ private fun MainScreenContent(
                 .padding(16.dp)
         ) {
             FloatingActionButton(
-                onClick = { scope.launch { lazyGridState.animateScrollToItem(0) } },
+                onClick = {
+                    scope.launch {
+                        lazyGridState.animateScrollToItem(0)
+                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    }
+                },
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 DefaultIcon(Icons.Default.ArrowUpward, tint = MaterialTheme.colorScheme.primary)
@@ -248,6 +263,7 @@ private fun MainScreenContent(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShopsFiltersBar(
@@ -289,6 +305,7 @@ private fun ShopsFiltersBar(
         )
     }
 }
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun FiltersGrid(
@@ -359,6 +376,7 @@ private fun FiltersGrid(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StatusChip(
@@ -374,6 +392,7 @@ private fun StatusChip(
         shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
     )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CityChip(
@@ -388,6 +407,7 @@ private fun CityChip(
         shape = RoundedCornerShape(DefaultValues.Shape.defaultShape),
     )
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExpandButton(
@@ -404,6 +424,7 @@ private fun ExpandButton(
         ExposedDropdownMenuDefaults.TrailingIcon(expanded)
     }
 }
+
 @Composable
 private fun ShopCardItem(
     shop: Shop,
@@ -475,9 +496,6 @@ private fun ShopCardItem(
         }
     }
 }
-
-
-
 
 
 @Preview(device = Devices.PHONE)

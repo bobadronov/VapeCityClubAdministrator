@@ -50,7 +50,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,6 +62,7 @@ import kotlinx.coroutines.launch
 import org.bigblackowl.vccadmin.data.entity.Shop
 import org.bigblackowl.vccadmin.data.entity.ShopStatus
 import org.bigblackowl.vccadmin.data.entity.UserRole
+import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.data.events.UIEvents
 import org.bigblackowl.vccadmin.data.repository.FakeBackend
 import org.bigblackowl.vccadmin.navigation.NavigationViewModel
@@ -67,7 +70,6 @@ import org.bigblackowl.vccadmin.navigation.Route
 import org.bigblackowl.vccadmin.theme.DefaultValues
 import org.bigblackowl.vccadmin.theme.PreviewDarkMaterialTheme
 import org.bigblackowl.vccadmin.theme.PreviewLightMaterialTheme
-import org.bigblackowl.vccadmin.data.entity.rememberIsDarkTheme
 import org.bigblackowl.vccadmin.uiComponent.buttons.BackButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.EditButton
 import org.bigblackowl.vccadmin.uiComponent.buttons.QRCodeButton
@@ -78,8 +80,8 @@ import org.bigblackowl.vccadmin.uiComponent.dialog.QRCodeDialog
 import org.bigblackowl.vccadmin.uiComponent.dialog.ShareShopDataDialog
 import org.bigblackowl.vccadmin.uiComponent.icons.DefaultIcon
 import org.bigblackowl.vccadmin.uiComponent.icons.OnlineIcon
-import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.indicators.LoadingComponent
+import org.bigblackowl.vccadmin.uiComponent.listItems.DefaultVerticalScrollbar
 import org.bigblackowl.vccadmin.uiComponent.text.BodyText
 import org.bigblackowl.vccadmin.uiComponent.text.HelperText
 import org.bigblackowl.vccadmin.uiComponent.text.SmallText
@@ -173,6 +175,7 @@ private fun ShopDetailsScreenContent(
 ) {
     var showQRCodeDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
 
     PlatformPullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -194,7 +197,10 @@ private fun ShopDetailsScreenContent(
                     )
 
                     ButtonRowContainer(modifier = Modifier.align(Alignment.BottomCenter)) {
-                        BackButton(Modifier.weight(1f)) { onBack() }
+                        BackButton(Modifier.weight(1f)) {
+                            onBack()
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                     }
                 }
             }
@@ -225,7 +231,7 @@ private fun ShopDetailsScreenContent(
                         ) {
                             TitleText(
                                 text = "${shop.street}, ${shop.houseNumber}",
-                             fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold
                             )
                             StatusBadge(status = shop.status)
                         }
@@ -279,7 +285,10 @@ private fun ShopDetailsScreenContent(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.Center,
                                     ) {
-                                        QRCodeButton(modifier = Modifier.fillMaxWidth(.7f), onClick = { showQRCodeDialog = true })
+                                        QRCodeButton(modifier = Modifier.fillMaxWidth(.7f), onClick = {
+                                            showQRCodeDialog = true
+                                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                                        })
                                     }
                                 }
 
@@ -378,23 +387,35 @@ private fun ShopDetailsScreenContent(
 
                     ButtonRowContainer {
                         if (isWideScreen()) {
-                            BackButton(modifier = Modifier.weight(1f), onBack = onBack)
+                            BackButton(modifier = Modifier.weight(1f), onBack = {
+                                onBack()
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            })
                         }
 
                         ShareButton(
                             modifier = Modifier.weight(1f),
-                            onShare = { showShareDialog = true },
+                            onShare = {
+                                showShareDialog = true
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            },
                         )
 
                         if (userRole == UserRole.ADMIN) {
-                            EditButton(modifier = Modifier.weight(1f), onEdit = { onEdit(shop.id) })
+                            EditButton(modifier = Modifier.weight(1f), onEdit = {
+                                onEdit(shop.id)
+                                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            })
                         }
                     }
 
                     AnimatedVisibility(showShareDialog) {
                         ShareShopDataDialog(
                             shop = shop,
-                            onDismiss = { showShareDialog = false },
+                            onDismiss = {
+                                showShareDialog = false
+                                haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                            },
                             onShareClick = onShare,
                             onCopy = onCopy,
                         )
@@ -406,7 +427,10 @@ private fun ShopDetailsScreenContent(
                                 .filter(AnnotatedString(shop.phoneNumber))
                                 .text.text,
                             showConfirmMessage = showConfirmMessage,
-                            onDismiss = { showQRCodeDialog = false },
+                            onDismiss = {
+                                showQRCodeDialog = false
+                                haptic.performHapticFeedback(HapticFeedbackType.Reject)
+                            },
                         )
                     }
                 }
