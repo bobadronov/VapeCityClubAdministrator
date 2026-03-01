@@ -1,3 +1,7 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -11,4 +15,11 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlinx.serialization) apply false
     alias(libs.plugins.buildConfig) apply false
+}
+plugins.withType<YarnPlugin>().configureEach {
+    extensions.configure<YarnRootExtension> {
+        yarnLockAutoReplace = true
+        yarnLockMismatchReport = YarnLockMismatchReport.WARNING // або NONE
+        reportNewYarnLock = true
+    }
 }
